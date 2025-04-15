@@ -234,7 +234,7 @@ export function useAutocompleteGridVirtualization({ width, columnCount, rowHeigh
     );
   };
 
-  const memoListBox = useMemo(() => ListboxComponent, []);
+  const memoListBox = useMemo(() => ListboxComponent, [columnCount]);
 
   return [memoListBox];
 }

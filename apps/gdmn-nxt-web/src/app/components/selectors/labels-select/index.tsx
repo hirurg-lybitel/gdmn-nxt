@@ -1,5 +1,5 @@
 import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
-import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, createFilterOptions, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, createFilterOptions, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography, useMediaQuery } from '@mui/material';
 import { MouseEvent, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../../features/labels';
@@ -30,7 +30,6 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
   }>({
     open: false
   });
-
 
   const isFetching = useMemo(() =>
     editIsLoading || addIsLoading || labelsFetching || labelsLoading,
@@ -100,6 +99,8 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
     stringify: (option: ILabel) => `${option.USR$NAME}`,
   });
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <>
       {labelEditComponent}
@@ -164,7 +165,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
             <div
               className="action"
               style={{
-                display: 'none'
+                display: mobile ? 'inline-flex' : 'none'
               }}
             >
               <ItemButtonEdit

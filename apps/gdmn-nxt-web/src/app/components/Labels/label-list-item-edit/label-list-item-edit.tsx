@@ -103,6 +103,7 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       open={open}
       onClose={handleOnClose}
       confirmation={formik.dirty}
+      maxWidth="80%"
     >
       <DialogTitle>
         {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}

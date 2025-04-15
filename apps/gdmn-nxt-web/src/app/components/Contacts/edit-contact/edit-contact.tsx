@@ -5,12 +5,12 @@ import WorkIcon from '@mui/icons-material/Work';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import EmailIcon from '@mui/icons-material/Email';
-import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField } from '@mui/material';
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, InputAdornment, Stack, Tab, TextField, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './edit-contact.module.less';
 import { IContactName, IContactPerson, ICustomer, IEmail, IMessenger, IPhone } from '@gsbelarus/util-api-types';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormikProvider, Form, useFormik } from 'formik';
 import * as yup from 'yup';
 import { emailsValidation, phonesValidation } from '@gdmn-nxt/helpers/validators';
@@ -46,7 +46,10 @@ export function EditContact({
   onCancel,
 }: EditContactProps) {
   const userPermissions = usePermissions();
-  const [tabIndex, setTabIndex] = useState('2');
+  const theme = useTheme();
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const defaultTab = matchDownMd ? '1' : '3';
+  const [tabIndex, setTabIndex] = useState(defaultTab);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -104,7 +107,7 @@ export function EditContact({
     },
     onReset: (values) => {
       setDeleting(false);
-      setTabIndex('2');
+      setTabIndex(defaultTab);
     }
   });
 
@@ -419,13 +422,93 @@ export function EditContact({
       </div>
     </div>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
 
-  const handleAvatarChange = (newAvatar: string | undefined) => {
+  const handleAvatarChange = useCallback((newAvatar: string | undefined) => {
     formik.setFieldValue('PHOTO', newAvatar);
-  };
+  }, [formik]);
 
-  const handleNameInfoChange = (value: IContactName) => {
+  const handleNameInfoChange = useCallback((value: IContactName) => {
     formik.setFieldValue('nameInfo', value);
-  };
+  }, [formik]);
+
+  const contactEditForm = useMemo(() => {
+    return (
+      <Stack spacing={2} style={{ marginRight: '16px' }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+        >
+          <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
+          <ContactName
+            value={formik.values.nameInfo}
+            onChange={handleNameInfoChange}
+            required
+            fullWidth
+            error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
+          />
+        </Stack>
+        {phoneOptions}
+        {emailsOptions}
+        {messengersOptions}
+        <Divider flexItem />
+        <ContactSelect
+          label="Ответственный"
+          placeholder="Выберите ответственного"
+          value={formik.values.RESPONDENT ?? null}
+          onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
+          error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
+          helperText={formik.touched.RESPONDENT ? formik.errors.RESPONDENT : undefined}
+          slots={{
+            startIcon: <ManageAccountsIcon />
+          }}
+        />
+        <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
+        <CustomerSelect
+          value={formik.values.COMPANY}
+          onChange={handleCustomerChange}
+          // required
+          error={formik.touched.COMPANY && Boolean(formik.errors.COMPANY)}
+          helperText={formik.touched.COMPANY && formik.errors.COMPANY}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="end">
+                <PeopleAltIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          label="Должность"
+          type="text"
+          name="RANK"
+          multiline
+          onChange={formik.handleChange}
+          value={formik.values.RANK ?? ''}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <WorkIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          label="Адрес"
+          type="text"
+          name="ADDRESS"
+          onChange={formik.handleChange}
+          value={formik.values.ADDRESS ?? ''}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LocationOnIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Stack>
+    );
+  }, [emailsOptions, formik, handleAvatarChange, handleCustomerChange, handleNameInfoChange, messengersOptions, phoneOptions]);
 
   return (
     <CustomizedDialog
@@ -433,125 +516,78 @@ export function EditContact({
       onClose={onClose}
       confirmation={formik.dirty}
       disableEscape
-      width="calc(100% - var(--menu-width))"
+      fullwidth
     >
       <DialogTitle>
         Редактирование контакта
       </DialogTitle>
       <DialogContent dividers style={{ display: 'grid' }}>
         <FormikProvider value={formik}>
-          <Form id="contactEditForm" onSubmit={formik.handleSubmit}>
+          <Form
+            id="contactEditForm"
+            style={{ minWidth: matchDownMd ? 0 : undefined }}
+            onSubmit={formik.handleSubmit}
+          >
             <Stack
               direction="row"
               flex={1}
               spacing={2}
               height="100%"
             >
-              <div className={styles.editPanel}>
-                <CustomizedScrollBox>
-                  <Stack spacing={2} style={{ marginRight: '16px' }}>
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      alignItems="center"
-                    >
-                      <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
-                      <ContactName
-                        value={formik.values.nameInfo}
-                        onChange={handleNameInfoChange}
-                        required
-                        fullWidth
-                        error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
-                      />
-                    </Stack>
-                    {phoneOptions}
-                    {emailsOptions}
-                    {messengersOptions}
-                    <Divider flexItem />
-                    <ContactSelect
-                      label="Ответственный"
-                      placeholder="Выберите ответственного"
-                      value={formik.values.RESPONDENT ?? null}
-                      onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
-                      error={formik.touched.RESPONDENT && Boolean(formik.errors.RESPONDENT)}
-                      helperText={formik.touched.RESPONDENT ? formik.errors.RESPONDENT : undefined}
-                      slots={{
-                        startIcon: <ManageAccountsIcon />
-                      }}
-                    />
-                    <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
-                    <CustomerSelect
-                      value={formik.values.COMPANY}
-                      onChange={handleCustomerChange}
-                      // required
-                      error={formik.touched.COMPANY && Boolean(formik.errors.COMPANY)}
-                      helperText={formik.touched.COMPANY && formik.errors.COMPANY}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="end">
-                            <PeopleAltIcon />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                    <TextField
-                      label="Должность"
-                      type="text"
-                      name="RANK"
-                      multiline
-                      onChange={formik.handleChange}
-                      value={formik.values.RANK ?? ''}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <WorkIcon />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                    <TextField
-                      label="Адрес"
-                      type="text"
-                      name="ADDRESS"
-                      onChange={formik.handleChange}
-                      value={formik.values.ADDRESS ?? ''}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <LocationOnIcon />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Stack>
-                </CustomizedScrollBox>
-              </div>
-              <Divider orientation="vertical" flexItem />
-              <Stack flex={1}>
+              {!matchDownMd && <>
+                <div className={styles.editPanel}>
+                  <CustomizedScrollBox>
+                    {contactEditForm}
+                  </CustomizedScrollBox>
+                </div>
+                <Divider orientation="vertical" flexItem />
+              </>
+              }
+              <Stack style={{ width: matchDownMd ? '100%' : 'auto' }} flex={1}>
                 <TabContext value={tabIndex}>
-                  <TabList onChange={handleTabsChange} className={styles.tabHeaderRoot}>
+                  <TabList
+                    scrollButtons="auto"
+                    variant="scrollable"
+                    onChange={handleTabsChange}
+                    className={styles.tabHeaderRoot}
+                  >
+                    {matchDownMd && (
+                      <Tab
+                        label="Редактирование"
+                        value="1"
+                      />
+                    )}
                     <Tab
                       label="История"
-                      value="1"
+                      value="2"
                       disabled
                     />
                     <Tab
                       label="Сделки"
-                      value="2"
+                      value="3"
                     />
                     <Tab
                       label="Задачи"
-                      value="3"
+                      value="4"
                     />
                   </TabList>
                   <Divider style={{ margin: 0 }} />
-                  <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
+                  {matchDownMd && <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
+                    <div style={{ width: '100%', marginRight: '-16px !important' }}>
+                      <CustomizedScrollBox>
+                        <div style={{ paddingBottom: '1px' }}>
+                          {contactEditForm}
+                        </div>
+                      </CustomizedScrollBox>
+                    </div>
+                  </TabPanel>}
+                  <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
                     <div className={styles.noData}><CustomNoData /></div>
                   </TabPanel>
-                  <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
+                  <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
                     <ContactsDeals contactId={contact?.ID ?? -1} />
                   </TabPanel>
-                  <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
+                  <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''}>
                     <ContactsTasks contactId={contact?.ID ?? -1} />
                   </TabPanel>
                 </TabContext>

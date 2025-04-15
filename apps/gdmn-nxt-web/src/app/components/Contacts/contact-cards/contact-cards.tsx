@@ -172,6 +172,8 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
 
   const memoCardLabels = useMemo(() => <CardLabels labels={contact.LABELS || []} handleLabelClick={handleLabelClick} />, [contact.LABELS, handleLabelClick]);
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <div
       className={`${styles['flip-card']} ${isFlipped ? styles['flipped'] : ''}`}
@@ -215,7 +217,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
               </StyledToolTip>
             </Stack>
             <div
-              className={styles.actions}
+              className={mobile ? styles.actionsActive : styles.actions}
             >
               <IconButton
                 size="small"
@@ -480,6 +482,8 @@ export function ContactCards({
     paginationClick({ ...paginationData, pageNo: newPage });
   };
 
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <div className={`container ${styles['container']}`}>
       {contacts?.length === 0
@@ -498,7 +502,7 @@ export function ContactCards({
           <div className={styles.footer}>
             <TablePagination
               component="div"
-              labelRowsPerPage="Карточек на странице:"
+              labelRowsPerPage={matchDownSm ? '' : 'Карточек на странице:'}
               count={contactsCount}
               page={paginationData.pageNo}
               rowsPerPageOptions={pageOptions}

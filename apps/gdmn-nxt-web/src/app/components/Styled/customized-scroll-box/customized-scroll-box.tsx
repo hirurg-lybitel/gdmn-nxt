@@ -15,7 +15,8 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
   container?: {
     style?: CSSProperties;
     className?: string;
-  }
+  },
+  disableScrollBlock?: boolean
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
@@ -24,6 +25,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     withBlur = false,
     backgroundColor = 'rgba(0, 0, 0, 0)',
     container,
+    disableScrollBlock,
     ...style
   } = props;
 
@@ -58,11 +60,13 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     return true;
   }, []);
 
-  const onScrollStart = (mobile: boolean) => () => {
+  const onScrollStart = (mobile: boolean) => (e: any) => {
+    if (disableScrollBlock) return;
     window.addEventListener(wheelEvent(mobile), preventDefault, { passive: false });
   };
 
   const onScrollEnd = (mobile: boolean) => () => {
+    if (disableScrollBlock) return;
     window.removeEventListener(wheelEvent(mobile), preventDefault, false);
   };
 

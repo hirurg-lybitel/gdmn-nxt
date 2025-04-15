@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions, useMediaQuery } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -232,6 +232,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     setTaskSelectAreaWidth(taskSelectAreaRef.current?.clientWidth ?? 0);
   }, [selectedTask?.name, projects.length]);
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <div style={{ position: 'relative' }}>
       <Box
@@ -332,7 +334,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
                 },
                 px: '0px !important',
                 '& .StyledEditButton': {
-                  visibility: 'hidden',
+                  visibility: mobile ? 'visible' : 'hidden',
                 },
                 '&:hover .StyledEditButton, &:focus-within .StyledEditButton': {
                   visibility: 'visible',
@@ -459,9 +461,9 @@ const CustomerItem = ({
     >
       <Stack
         flex={1}
-        direction={{ xs: 'column', sm: 'row' }}
-        alignItems={{ xs: 'initial', sm: 'center' }}
-        spacing={{ xs: 0, sm: 1 }}
+        direction={'row'}
+        alignItems={'initial'}
+        spacing={1}
         style={{ padding: '2px 16px', minHeight: '36px' }}
         onClick={customerClick(customer)}
       >
@@ -478,7 +480,11 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        <Stack direction="row" spacing={{ xs: 0, sm: 1 }} flex={1}>
+        <Stack
+          direction="row"
+          spacing={{ xs: 0, sm: 1 }}
+          flex={1}
+        >
           <Box flex={1} display={{ xs: 'none', sm: 'block' }} />
           {withTasks && (taskCount ?? 0) > 0 &&
             <Stack

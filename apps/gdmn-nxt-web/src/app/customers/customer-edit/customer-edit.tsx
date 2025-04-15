@@ -11,10 +11,12 @@ import {
   TextField,
   Box,
   Tab,
-  Tooltip
+  Tooltip,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -39,6 +41,7 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import { CustomerFeedback } from '../CustomerDetails/customer-feedback/customer-feedback';
 import { CustomerTasks } from '../CustomerDetails/customer-tasks/customer-tasks';
 import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -61,7 +64,12 @@ export function CustomerEdit({
 
   const userPermissions = usePermissions();
 
-  const [tabIndex, setTabIndex] = useState('1');
+  const theme = useTheme();
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+
+  const defaultTab = matchDownMd ? '0' : (!customer ? '2' : '1');
+
+  const [tabIndex, setTabIndex] = useState(defaultTab);
 
   const handleTabsChange = (event: any, newindex: string) => {
     setTabIndex(newindex);
@@ -107,11 +115,7 @@ export function CustomerEdit({
       if (tabIndex !== '1') setTabIndex('1');
       return;
     };
-    if (!customer) {
-      setTabIndex('2');
-    } else {
-      setTabIndex('1');
-    }
+    setTabIndex(defaultTab);
   }, [open]);
 
   const handleDeleteClick = () => {
@@ -126,94 +130,111 @@ export function CustomerEdit({
     formik.setFieldValue('PHONE', value);
   };
 
+  const editForm = useMemo(() => {
+    return (
+      <Stack
+        style={{ marginRight: '16px' }}
+        spacing={2}
+      >
+        <TextField
+          label="Наименование"
+          type="text"
+          required
+          autoFocus
+          multiline
+          name="NAME"
+          onChange={formik.handleChange}
+          value={formik.values.NAME}
+          helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
+          error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
+        />
+        <TextField
+          label="УНП"
+          type="text"
+          name="TAXID"
+          onChange={formik.handleChange}
+          value={formik.values.TAXID}
+        />
+        <EmailInput
+          name="EMAIL"
+          onChange={formik.handleChange}
+          value={formik.values.EMAIL}
+          helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+          error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
+          fullWidth
+        />
+        <TelephoneInput
+          name="PHONE"
+          label="Телефон"
+          value={formik.values.PHONE ?? ''}
+          onChange={handlePhoneChange}
+          fullWidth
+          fixedCode
+          strictMode
+          helperText={getIn(formik.touched, 'PHONE') && getIn(formik.errors, 'PHONE')}
+          error={getIn(formik.touched, 'PHONE') && Boolean(getIn(formik.errors, 'PHONE'))}
+        />
+        <TextField
+          label="Адрес"
+          multiline
+          minRows={1}
+          type="text"
+          name="ADDRESS"
+          onChange={formik.handleChange}
+          value={formik.values.ADDRESS}
+          placeholder="Введите адрес"
+          helperText={getIn(formik.touched, 'ADDRESS') && getIn(formik.errors, 'ADDRESS')}
+          error={getIn(formik.touched, 'ADDRESS') && Boolean(getIn(formik.errors, 'ADDRESS'))}
+        />
+        <BusinessProcessesSelect
+          value={formik.values.BUSINESSPROCESSES ?? null}
+          onChange={value => {
+            formik.setFieldValue(
+              'BUSINESSPROCESSES',
+              value || initValue.BUSINESSPROCESSES
+            );
+          }}
+          multiple
+          limitTags={2}
+          disableCloseOnSelect
+        />
+        <LabelsSelect labels={formik.values.LABELS} onChange={handleLabelsChange} />
+      </Stack>
+    );
+  }, [formik, handleLabelsChange, handlePhoneChange, initValue.BUSINESSPROCESSES]);
+
   return (
     <CustomizedDialog
       open={open}
       onClose={onCancel}
       confirmation={formik.dirty}
-      width="calc(100% - var(--menu-width))"
+      fullwidth
     >
       <DialogTitle>
         {customer ? 'Редактирование клиента' : 'Добавление клиента'}
       </DialogTitle>
-      <DialogContent dividers style={{ display: 'grid' }}>
+      <DialogContent dividers style={{ display: 'flex' }}>
         <FormikProvider value={formik}>
-          <Form id="customerEditForm" onSubmit={formik.handleSubmit}>
+          <Form
+            style={{ flex: 1, minWidth: 0 }}
+            id="customerEditForm"
+            onSubmit={formik.handleSubmit}
+          >
             <Stack
               direction="row"
               spacing={2}
               height="100%"
+              width="100%"
             >
-              <Stack
-                className={styles.editPanel}
-                spacing={2}
-              >
-                <TextField
-                  label="Наименование"
-                  type="text"
-                  required
-                  autoFocus
-                  multiline
-                  name="NAME"
-                  onChange={formik.handleChange}
-                  value={formik.values.NAME}
-                  helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
-                  error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
-                />
-                <TextField
-                  label="УНП"
-                  type="text"
-                  name="TAXID"
-                  onChange={formik.handleChange}
-                  value={formik.values.TAXID}
-                />
-                <EmailInput
-                  name="EMAIL"
-                  onChange={formik.handleChange}
-                  value={formik.values.EMAIL}
-                  helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
-                  error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
-                  fullWidth
-                />
-                <TelephoneInput
-                  name="PHONE"
-                  label="Телефон"
-                  value={formik.values.PHONE ?? ''}
-                  onChange={handlePhoneChange}
-                  fullWidth
-                  fixedCode
-                  strictMode
-                  helperText={getIn(formik.touched, 'PHONE') && getIn(formik.errors, 'PHONE')}
-                  error={getIn(formik.touched, 'PHONE') && Boolean(getIn(formik.errors, 'PHONE'))}
-                />
-                <TextField
-                  label="Адрес"
-                  multiline
-                  minRows={1}
-                  type="text"
-                  name="ADDRESS"
-                  onChange={formik.handleChange}
-                  value={formik.values.ADDRESS}
-                  placeholder="Введите адрес"
-                  helperText={getIn(formik.touched, 'ADDRESS') && getIn(formik.errors, 'ADDRESS')}
-                  error={getIn(formik.touched, 'ADDRESS') && Boolean(getIn(formik.errors, 'ADDRESS'))}
-                />
-                <BusinessProcessesSelect
-                  value={formik.values.BUSINESSPROCESSES ?? null}
-                  onChange={value => {
-                    formik.setFieldValue(
-                      'BUSINESSPROCESSES',
-                      value || initValue.BUSINESSPROCESSES
-                    );
-                  }}
-                  multiple
-                  limitTags={2}
-                  disableCloseOnSelect
-                />
-                <LabelsSelect labels={formik.values.LABELS} onChange={handleLabelsChange} />
-              </Stack>
-              <Divider orientation="vertical" flexItem />
-              <Stack flex={1}>
+              {!matchDownMd && <>
+                <div className={styles.editPanel}>
+                  <CustomizedScrollBox>
+                    {editForm}
+                  </CustomizedScrollBox>
+                </div>
+                <Divider orientation="vertical" flexItem />
+              </>}
+              <Stack style={{ minWidth: 0 }} flex={1}>
                 <TabContext value={tabIndex}>
                   <TabList
                     className={styles.tabHeaderRoot}
@@ -221,6 +242,13 @@ export function CustomerEdit({
                     variant="scrollable"
                     scrollButtons="auto"
                   >
+                    {matchDownMd && (
+                      <Tab
+                        className={styles.tabHeader}
+                        label="Редактирование"
+                        value="0"
+                      />
+                    )}
                     <Tab
                       className={styles.tabHeader}
                       label="Общение"
@@ -264,6 +292,22 @@ export function CustomerEdit({
                     />
                   </TabList>
                   <Divider />
+                  {matchDownMd && (
+                    <TabPanel
+                      value="0"
+                      className={tabIndex === '0' ? styles.tabPanel : ''}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <CustomizedScrollBox>
+                          <div style={{ paddingBottom: '1px', paddingTop: '5px' }}>
+                            {editForm}
+                          </div>
+
+                        </CustomizedScrollBox>
+                      </div>
+                    </TabPanel>
+                  )
+                  }
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
                     <CustomerFeedback customerId={Number(customer?.ID)} />
                   </TabPanel>

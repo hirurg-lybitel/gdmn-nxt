@@ -128,7 +128,7 @@ const Main = () => {
                           </Route>
                           <Route path="managment">
                             <Route path="" element={<Navigate to="contacts" />} />
-                            <Route path="labels" element={<Labels />} />
+                            <Route path="time-tracker" element={<TimeTracker />} />
                             <Route path="contacts" element={<Contacts />} />
                             <Route path="ourContacts" element={<OurContacts />} />
                             <Route path="deals">
@@ -148,7 +148,7 @@ const Main = () => {
                               {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
                             </Route>
                             <Route path="contracts" element={<Contracts />} />
-                            <Route path="time-tracker" element={<TimeTracker />} />
+                            <Route path="labels" element={<Labels />} />
                             <Route path="projects" element={<Projects />} />
                           </Route>
                           <Route path="marketing">

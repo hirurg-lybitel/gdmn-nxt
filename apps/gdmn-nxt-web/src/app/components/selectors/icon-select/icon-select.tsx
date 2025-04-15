@@ -1,4 +1,4 @@
-import { Autocomplete, Button, IconButton, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Button, IconButton, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import styles from './icon-select.module.less';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -24,7 +24,13 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
         !item.includes('Sharp'))
     ), []);
 
-  const [ListboxComponent] = useAutocompleteGridVirtualization({ width: 450, columnCount: 8, rowHeight: 55 });
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const colCOunt = matchDownSm ? 4 : 8;
+  const width = 56.25 * colCOunt;
+
+  const [ListboxComponent] = useAutocompleteGridVirtualization({ width: width, columnCount: colCOunt, rowHeight: 55 });
 
   if (!open) return <></>;
 
@@ -32,11 +38,17 @@ const ListboxComponent = ({ open, onClose, onChange }: ListboxComponentProps) =>
     <CustomizedCard
       borders
       className={styles.selectForm}
+      style={{ minWidth: width }}
     >
       <Autocomplete
         options={icons || []}
         ListboxComponent={ListboxComponent}
         open
+        componentsProps={{
+          popper: {
+            sx: { width: width + 'px !important' },
+          },
+        }}
         disableListWrap
         disableCloseOnSelect
         fullWidth

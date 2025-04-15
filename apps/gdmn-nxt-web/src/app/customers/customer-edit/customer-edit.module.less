@@ -17,21 +17,17 @@
 .tabHeaderRoot {
   min-height: 30px !important;
   margin-top: -16px;
-  max-width: calc(100vw - 591px); // костыль из-за горизонтального скрола на маленьких экранах
 }
 
 .editPanel {
-  width: 250px
-}
-
-@media (min-width: 1366px) {
-  .editPanel {
-    width: 250px
-  }
+  margin-right: -16px !important;
+  width: 250px;
+  min-width: 250px;
 }
 
 @media (min-width: 1920px) {
   .editPanel {
-    width: 350px
+    width: 350px;
+    min-width: 350px;
   }
 }

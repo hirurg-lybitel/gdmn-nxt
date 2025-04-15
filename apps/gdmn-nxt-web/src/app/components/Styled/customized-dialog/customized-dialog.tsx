@@ -1,4 +1,4 @@
-import { Dialog, Slide } from '@mui/material';
+import { Dialog, Slide, useMediaQuery, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import './customized-dialog.module.less';
 import { forwardRef, ReactElement, ReactNode, Ref, useEffect, useMemo, useState } from 'react';
@@ -31,21 +31,32 @@ export interface CustomizedDialogProps {
   hideBackdrop?: boolean;
   disableEscape?: boolean;
   confirmation?: boolean;
+  fullwidth?: boolean;
+  disableScrollBlock?: boolean;
 }
 
 
 function CustomizedDialog(props: CustomizedDialogProps) {
   const { children, open, onClose, confirmation = false } = props;
   const {
-    width = 500,
+    width,
     minWidth = 0,
     maxWidth = '100%',
     hideBackdrop = false,
-    disableEscape = false
+    disableEscape = false,
+    fullwidth = false
   } = props;
 
+  const theme = useTheme();
+
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const leftIndent = matchDownSm ? 0 : matchDownMd ? 100 : matchDownLg ? 190 : theme.drawerWidth;
+
   const styles = {
-    width: width,
+    width: width ?? (fullwidth ? `calc(100% - ${leftIndent}px)` : 500),
     minWidth,
     maxWidth
   };
