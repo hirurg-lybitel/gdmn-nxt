@@ -216,7 +216,8 @@ const ButtonDateRangePicker = forwardRef(
                 </Box>
               </Dialog>
             );
-          }, [matchDownSm, onChange, shortcuts, theme.palette.mode, theme.palette.text.primary, theme.textColor])
+            // обернуто в JSON.stringify потому что обновляется при изменении даты и диалог мигает
+          }, [matchDownSm, JSON.stringify(onChange), JSON.stringify(shortcuts), theme.palette.mode, theme.palette.text.primary, theme.textColor])
         }}
         slotProps={{
           field: { onClick: buttonOnClick } as any,
