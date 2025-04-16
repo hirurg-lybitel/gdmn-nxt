@@ -16,7 +16,7 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
     style?: CSSProperties;
     className?: string;
   },
-  disableScrollBlock?: boolean
+  externalScrollLock?: boolean
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
@@ -25,7 +25,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     withBlur = false,
     backgroundColor = 'rgba(0, 0, 0, 0)',
     container,
-    disableScrollBlock,
+    externalScrollLock = false,
     ...style
   } = props;
 
@@ -48,7 +48,10 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     handleScroll();
   }, []);
 
-  const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
+  const preventDefault = useCallback((e: Event) => {
+    console.log(e);
+    e.preventDefault();
+  }, []);
   const wheelEvent = useCallback((mobile: boolean) => mobile ? 'touchmove' : 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
 
   const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
@@ -61,12 +64,12 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
   }, []);
 
   const onScrollStart = (mobile: boolean) => (e: any) => {
-    if (disableScrollBlock) return;
+    if (!externalScrollLock) return;
     window.addEventListener(wheelEvent(mobile), preventDefault, { passive: false });
   };
 
   const onScrollEnd = (mobile: boolean) => () => {
-    if (disableScrollBlock) return;
+    if (!externalScrollLock) return;
     window.removeEventListener(wheelEvent(mobile), preventDefault, false);
   };
 

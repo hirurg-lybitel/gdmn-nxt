@@ -1,7 +1,7 @@
 import './kanban-column.module.less';
 import React, { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, Button, CardActions, CardContent, Stack, IconButton, useTheme, Chip, TextField, Skeleton, Typography } from '@mui/material';
+import { Box, Button, CardActions, CardContent, Stack, IconButton, useTheme, Chip, TextField, Skeleton, Typography, useMediaQuery } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -74,6 +74,8 @@ export function KanbanColumn(props: KanbanColumnProps) {
   const [editTitleText, setEditTitleText] = useState(false);
   const [titleText, setTitleText] = useState(item.USR$NAME);
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   const header = () => {
     const handleEditColumn = () => {
       setEditTitleText(true);
@@ -109,6 +111,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
         onKeyDown={handleTitleKeyPress}
         // maxWidth="200px"
         sx={{
+          minHeight: '38px',
           '& .title': {
             letterSpacing: '0.5px'
           },
@@ -120,7 +123,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
             alignSelf: 'center'
           },
           '&:hover .quantity': {
-            display: 'none'
+            display: mobile ? 'auto' : 'none'
           }
         }}
       >
@@ -165,33 +168,39 @@ export function KanbanColumn(props: KanbanColumnProps) {
                 : <Typography variant="subtitle1">{item.USR$NAME}</Typography>
               }
               <Box flex={1} />
-              {isFetching ?
-                <Skeleton
-                  variant="circular"
-                  width={'33px'}
-                  height={'32px'}
-                />
-                :
-                <Chip className="quantity" label={item.CARDS?.length} />
-              }
             </Stack>
           }
         </Box>
-        <div
-          className="actions"
-          hidden
+        <Stack
+          direction={'row'}
+          spacing={1}
+          alignItems={'center'}
         >
-          <PermissionsGate actionAllowed={userPermissions?.stages?.PUT}>
-            <IconButton size="small" onClick={handleEditColumn}>
-              <EditIcon fontSize="small" />
-            </IconButton >
-          </PermissionsGate>
-          <PermissionsGate actionAllowed={userPermissions?.stages?.DELETE}>
-            <IconButton size="small" onClick={handleDeleteColumn}>
-              <DeleteIcon fontSize="small" />
-            </IconButton >
-          </PermissionsGate>
-        </div>
+          <div
+            className="actions"
+            hidden={!mobile}
+          >
+            <PermissionsGate actionAllowed={userPermissions?.stages?.PUT}>
+              <IconButton size="small" onClick={handleEditColumn}>
+                <EditIcon fontSize="small" />
+              </IconButton >
+            </PermissionsGate>
+            <PermissionsGate actionAllowed={userPermissions?.stages?.DELETE}>
+              <IconButton size="small" onClick={handleDeleteColumn}>
+                <DeleteIcon fontSize="small" />
+              </IconButton >
+            </PermissionsGate>
+          </div>
+          {isFetching ?
+            <Skeleton
+              variant="circular"
+              width={'33px'}
+              height={'32px'}
+            />
+            :
+            <Chip className="quantity" label={item.CARDS?.length} />
+          }
+        </Stack>
       </Stack>
     );
   };
@@ -210,7 +219,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
 
   return (
     <Box
-      style={{ display: 'flex', flex: 1, height: 'calc(100vh - 140px)', }}
+      style={{ display: 'flex', flex: 1 }}
       flexDirection={'column'}
     >
       <Box

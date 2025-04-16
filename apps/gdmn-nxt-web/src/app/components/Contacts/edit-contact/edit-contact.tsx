@@ -536,7 +536,7 @@ export function EditContact({
             >
               {!matchDownMd && <>
                 <div className={styles.editPanel}>
-                  <CustomizedScrollBox disableScrollBlock>
+                  <CustomizedScrollBox>
                     {contactEditForm}
                   </CustomizedScrollBox>
                 </div>
@@ -574,7 +574,7 @@ export function EditContact({
                   <Divider style={{ margin: 0 }} />
                   {matchDownMd && <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
                     <div style={{ width: '100%', marginRight: '-16px !important' }}>
-                      <CustomizedScrollBox disableScrollBlock>
+                      <CustomizedScrollBox>
                         <div style={{ paddingBottom: '1px' }}>
                           {contactEditForm}
                         </div>

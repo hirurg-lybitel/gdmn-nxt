@@ -550,7 +550,10 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                 </Box>
                 <Divider style={{ margin: 0 }} />
                 <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
-                  <CustomizedScrollBox container={{ className: classes.scrollContainer }} className={classes.scrollBox}>
+                  <CustomizedScrollBox
+                    container={{ className: classes.scrollContainer }}
+                    className={classes.scrollBox}
+                  >
                     <Box
                       sx={{
                         display: 'flex',

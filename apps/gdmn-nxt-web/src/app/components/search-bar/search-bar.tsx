@@ -175,7 +175,10 @@ export function SearchBar(props: SearchBarProps) {
 
   const icons =
     <>
-      <Box display="inline-flex" alignSelf="center">
+      <Box
+        display="inline-flex"
+        alignSelf="center"
+      >
         <IconButton
           onClick={handleRequestSearch}
           className={`

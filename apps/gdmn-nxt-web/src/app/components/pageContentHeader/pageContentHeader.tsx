@@ -8,21 +8,23 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PermissionsGate from '../Permissions/permission-gate/permission-gate';
 
 interface PageHeaderProps {
-  title: string,
+  title?: string,
   isLoading?: boolean,
   isFetching?: boolean,
   onCancelSearch: () => void,
   onRequestSearch: (value: string) => void,
   searchValue?: string,
+  searchPlaceholder?: string,
   onRefetch: () => void,
   onFilterClick: () => void,
   hasFilters?: boolean
   onAddClick?: () => void,
   addButton?: boolean
-  action?: ReactNode
+  action?: ReactNode,
+  wrapAction?: ReactNode
 }
 
-export default function PageHeader(props: PageHeaderProps) {
+export default function PageContentHeader(props: PageHeaderProps) {
   const {
     title,
     isLoading = false,
@@ -30,12 +32,14 @@ export default function PageHeader(props: PageHeaderProps) {
     onCancelSearch,
     onRequestSearch,
     searchValue,
+    searchPlaceholder = 'Поиск',
     onRefetch,
     onFilterClick,
     hasFilters = false,
     onAddClick,
     addButton = false,
-    action
+    action,
+    wrapAction
   } = props;
 
   const theme = useTheme();
@@ -48,10 +52,10 @@ export default function PageHeader(props: PageHeaderProps) {
       onCancelSearch={onCancelSearch}
       onRequestSearch={onRequestSearch}
       cancelOnEscape
-      placeholder="Поиск"
+      placeholder={searchPlaceholder}
       value={searchValue}
     />
-  ), [isLoading, matchDownSm, onCancelSearch, onRequestSearch, searchValue]);
+  ), [isLoading, matchDownSm, onCancelSearch, onRequestSearch, searchPlaceholder, searchValue]);
 
   return (
     <CustomizedCard
@@ -68,11 +72,22 @@ export default function PageHeader(props: PageHeaderProps) {
       <div style={{ width: '100%', display: 'flex', alignItems: 'center', minHeight: '34px' }}>
 
         {title && <Typography style={{ textWrap: 'nowrap', marginRight: '8px' }} variant="pageHeader">{title}</Typography>}
-        {action && <Box>
-          {action}
-        </Box>}
+        {action && (
+          <Box>
+            {action}
+          </Box>
+        )}
+        {wrapAction && (
+          <Box display={{ xs: 'none', sm: 'block' }}>
+            {wrapAction}
+          </Box>
+        )}
         <Box flex={1} />
-        <Box pr={1} display={{ xs: 'none', sm: 'block' }}>
+        <Box
+          pr={1}
+          display={{ xs: 'none', sm: 'block' }}
+          minWidth={0}
+        >
           {searchBar}
         </Box>
 
@@ -100,6 +115,9 @@ export default function PageHeader(props: PageHeaderProps) {
           />
         </Box>
       </div>
+      <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
+        {wrapAction}
+      </Box>
       <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
         {searchBar}
       </Box>

@@ -23,7 +23,7 @@ import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contac
 import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
-import PageHeader from '@gdmn-nxt/components/pageHeader/pageHeader';
+import PageContentHeader from '@gdmn-nxt/components/pageContentHeader/pageContentHeader';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
@@ -193,7 +193,7 @@ export default function Contacts() {
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
-      <PageHeader
+      <PageContentHeader
         title={'Контакты'}
         isLoading={isLoading}
         isFetching={personsIsFetching}

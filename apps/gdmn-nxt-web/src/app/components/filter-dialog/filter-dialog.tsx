@@ -4,10 +4,10 @@ import { ReactNode } from 'react';
 
 interface FilterDialogProps {
   open: boolean,
-  onClose: () => void,
+  onClose?: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown' | 'swipe') => void,
   onClear: () => void,
   children: ReactNode,
-  width?: number
+  width?: number | string
 }
 
 export default function FilterDialog(props: Readonly<FilterDialogProps>) {
@@ -36,7 +36,7 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
           fullWidth
           onClick={() => {
             onClear();
-            onClose();
+            onClose && onClose();
           }}
         >
           Очистить
@@ -45,7 +45,7 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
           style={{ marginLeft: 0, marginTop: '10px', textTransform: 'none' }}
           variant="outlined"
           fullWidth
-          onClick={() => onClose()}
+          onClick={() => onClose && onClose()}
         >
           Закрыть
         </Button>}

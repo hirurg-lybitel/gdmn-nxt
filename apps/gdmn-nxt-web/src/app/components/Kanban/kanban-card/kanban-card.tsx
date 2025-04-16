@@ -287,6 +287,7 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="column"
           spacing={0.5}
           color={colorModeIsLight ? '#636b74' : '#bababa'}
+          style={{ touchAction: 'manipulation' }}
           onDoubleClick={doubleClick}
         >
           <Stack
