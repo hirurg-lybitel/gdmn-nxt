@@ -31,6 +31,7 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
 import { ContactSelect } from '../../selectors/contact-select';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 export interface EditContactProps {
   contact: IContactPerson;
@@ -511,119 +512,89 @@ export function EditContact({
   }, [emailsOptions, formik, handleAvatarChange, handleCustomerChange, handleNameInfoChange, messengersOptions, phoneOptions]);
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={onClose}
+      title={'Редактирование контакта'}
       confirmation={formik.dirty}
-      disableEscape
+      onDeleteClick={handleDeleteClick}
+      deleteButton={userPermissions?.contacts?.DELETE}
       fullwidth
     >
-      <DialogTitle>
-        Редактирование контакта
-      </DialogTitle>
-      <DialogContent dividers style={{ display: 'grid' }}>
-        <FormikProvider value={formik}>
-          <Form
-            id="contactEditForm"
-            style={{ minWidth: matchDownMd ? 0 : undefined }}
-            onSubmit={formik.handleSubmit}
-          >
-            <Stack
-              direction="row"
-              flex={1}
-              spacing={2}
-              height="100%"
-            >
-              {!matchDownMd && <>
-                <div className={styles.editPanel}>
-                  <CustomizedScrollBox>
-                    {contactEditForm}
-                  </CustomizedScrollBox>
-                </div>
-                <Divider orientation="vertical" flexItem />
-              </>
-              }
-              <Stack style={{ width: matchDownMd ? '100%' : 'auto' }} flex={1}>
-                <TabContext value={tabIndex}>
-                  <TabList
-                    scrollButtons="auto"
-                    variant="scrollable"
-                    onChange={handleTabsChange}
-                    className={styles.tabHeaderRoot}
-                  >
-                    {matchDownMd && (
-                      <Tab
-                        label="Редактирование"
-                        value="1"
-                      />
-                    )}
-                    <Tab
-                      label="История"
-                      value="2"
-                      disabled
-                    />
-                    <Tab
-                      label="Сделки"
-                      value="3"
-                    />
-                    <Tab
-                      label="Задачи"
-                      value="4"
-                    />
-                  </TabList>
-                  <Divider style={{ margin: 0 }} />
-                  {matchDownMd && <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
-                    <div style={{ width: '100%', marginRight: '-16px !important' }}>
-                      <CustomizedScrollBox>
-                        <div style={{ paddingBottom: '1px' }}>
-                          {contactEditForm}
-                        </div>
-                      </CustomizedScrollBox>
-                    </div>
-                  </TabPanel>}
-                  <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
-                    <div className={styles.noData}><CustomNoData /></div>
-                  </TabPanel>
-                  <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
-                    <ContactsDeals contactId={contact?.ID ?? -1} />
-                  </TabPanel>
-                  <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''}>
-                    <ContactsTasks contactId={contact?.ID ?? -1} />
-                  </TabPanel>
-                </TabContext>
-              </Stack>
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        <PermissionsGate actionAllowed={userPermissions?.contacts?.DELETE}>
-          <ItemButtonDelete button onClick={handleDeleteClick} />
-        </PermissionsGate>
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={styles.button}
-          variant="outlined"
-          onClick={onClose}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
+      <FormikProvider value={formik}>
+        <Form
+          id="contactEditForm"
+          style={{ minWidth: matchDownMd ? 0 : undefined }}
+          onSubmit={formik.handleSubmit}
         >
-          Отменить
-        </ButtonWithConfirmation>
-        <PermissionsGate actionAllowed={userPermissions?.contacts?.PUT} show>
-          <Button
-            className={styles.button}
-            type="submit"
-            form="contactEditForm"
-            variant="contained"
-            disabled={!userPermissions?.contacts?.PUT}
+          <Stack
+            direction="row"
+            flex={1}
+            spacing={2}
+            height="100%"
           >
-            Сохранить
-          </Button>
-        </PermissionsGate>
-      </DialogActions>
-    </CustomizedDialog>
+            {!matchDownMd && <>
+              <div className={styles.editPanel}>
+                <CustomizedScrollBox>
+                  {contactEditForm}
+                </CustomizedScrollBox>
+              </div>
+              <Divider orientation="vertical" flexItem />
+            </>
+            }
+            <Stack style={{ width: matchDownMd ? '100%' : 'auto' }} flex={1}>
+              <TabContext value={tabIndex}>
+                <TabList
+                  scrollButtons="auto"
+                  variant="scrollable"
+                  onChange={handleTabsChange}
+                  className={styles.tabHeaderRoot}
+                >
+                  {matchDownMd && (
+                    <Tab
+                      label="Редактирование"
+                      value="1"
+                    />
+                  )}
+                  <Tab
+                    label="История"
+                    value="2"
+                    disabled
+                  />
+                  <Tab
+                    label="Сделки"
+                    value="3"
+                  />
+                  <Tab
+                    label="Задачи"
+                    value="4"
+                  />
+                </TabList>
+                <Divider style={{ margin: 0 }} />
+                {matchDownMd && <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''}>
+                  <div style={{ width: '100%', marginRight: '-16px !important' }}>
+                    <CustomizedScrollBox>
+                      <div style={{ paddingBottom: '1px' }}>
+                        {contactEditForm}
+                      </div>
+                    </CustomizedScrollBox>
+                  </div>
+                </TabPanel>}
+                <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''}>
+                  <div className={styles.noData}><CustomNoData /></div>
+                </TabPanel>
+                <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''}>
+                  <ContactsDeals contactId={contact?.ID ?? -1} />
+                </TabPanel>
+                <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''}>
+                  <ContactsTasks contactId={contact?.ID ?? -1} />
+                </TabPanel>
+              </TabContext>
+            </Stack>
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

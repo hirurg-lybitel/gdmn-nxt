@@ -32,7 +32,6 @@ export interface CustomizedDialogProps {
   disableEscape?: boolean;
   confirmation?: boolean;
   fullwidth?: boolean;
-  disableScrollBlock?: boolean;
 }
 
 

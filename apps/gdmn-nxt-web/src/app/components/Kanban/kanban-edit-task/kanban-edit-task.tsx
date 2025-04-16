@@ -368,7 +368,7 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
                   <>
                     <Divider textAlign="left">Дата выполнения</Divider>
                     <Stack direction="row" spacing={2}>
-                      <DesktopDatePicker
+                      <DatePicker
                         label="Дата"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
@@ -387,7 +387,11 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
                     </Stack>
                   </>}
                   <Divider />
-                  <Stack direction="row" spacing={2}>
+                  <Stack
+                    direction="row"
+                    gap={'16px'}
+                    flexWrap={'wrap'}
+                  >
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -438,9 +442,10 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
             <ItemButtonDelete button onClick={handleDeleteClick} />
           </PermissionsGate>
         }
-        <Box flex={1} />
+        <Box flex={1} margin={'0px !important'} />
         <ButtonWithConfirmation
           className={classes.button}
+          style={{ marginLeft: 0, textTransform: 'none' }}
           variant="outlined"
           onClick={handleCancelClick}
           title="Внимание"

@@ -48,10 +48,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     handleScroll();
   }, []);
 
-  const preventDefault = useCallback((e: Event) => {
-    console.log(e);
-    e.preventDefault();
-  }, []);
+  const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
   const wheelEvent = useCallback((mobile: boolean) => mobile ? 'touchmove' : 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
 
   const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };

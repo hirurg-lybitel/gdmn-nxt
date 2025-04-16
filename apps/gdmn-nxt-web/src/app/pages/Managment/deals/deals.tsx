@@ -173,6 +173,7 @@ export function Deals(props: DealsProps) {
         hasFilters={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0}
         addButton={userPermissions?.contacts?.POST}
         onAddClick={addDealClick}
+        addButtonTooltip="Создать сделку"
         action={
           <ToggleButtonGroup
             color="primary"

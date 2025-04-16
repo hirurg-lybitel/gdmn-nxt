@@ -42,6 +42,7 @@ import { CustomerFeedback } from '../CustomerDetails/customer-feedback/customer-
 import { CustomerTasks } from '../CustomerDetails/customer-tasks/customer-tasks';
 import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -204,179 +205,139 @@ export function CustomerEdit({
   }, [formik, handleLabelsChange, handlePhoneChange, initValue.BUSINESSPROCESSES, matchDownMd]);
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={onCancel}
+      title={customer ? 'Редактирование клиента' : 'Добавление клиента'}
       confirmation={formik.dirty}
+      onDeleteClick={handleDeleteClick}
+      deleteButton={!!customer && !!deleteable && userPermissions?.customers?.DELETE}
       fullwidth
     >
-      <DialogTitle>
-        {customer ? 'Редактирование клиента' : 'Добавление клиента'}
-      </DialogTitle>
-      <DialogContent dividers style={{ display: 'flex' }}>
-        <FormikProvider value={formik}>
-          <Form
-            style={{ flex: 1, minWidth: 0 }}
-            id="customerEditForm"
-            onSubmit={formik.handleSubmit}
-          >
-            <Stack
-              direction="row"
-              spacing={2}
-              height="100%"
-              width="100%"
-            >
-              {!matchDownMd && <>
-                <div className={styles.editPanel}>
-                  <CustomizedScrollBox>
-                    {editForm}
-                  </CustomizedScrollBox>
-                </div>
-                <Divider orientation="vertical" flexItem />
-              </>}
-              <Stack style={{ minWidth: 0 }} flex={1}>
-                <TabContext value={tabIndex}>
-                  <TabList
-                    className={styles.tabHeaderRoot}
-                    onChange={handleTabsChange}
-                    variant="scrollable"
-                    scrollButtons="auto"
-                  >
-                    {matchDownMd && (
-                      <Tab
-                        className={styles.tabHeader}
-                        label="Редактирование"
-                        value="0"
-                      />
-                    )}
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Общение"
-                      value="1"
-                      disabled={!customer?.ID}
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Контакты"
-                      value="2"
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Реквизиты"
-                      value="3"
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Акты выполненных работ"
-                      value="4"
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Выписки по р/с"
-                      value="5"
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Договоры"
-                      value="6"
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Сделки"
-                      value="7"
-                    />
-                    <Tab
-                      className={styles.tabHeader}
-                      label="Задачи"
-                      value="8"
-                    />
-                  </TabList>
-                  <Divider />
-                  {matchDownMd && (
-                    <TabPanel
-                      value="0"
-                      className={tabIndex === '0' ? styles.tabPanel : ''}
-                    >
-                      <div style={{ flex: 1, marginRight: '-20px' }}>
-                        <CustomizedScrollBox>
-                          <div style={{ paddingBottom: '1px', paddingTop: '5px' }}>
-                            {editForm}
-                          </div>
-
-                        </CustomizedScrollBox>
-                      </div>
-                    </TabPanel>
-                  )
-                  }
-                  <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
-                    <CustomerFeedback customerId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
-                    <CustomerContacts customerId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''} >
-                    <CustomerInfo customerId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''}>
-                    <ActCompletion customerId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="5" className={tabIndex === '5' ? styles.tabPanel : ''} >
-                    <BankStatement companyId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="6" className={tabIndex === '6' ? styles.tabPanel : ''} >
-                    <ContractsList companyId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="7" className={tabIndex === '7' ? styles.tabPanel : ''} >
-                    <CustomerDeals customerId={Number(customer?.ID)} />
-                  </TabPanel>
-                  <TabPanel value="8" className={tabIndex === '8' ? styles.tabPanel : ''} >
-                    <CustomerTasks customerId={Number(customer?.ID)} />
-                  </TabPanel>
-                </TabContext>
-              </Stack>
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        {customer && deleteable &&
-          <PermissionsGate actionAllowed={userPermissions?.customers?.DELETE}>
-            <ItemButtonDelete
-              button
-              text={`Вы действительно хотите удалить клиента ${customer?.NAME}?`}
-              onClick={handleDeleteClick}
-            />
-          </PermissionsGate>
-        }
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={styles.button}
-          variant="outlined"
-          color="primary"
-          onClick={onCancel}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
+      <FormikProvider value={formik}>
+        <Form
+          style={{ flex: 1, minWidth: 0 }}
+          id="customerEditForm"
+          onSubmit={formik.handleSubmit}
         >
-          Отменить
-        </ButtonWithConfirmation>
-        <PermissionsGate actionAllowed={userPermissions?.customers?.PUT} show>
-          <Tooltip title={readOnly ? 'Карточка в режиме просмотра' : ''}>
-            <div>
-              <Button
-                className={styles.button}
-                variant="contained"
-                disabled={!userPermissions?.customers?.PUT || readOnly}
-                form="customerEditForm"
-                type="submit"
-              >
-                Сохранить
-              </Button>
-            </div>
-          </Tooltip>
-        </PermissionsGate>
-      </DialogActions>
-    </CustomizedDialog>
+          <Stack
+            direction="row"
+            spacing={2}
+            height="100%"
+            width="100%"
+          >
+            {!matchDownMd && <>
+              <div className={styles.editPanel}>
+                <CustomizedScrollBox>
+                  {editForm}
+                </CustomizedScrollBox>
+              </div>
+              <Divider orientation="vertical" flexItem />
+            </>}
+            <Stack style={{ minWidth: 0 }} flex={1}>
+              <TabContext value={tabIndex}>
+                <TabList
+                  className={styles.tabHeaderRoot}
+                  onChange={handleTabsChange}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                >
+                  {matchDownMd && (
+                    <Tab
+                      className={styles.tabHeader}
+                      label="Редактирование"
+                      value="0"
+                    />
+                  )}
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Общение"
+                    value="1"
+                    disabled={!customer?.ID}
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Контакты"
+                    value="2"
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Реквизиты"
+                    value="3"
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Акты выполненных работ"
+                    value="4"
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Выписки по р/с"
+                    value="5"
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Договоры"
+                    value="6"
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Сделки"
+                    value="7"
+                  />
+                  <Tab
+                    className={styles.tabHeader}
+                    label="Задачи"
+                    value="8"
+                  />
+                </TabList>
+                <Divider />
+                {matchDownMd && (
+                  <TabPanel
+                    value="0"
+                    className={tabIndex === '0' ? styles.tabPanel : ''}
+                  >
+                    <div style={{ flex: 1, marginRight: '-20px' }}>
+                      <CustomizedScrollBox>
+                        <div style={{ paddingBottom: '1px', paddingTop: '5px' }}>
+                          {editForm}
+                        </div>
+
+                      </CustomizedScrollBox>
+                    </div>
+                  </TabPanel>
+                )
+                }
+                <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
+                  <CustomerFeedback customerId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
+                  <CustomerContacts customerId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="3" className={tabIndex === '3' ? styles.tabPanel : ''} >
+                  <CustomerInfo customerId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''}>
+                  <ActCompletion customerId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="5" className={tabIndex === '5' ? styles.tabPanel : ''} >
+                  <BankStatement companyId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="6" className={tabIndex === '6' ? styles.tabPanel : ''} >
+                  <ContractsList companyId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="7" className={tabIndex === '7' ? styles.tabPanel : ''} >
+                  <CustomerDeals customerId={Number(customer?.ID)} />
+                </TabPanel>
+                <TabPanel value="8" className={tabIndex === '8' ? styles.tabPanel : ''} >
+                  <CustomerTasks customerId={Number(customer?.ID)} />
+                </TabPanel>
+              </TabContext>
+            </Stack>
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

@@ -312,17 +312,15 @@ export function KanbanBoard(props: KanbanBoardProps) {
                     key={column.ID}
                     draggableId={column.ID.toString()}
                     index={index}
+                    isDragDisabled={mobile}
                   >
                     {(provided, snapshot) => {
                       const dragProvided: DraggableProvided = provided;
                       const dragSnapshot = snapshot;
-                      const columnBoxProps = mobile ? {} : {
-                        ref: provided.innerRef,
-                        ...provided.draggableProps
-                      };
                       return (
                         <Box
-                          {...columnBoxProps}
+                          ref= {provided.innerRef}
+                          {...provided.draggableProps}
                           display="flex"
                           flex={1}
                         >
@@ -362,17 +360,15 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                           key={card.ID + column.ID * 10}
                                           draggableId={(card.ID + column?.ID * 10)?.toString()}
                                           index={index}
+                                          isDragDisabled={mobile}
                                         >
                                           {(provided, snapshot) => {
-                                            const cardBoxProps = mobile ? {} : {
-                                              ref: provided.innerRef,
-                                              ...provided.draggableProps,
-                                              ...provided.dragHandleProps
-                                            };
                                             return (
                                               <Box
                                                 className={styles.boardItem}
-                                                {...cardBoxProps}
+                                                ref= {provided.innerRef}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
                                               >
                                                 <KanbanCard
                                                   snapshot={snapshot}

@@ -204,6 +204,7 @@ export default function Contacts() {
         onFilterClick={filterHandlers.filterClick}
         hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
         addButton={userPermissions?.contacts?.POST}
+        addButtonTooltip="Создать контракт"
         onAddClick={() => setUpsertContact({ addContact: true })}
         action={
           <ToggleButtonGroup

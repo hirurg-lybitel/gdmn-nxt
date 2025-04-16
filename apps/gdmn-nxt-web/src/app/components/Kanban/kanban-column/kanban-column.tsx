@@ -175,6 +175,7 @@ export function KanbanColumn(props: KanbanColumnProps) {
           direction={'row'}
           spacing={1}
           alignItems={'center'}
+          sx={{ display: isFetching ? 'none' : 'auto' }}
         >
           <div
             className="actions"

@@ -1,7 +1,7 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, IconButton, Stack, Typography, useTheme, Tooltip, Icon } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Tooltip, Icon, useMediaQuery } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
@@ -161,6 +161,23 @@ export function KanbanCard(props: KanbanCardProps) {
     setEditCard(true);
   }, [card]);
 
+  const [lastTap, setLastTap] = useState(0);
+
+  const onCardClick = useCallback(() => {
+    const currentTime = Date.now();
+    const tapGap = currentTime - lastTap;
+
+    if (tapGap < 500) {
+      doubleClick();
+      setLastTap(currentTime - 500);
+      return;
+    }
+
+    setLastTap(currentTime);
+  }, [doubleClick, lastTap]);
+
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   const dayCalc = (days: number): string => {
     const positiveDays = Math.abs(days);
     const lastNumber = positiveDays % 10;
@@ -289,6 +306,7 @@ export function KanbanCard(props: KanbanCardProps) {
           color={colorModeIsLight ? '#636b74' : '#bababa'}
           style={{ touchAction: 'manipulation' }}
           onDoubleClick={doubleClick}
+          onClick={mobile ? onCardClick : undefined}
         >
           <Stack
             direction="row"
@@ -381,7 +399,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging, addIsFetching, theme]);
+  }, [card, snapshot.isDragging, addIsFetching, theme, onCardClick, mobile]);
 
   return (
     <>

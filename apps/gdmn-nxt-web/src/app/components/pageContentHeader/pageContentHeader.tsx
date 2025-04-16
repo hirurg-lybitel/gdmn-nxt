@@ -20,6 +20,7 @@ interface PageHeaderProps {
   hasFilters?: boolean
   onAddClick?: () => void,
   addButton?: boolean
+  addButtonTooltip?: string,
   action?: ReactNode,
   wrapAction?: ReactNode
 }
@@ -38,6 +39,7 @@ export default function PageContentHeader(props: PageHeaderProps) {
     hasFilters = false,
     onAddClick,
     addButton = false,
+    addButtonTooltip,
     action,
     wrapAction
   } = props;
@@ -97,7 +99,7 @@ export default function PageContentHeader(props: PageHeaderProps) {
             disabled={isFetching}
             onClick={onAddClick}
           >
-            <Tooltip arrow title="Создать контакт">
+            <Tooltip arrow title={addButtonTooltip ?? ''}>
               <AddCircleIcon color={isFetching ? 'disabled' : 'primary'} />
             </Tooltip>
           </IconButton>
