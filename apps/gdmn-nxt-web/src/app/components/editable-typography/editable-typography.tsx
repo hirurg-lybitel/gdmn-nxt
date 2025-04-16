@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ClickAwayListener, IconButton, TextField, Tooltip, Typography, TypographyProps } from '@mui/material';
+import { ClickAwayListener, IconButton, TextField, Tooltip, Typography, TypographyProps, useMediaQuery } from '@mui/material';
 import styles from './editable-typography.module.less';
 import { CSSProperties, KeyboardEvent, cloneElement, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
@@ -130,6 +130,8 @@ const EditableTypography = <Value extends React.ReactNode>({
     e.key === 'Escape' && onClose(e);
   };
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <ClickAwayListener onClickAway={editText && closeOnBlur ? onClose : () => {}}>
       <div
@@ -170,7 +172,7 @@ const EditableTypography = <Value extends React.ReactNode>({
         </ErrorTooltip>
         <div
           style={{ flexDirection: buttonDirection }}
-          className={`${styles['actions']} ${editText ? styles['visible'] : styles['hidden']}`}
+          className={`${styles['actions']} ${(editText || mobile) ? styles['visible'] : styles['hidden']}`}
         >
           {editText
             ? cancellable ? <Tooltip arrow title="Сохранить">

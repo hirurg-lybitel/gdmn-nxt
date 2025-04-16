@@ -41,10 +41,11 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const {
     width,
     minWidth = 0,
-    maxWidth = '100%',
+    fullwidth = false,
+    maxWidth = (!width && !fullwidth) || Number(width) <= 600 ? '80%' : '100%',
     hideBackdrop = false,
     disableEscape = false,
-    fullwidth = false
+
   } = props;
 
   const theme = useTheme();

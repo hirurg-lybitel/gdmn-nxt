@@ -29,7 +29,7 @@ import * as yup from 'yup';
 import { IContactWithID, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
-import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
+import { DatePicker, DesktopDatePicker } from '@mui/x-date-pickers-pro';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
@@ -315,6 +315,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
         spacing={2}
         paddingTop={1}
         maxWidth={600}
+        paddingBottom={'1px'}
       >
         <TextField
           label="Продукция"
@@ -325,7 +326,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
           error={getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))}
           helperText={getIn(formik.touched, 'DEAL.PRODUCTNAME') && getIn(formik.errors, 'DEAL.PRODUCTNAME')}
         />
-        <Stack direction={'row'} spacing={2}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           <Stack direction={'column'} flex={1}>
             <TextField
               label="Номер заявки"
@@ -338,11 +339,12 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
             />
           </Stack>
           <Stack
-            direction="column"
+            direction={{ xs: 'row', sm: 'column' }}
             spacing={2}
-            width={150}
+            width={{ xs: '100%', sm: 150 }}
           >
-            <DesktopDatePicker
+            <DatePicker
+              sx={{ flex: 1 }}
               label="Дата"
               value={formik.values.DEAL?.CREATIONDATE ? new Date(formik.values.DEAL?.CREATIONDATE) : null}
               format="dd.MM.yyyy"
@@ -350,6 +352,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
               slotProps={{ textField: { variant: 'outlined' } }}
             />
             <TimePicker
+              sx={{ flex: 1 }}
               label="Время"
               value={formik.values.DEAL?.CREATIONDATE ? new Date(formik.values.DEAL?.CREATIONDATE) : null}
               onChange={(value) => formik.setFieldValue('DEAL.CREATIONDATE', value)}
@@ -370,7 +373,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
         <Stack
           flex={1}
           spacing={2}
-          direction={{ sm: 'column', md: 'row', lg: 'row' }}
+          direction={{ xs: 'column', sm: 'column', md: 'row', lg: 'row' }}
         >
           <EmailInput
             fullWidth
@@ -460,8 +463,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
       open={open}
       onClose={handleOnClose}
       confirmation={formik.dirty}
-      minWidth={400}
-      width="calc(100% - var(--menu-width))"
+      fullwidth
     >
       <DialogTitle>
         {formik.values.ID > 0 ? `Редактирование сделки №${card?.DEAL?.USR$NUMBER ?? 'Н/Д'}: ${card?.DEAL?.USR$NAME ?? 'Без имени'}` : 'Создание сделки'}
@@ -471,9 +473,13 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
           <Form
             id="mainForm"
             onSubmit={formik.handleSubmit}
-            style={{ flex: 1, display: 'flex' }}
+            style={{ flex: 1, display: 'flex', width: '100%' }}
           >
-            <Stack spacing={2} flex={1}>
+            <Stack
+              width={'100%'}
+              spacing={2}
+              flex={1}
+            >
               {matchDownLg
                 ? <Stack
                   direction="row"
@@ -522,7 +528,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                     </Step>)}
                 </Stepper>}
               <TabContext value={tabIndex}>
-                <Box style={{ maxWidth: `calc(${windowWidth})`, alignSelf: 'center' }}>
+                <Box style={{ width: '100%' }}>
                   <TabList
                     onChange={handleTabsChange}
                     scrollButtons="auto"

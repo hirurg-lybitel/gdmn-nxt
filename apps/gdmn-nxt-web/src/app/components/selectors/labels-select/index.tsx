@@ -132,15 +132,19 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
               }
             }}
           >
-            <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', minWidth: 0 }}>
               <Checkbox
                 icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                 checkedIcon={<CheckBoxIcon fontSize="small" />}
                 style={{ marginRight: 8 }}
                 checked={selected}
               />
-              <Stack direction="column">
-                <Stack direction="row" spacing={1}>
+              <Stack direction="column" style={{ minWidth: 0 }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  style={{ minWidth: 0 }}
+                >
                   <Box style={{ display: 'flex', width: '30px', alignItems: 'center', justifyContent: 'center' }}>
                     {option.USR$ICON
                       ? <IconByName name={option.USR$ICON} style={{ color: option.USR$COLOR }} />
@@ -155,7 +159,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
                       />
                     }
                   </Box>
-                  <Box>
+                  <Box style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {option.USR$NAME}
                   </Box>
                 </Stack>

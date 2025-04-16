@@ -7,7 +7,9 @@ import {
   Button,
   Tooltip,
   CardContent,
-  Autocomplete
+  Autocomplete,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { useReducer, useRef } from 'react';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
@@ -108,6 +110,9 @@ export function CustomerFeedback({
     deleteFeedback(id);
   };
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   if (feedbackIsLoading) {
     return (
       <CircularIndeterminate open size={80} />
@@ -127,7 +132,9 @@ export function CustomerFeedback({
               <Autocomplete
                 size="small"
                 style={{
-                  width: '250px'
+                  maxWidth: '250px',
+                  width: '100%',
+                  marginRight: '16px'
                 }}
                 options={historyType}
                 loading={historyTypeIsFetching}
@@ -155,7 +162,7 @@ export function CustomerFeedback({
                 </Box>
               </Tooltip>
             </Stack>
-            <Stack direction="row" spacing={2}>
+            <Stack direction={matchDownSm ? 'column' : 'row'} spacing={2}>
               <TextField
                 inputRef={responseRef}
                 label="Ответ клиента"
@@ -186,6 +193,7 @@ export function CustomerFeedback({
             [`& .${timelineOppositeContentClasses.root}`]: {
               flex: 0.1,
             },
+            minWidth: '500px'
           }}
         >
           {feedback.map((f, idx) => (

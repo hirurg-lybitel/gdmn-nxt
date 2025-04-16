@@ -5,10 +5,37 @@
 .contacts-container .list {
   grid-template-columns: repeat(3, 1fr);
   padding: 0;
+  padding-right: 20px;
 }
 
-@media (min-width: 1920px) {
+@media (max-width: 1920px) {
   .contacts-container .list {
-      grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
+
+@media (max-width: 1180px) {
+  .contacts-container .list {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 1050px) {
+  .contacts-container .list {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .contacts-container .list {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .contacts-container .list {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+

@@ -13,6 +13,8 @@ import {
   AccordionProps,
   styled,
   AccordionSummaryProps,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import dayjs from '@gdmn-nxt/dayjs';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -130,6 +132,9 @@ export const FeedbackItem = ({
     e.stopPropagation();
   };
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <TimelineItem>
       <TimelineOppositeContent>
@@ -200,7 +205,7 @@ export const FeedbackItem = ({
                   <Stack spacing={2}>
                     <Stack
                       flex={1}
-                      direction={'row'}
+                      direction={matchDownSm ? 'column' : 'row'}
                       spacing={2}
                     >
                       <TextField

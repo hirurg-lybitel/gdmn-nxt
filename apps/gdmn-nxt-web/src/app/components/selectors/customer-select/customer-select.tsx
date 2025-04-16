@@ -458,6 +458,7 @@ const CustomerItem = ({
   return (
     <Stack
       flex={1}
+      minWidth={0}
     >
       <Stack
         flex={1}
@@ -474,8 +475,11 @@ const CustomerItem = ({
             style={{ marginRight: 8 }}
             checked={selected}
           />}
-        <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-          {customer.NAME}
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0 }}>
+          <span
+            style={{ overflow: 'hidden',
+              textOverflow: 'ellipsis' }}
+          >{customer.NAME}</span>
           {!disableCaption && customer.TAXID
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
@@ -483,7 +487,6 @@ const CustomerItem = ({
         <Stack
           direction="row"
           spacing={{ xs: 0, sm: 1 }}
-          flex={1}
         >
           <Box flex={1} display={{ xs: 'none', sm: 'block' }} />
           {withTasks && (taskCount ?? 0) > 0 &&
@@ -508,6 +511,7 @@ const CustomerItem = ({
           >
             {!disableEdition &&
               <ItemButtonEdit
+                style={{ flex: 0 }}
                 button
                 onClick={editCustomer(customer)}
               />

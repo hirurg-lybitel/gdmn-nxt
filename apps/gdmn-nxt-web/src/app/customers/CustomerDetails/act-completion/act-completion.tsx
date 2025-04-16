@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Stack, useMediaQuery } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetActCompletionQuery } from '../../../features/act-completion/actCompletionApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -18,7 +18,9 @@ export function ActCompletion(props: ActCompletionProps) {
 
   const systemSettings = useSystemSettings();
 
-  const cols = columns[systemSettings?.CONTRACTTYPE ?? ContractType.GS];
+  const mobile = useMediaQuery('(pointer: coarse)');
+
+  const cols = columns[mobile ? 'mobile' : 'default'][ContractType.BG];
 
   return (
     <Stack

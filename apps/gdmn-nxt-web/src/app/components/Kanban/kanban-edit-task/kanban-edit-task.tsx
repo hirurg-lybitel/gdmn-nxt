@@ -6,7 +6,7 @@ import { IContactWithID, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-ty
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { TimePicker } from '@mui/x-date-pickers-pro';
+import { DatePicker, TimePicker } from '@mui/x-date-pickers-pro';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useAddTaskMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
@@ -341,7 +341,7 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
                   </Stack>
                   <Divider textAlign="left">Срок выполнения</Divider>
                   <Stack direction="row" spacing={2}>
-                    <DesktopDatePicker
+                    <DatePicker
                       label="Дата"
                       value={formik.values.USR$DEADLINE || null}
                       // onChange={formik.handleChange}
