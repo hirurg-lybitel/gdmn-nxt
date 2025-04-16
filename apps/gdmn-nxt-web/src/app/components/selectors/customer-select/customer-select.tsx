@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions, Popper } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -478,7 +478,11 @@ const CustomerItem = ({
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
             : <></>}
         </div>
-        <Stack direction="row" spacing={{ xs: 0, sm: 1 }} flex={1}>
+        <Stack
+          direction="row"
+          spacing={{ xs: 0, sm: 1 }}
+          flex={1}
+        >
           <Box flex={1} display={{ xs: 'none', sm: 'block' }} />
           {withTasks && (taskCount ?? 0) > 0 &&
             <Stack
@@ -628,9 +632,13 @@ const CustomerTasks = ({
     setSelectedProject(task?.project);
   }, [task?.project]);
 
+  const CustomPopper = (props: any) => {
+    return <Popper {...props} style={{ width: 'fit-content' }} />;
+  };
+
   return (
     <Autocomplete
-      clearIcon={null}
+      PopperComponent={CustomPopper}
       options={projects}
       getOptionLabel={() => task?.name ?? ''}
       filterOptions={filterProjects()}
@@ -716,6 +724,9 @@ const CustomerTasks = ({
         top: -2,
         width: '100%',
         '& .MuiInput-root::before': { borderBottom: 0 },
+        '& .MuiAutocomplete-clearIndicator': {
+          display: 'none'
+        },
         ...sx
       }}
       slotProps={{
