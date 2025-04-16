@@ -454,7 +454,7 @@ const TimeTrackerItem = (props: ITimeTrackerItemProps) => {
     },
     onSubmit: (values, { resetForm }) => {
       resetForm();
-      handleCancelClick();
+      onClose();
       updateTimeTrack(values);
     },
   });
