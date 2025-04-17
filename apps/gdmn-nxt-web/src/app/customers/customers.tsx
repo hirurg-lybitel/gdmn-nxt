@@ -31,6 +31,7 @@ import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -468,6 +469,8 @@ export function Customers(props: CustomersProps) {
     return Object.keys(filters || {}).length > 0;
   }, [filteringData]);
 
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <CustomizedCard
       style={{
@@ -484,62 +487,23 @@ export function Customers(props: CustomersProps) {
           })
       }}
     >
-      <CardHeader
-        title={<Typography variant="pageHeader" fontWeight={600}>Клиенты</Typography>}
-        action={
-          <Stack direction="row" spacing={1}>
-            <Box paddingX={'4px'} />
-            {memoSearchBar}
-            <Box display="inline-flex" alignSelf="center">
-              <PermissionsGate actionAllowed={userPermissions?.customers.POST}>
-                <IconButton
-                  size="small"
-                  onClick={handleAddOrganization}
-                  disabled={customerFetching}
-                >
-                  <Tooltip arrow title="Добавить клиента">
-                    <AddCircleIcon color={customerFetching ? 'disabled' : 'primary'} />
-                  </Tooltip>
-                </IconButton>
-              </PermissionsGate>
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomLoadingButton
-                hint="Обновить данные"
-                loading={customerFetching}
-                onClick={() => customerRefetch()}
-              />
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <IconButton
-                onClick={filterHandlers.handleFilter}
-                disabled={customerFetching || filtersIsLoading || filtersIsFetching}
-                size="small"
-              >
-                <Tooltip
-                  title={haveFilter
-                    ? 'У вас есть активные фильтры'
-                    : 'Выбрать фильтры'
-                  }
-                  arrow
-                >
-                  <Badge
-                    color="error"
-                    variant={
-                      haveFilter
-                        ? 'dot'
-                        : 'standard'
-                    }
-                  >
-                    <FilterListIcon
-                      color={customerFetching ? 'disabled' : 'primary'}
-                    />
-                  </Badge>
-                </Tooltip>
-              </IconButton>
-            </Box>
-          </Stack>
-        }
+      <CustomCardHeader
+        search
+        filter
+        refetch
+        title={'Клиенты'}
+        searchPlaceholder="Поиск клиента"
+        isLoading={customerIsLoading || filtersIsLoading}
+        isFetching={customerFetching || filtersIsFetching}
+        onCancelSearch={filterHandlers.handleCancelSearch}
+        onRequestSearch={filterHandlers.handleRequestSearch}
+        searchValue={filteringData?.NAME?.[0]}
+        onRefetch={customerRefetch}
+        onFilterClick={filterHandlers.handleFilter}
+        hasFilters={haveFilter}
+        addButton={userPermissions?.customers.POST}
+        onAddClick={handleAddOrganization}
+        addButtonTooltip="Создать клиента"
       />
       <Divider />
       <CardContent
@@ -607,6 +571,9 @@ export function Customers(props: CustomersProps) {
             className={classes.row}
           >
             <StyledGrid
+              sx={{ '& .MuiTablePagination-input': {
+                display: 'inline-flex !important'
+              } }}
               autoHeightForFields={['LABELS']}
               onRowDoubleClick={lineDoubleClick}
               columns={columns}
