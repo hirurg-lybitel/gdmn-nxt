@@ -45,7 +45,7 @@ import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-can
 import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
 import { Form, FormikProvider, useFormik } from 'formik';
 import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
-import PageContentHeader from '@gdmn-nxt/components/pageContentHeader/pageContentHeader';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 const durationMask = [
   /[0-9]/,
@@ -171,7 +171,10 @@ export function TimeTracker() {
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const Header = useMemo(() => (
-    <PageContentHeader
+    <CustomCardHeader
+      search
+      filter
+      refetch
       title={'Учёт времени'}
       isLoading={isLoading}
       isFetching={isFetching}

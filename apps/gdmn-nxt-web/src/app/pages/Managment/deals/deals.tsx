@@ -21,7 +21,7 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import KanbanEditCard from '@gdmn-nxt/components/Kanban/kanban-edit-card/kanban-edit-card';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
-import PageContentHeader from '@gdmn-nxt/components/pageContentHeader/pageContentHeader';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 export interface IChanges {
   id: number;
@@ -161,7 +161,10 @@ export function Deals(props: DealsProps) {
 
   const Header = useMemo(() => {
     return (
-      <PageContentHeader
+      <CustomCardHeader
+        search
+        filter
+        refetch
         searchPlaceholder="Поиск сделки"
         isLoading={isLoading}
         isFetching={columnsIsFetching}

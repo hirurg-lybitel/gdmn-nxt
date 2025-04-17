@@ -11,21 +11,24 @@ interface PageHeaderProps {
   title?: string,
   isLoading?: boolean,
   isFetching?: boolean,
-  onCancelSearch: () => void,
-  onRequestSearch: (value: string) => void,
+  onCancelSearch?: () => void,
+  onRequestSearch?: (value: string) => void,
   searchValue?: string,
   searchPlaceholder?: string,
-  onRefetch: () => void,
-  onFilterClick: () => void,
+  onRefetch?: () => void,
+  onFilterClick?: () => void,
   hasFilters?: boolean
   onAddClick?: () => void,
   addButton?: boolean
   addButtonTooltip?: string,
   action?: ReactNode,
-  wrapAction?: ReactNode
+  wrapAction?: ReactNode,
+  search?: boolean,
+  filter?: boolean,
+  refetch?: boolean
 }
 
-export default function PageContentHeader(props: PageHeaderProps) {
+export default function CustomCardHeader(props: PageHeaderProps) {
   const {
     title,
     isLoading = false,
@@ -41,7 +44,10 @@ export default function PageContentHeader(props: PageHeaderProps) {
     addButton = false,
     addButtonTooltip,
     action,
-    wrapAction
+    wrapAction,
+    search,
+    filter,
+    refetch
   } = props;
 
   const theme = useTheme();
@@ -85,13 +91,15 @@ export default function PageContentHeader(props: PageHeaderProps) {
           </Box>
         )}
         <Box flex={1} />
-        <Box
-          pr={1}
-          display={{ xs: 'none', sm: 'block' }}
-          minWidth={0}
-        >
-          {searchBar}
-        </Box>
+        {search && (
+          <Box
+            pr={1}
+            display={{ xs: 'none', sm: 'block' }}
+            minWidth={0}
+          >
+            {searchBar}
+          </Box>
+        )}
 
         {addButton && <Box display="inline-flex" alignSelf="center">
           <IconButton
@@ -104,18 +112,22 @@ export default function PageContentHeader(props: PageHeaderProps) {
             </Tooltip>
           </IconButton>
         </Box>}
-        <CustomLoadingButton
-          hint="Обновить данные"
-          loading={isFetching}
-          onClick={onRefetch}
-        />
-        <Box display="inline-flex" alignSelf="center">
-          <CustomFilterButton
-            onClick={onFilterClick}
-            disabled={isFetching}
-            hasFilters={hasFilters}
+        {refetch && (
+          <CustomLoadingButton
+            hint="Обновить данные"
+            loading={isFetching}
+            onClick={() => onRefetch && onRefetch()}
           />
-        </Box>
+        )}
+        {filter && (
+          <Box display="inline-flex" alignSelf="center">
+            <CustomFilterButton
+              onClick={onFilterClick}
+              disabled={isFetching}
+              hasFilters={hasFilters}
+            />
+          </Box>
+        )}
       </div>
       <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
         {wrapAction}

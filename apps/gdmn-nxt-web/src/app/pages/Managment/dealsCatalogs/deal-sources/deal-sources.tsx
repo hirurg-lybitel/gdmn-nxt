@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { IDealSource } from '@gsbelarus/util-api-types';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
 import AddIcon from '@mui/icons-material/Add';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 
 /* eslint-disable-next-line */
@@ -87,7 +88,7 @@ export function DealSources(props: DealSourcesProps) {
     <CustomizedCard
       className={styles.Card}
     >
-      <CardHeader title={<Typography variant="pageHeader">Источники заявок</Typography>} />
+      <CustomCardHeader title={'Источники заявок'} />
       <Divider />
       <CardToolbar>
         <Stack direction="row">
