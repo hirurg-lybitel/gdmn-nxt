@@ -129,12 +129,12 @@ export default function CustomCardHeader(props: PageHeaderProps) {
           </Box>
         )}
       </div>
-      <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
+      <Box style={{ width: '100% ', marginTop: wrapAction ? '10px' : '0px' }} display={{ xs: 'block', sm: 'none' }}>
         {wrapAction}
       </Box>
-      <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
+      {search && <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
         {searchBar}
-      </Box>
+      </Box>}
     </CustomizedCard>
   );
 }

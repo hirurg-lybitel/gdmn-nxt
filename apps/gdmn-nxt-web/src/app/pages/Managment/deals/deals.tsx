@@ -236,7 +236,7 @@ export function Deals(props: DealsProps) {
       />
     );
   }
-  , [tabNo, filterData, columnsIsFetching]);
+  , [isLoading, columnsIsFetching, filterHandlers.cancelSearch, filterHandlers.requestSearch, filterHandlers.filterClick, filterHandlers.filterDeadlineChange, filterData, refreshBoard, userPermissions?.contacts?.POST, tabNo, cardDateFilter]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 

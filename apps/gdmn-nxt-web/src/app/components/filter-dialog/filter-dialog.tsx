@@ -16,7 +16,7 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
     onClose,
     onClear,
     children,
-    width
+    width = 400
   } = props;
 
   const theme = useTheme();

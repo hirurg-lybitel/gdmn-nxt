@@ -21,6 +21,7 @@ import TasksFilter, { IFilteringData } from '../../../components/Kanban/tasks-fi
 import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 export interface TasksProps {}
 
@@ -108,11 +109,23 @@ export function Tasks(props: TasksProps) {
     const refreshBoard = async () => refetch();
     const addTaskClick = async () => setAddTaskForm(true);
     return (
-      <>
-        <CustomizedCard
-          direction="row"
-          className={styles.headerCard}
-        >
+      <CustomCardHeader
+        search
+        filter
+        refetch
+        searchPlaceholder="Поиск задачи"
+        isLoading={isLoading}
+        isFetching={columnsIsFetching}
+        searchValue={filterData?.name?.[0]}
+        onRefetch={refreshBoard}
+        onFilterClick={filterClick}
+        onCancelSearch={cancelSearch}
+        onRequestSearch={requestSearch}
+        hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
+        addButton={userPermissions?.tasks?.POST}
+        onAddClick={addTaskClick}
+        addButtonTooltip="Создать задачу"
+        action={
           <ToggleButtonGroup
             color="primary"
             value={tabNo}
@@ -134,67 +147,11 @@ export function Tasks(props: TasksProps) {
               </Tooltip>
             </ToggleButton>
           </ToggleButtonGroup>
-          <SearchBar
-            disabled={isLoading}
-            onCancelSearch={cancelSearch}
-            onRequestSearch={requestSearch}
-            cancelOnEscape
-            fullWidth
-            placeholder="Поиск задачи"
-            iconPosition="start"
-            style={{
-              margin: '0 8px'
-            }}
-            value={
-              filterData && filterData.name
-                ? filterData.name[0]
-                : undefined
-            }
-          />
-          <PermissionsGate actionAllowed={userPermissions?.tasks?.POST}>
-            <IconButton
-              disabled={columnsIsFetching}
-              onClick={addTaskClick}
-              color="primary"
-              size="small"
-            >
-              <Tooltip title="Добавить новую задачу" arrow>
-                <AddCircleIcon />
-              </Tooltip>
-            </IconButton>
-          </PermissionsGate>
-          <CustomLoadingButton
-            hint="Обновить данные"
-            loading={columnsIsFetching}
-            onClick={refreshBoard}
-          />
-          <IconButton
-            onClick={filterClick}
-            disabled={columnsIsFetching}
-            size="small"
-          >
-            <Tooltip
-              title={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
-                ? 'У вас есть активные фильтры'
-                : 'Выбрать фильтры'
-              }
-              arrow
-            >
-              <Badge
-                color="error"
-                variant={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
-                  ? 'dot'
-                  : 'standard'}
-              >
-                <FilterListIcon color={columnsIsFetching ? 'disabled' : 'primary'} />
-              </Badge>
-            </Tooltip>
-          </IconButton>
-        </CustomizedCard>
-      </>
+        }
+      />
     );
   }
-  , [tabNo, columnsIsFetching, filterData]);
+  , [isLoading, columnsIsFetching, filterData, filterClick, cancelSearch, requestSearch, userPermissions?.tasks?.POST, tabNo, refetch]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanTasksBoard columns={columns} isLoading={isLoading} />, [columns, isLoading]);
 

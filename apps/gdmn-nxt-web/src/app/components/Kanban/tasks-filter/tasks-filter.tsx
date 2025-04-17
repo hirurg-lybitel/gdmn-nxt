@@ -9,6 +9,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { CustomerSelect } from '../../selectors/customer-select/customer-select';
 import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select/employees-select';
+import FilterDialog from '@gdmn-nxt/components/filter-dialog/filter-dialog';
 
 export interface IFilteringData {
   [name: string]: any;
@@ -60,112 +61,98 @@ export function TasksFilter(props: TasksFilterProps) {
   const taskNumberChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setTaskNumber(e.target.value), []);
 
   return (
-    <CustomizedDialog
+    <FilterDialog
       open={open}
+      onClear={() => {
+        onFilterClear();
+        setTaskNumber('');
+        onClose && onClose();
+      }}
       onClose={onClose}
       width={width}
     >
-      <DialogContent>
-        <Stack spacing={5}>
-          <Box>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              fontWeight={600}
-              mb={2}
-            >
+      <Stack spacing={5}>
+        <Box>
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            fontWeight={600}
+            mb={2}
+          >
               Основная информация
-            </Typography>
-            <Stack spacing={2}>
-              <TextField
-                label="Номер задачи"
-                value={taskNumber || ''}
-                onChange={taskNumberChange}
-              />
-            </Stack>
-          </Box>
+          </Typography>
+          <Stack spacing={2}>
+            <TextField
+              label="Номер задачи"
+              value={taskNumber || ''}
+              onChange={taskNumberChange}
+            />
+          </Stack>
+        </Box>
 
-          <Box>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              fontWeight={600}
-              mb={2}
-            >
+        <Box>
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            fontWeight={600}
+            mb={2}
+          >
               Фильтры
-            </Typography>
-            <Stack spacing={2}>
-              <EmployeesSelect
-                value={filteringData?.performers}
-                onChange={(value) => handleOnChange('performers', value)}
-                multiple
-                limitTags={2}
-                label={'Исполнитель'}
-                placeholder={'Выберите исполнителя'}
-              />
-              <CustomerSelect
-                label="Клиенты"
-                placeholder="Выберите клиента"
-                multiple
-                disableCreation
-                onChange={(value) => handleOnChange('customers', value)}
-                value={filteringData?.customers ? filteringData.customers : []}
-              />
+          </Typography>
+          <Stack spacing={2}>
+            <EmployeesSelect
+              value={filteringData?.performers}
+              onChange={(value) => handleOnChange('performers', value)}
+              multiple
+              limitTags={2}
+              label={'Исполнитель'}
+              placeholder={'Выберите исполнителя'}
+            />
+            <CustomerSelect
+              label="Клиенты"
+              placeholder="Выберите клиента"
+              multiple
+              disableCreation
+              onChange={(value) => handleOnChange('customers', value)}
+              value={filteringData?.customers ? filteringData.customers : []}
+            />
 
-            </Stack>
-          </Box>
+          </Stack>
+        </Box>
 
-          <Box>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              fontFamily={'600'}
-              mb={1}
-            >
+        <Box>
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            fontFamily={'600'}
+            mb={1}
+          >
               Дополнительно
-            </Typography>
-            <Stack>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filteringData?.isCreator ?? false}
-                    onChange={(e) => handleOnChange('isCreator', e.target.checked)}
-                  />
-                }
-                label="Я постановщик"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filteringData?.isPerformer ?? false}
-                    onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
-                  />
-                }
-                label="Я исполнитель"
-              />
+          </Typography>
+          <Stack>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filteringData?.isCreator ?? false}
+                  onChange={(e) => handleOnChange('isCreator', e.target.checked)}
+                />
+              }
+              label="Я постановщик"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filteringData?.isPerformer ?? false}
+                  onChange={(e) => handleOnChange('isPerformer', e.target.checked)}
+                />
+              }
+              label="Я исполнитель"
+            />
 
-            </Stack>
-          </Box>
-        </Stack>
-
-      </DialogContent>
-      <DialogActions>
-        <Button
-          sx={{
-            mb: 1.5
-          }}
-          variant="contained"
-          fullWidth
-          onClick={() => {
-            onFilterClear();
-            setTaskNumber('');
-            onClose && onClose();
-          }}
-        >
-          Очистить фильтры
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+          </Stack>
+        </Box>
+      </Stack>
+    </FilterDialog>
   );
 }
 

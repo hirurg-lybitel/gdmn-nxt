@@ -15,6 +15,7 @@ import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolba
 import AddIcon from '@mui/icons-material/Add';
 import { DESTRUCTION } from 'dns';
 import { Description } from '@mui/icons-material';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
 export interface TaskTypesProps {}
@@ -289,6 +290,7 @@ export function TaskTypes(props: TaskTypesProps) {
       headerName: 'Наименование',
       editable: true,
       flex: 0.5,
+      minWidth: 200,
       renderEditCell,
     },
     {
@@ -296,6 +298,7 @@ export function TaskTypes(props: TaskTypesProps) {
       editable: true,
       headerName: 'Описание',
       flex: 1,
+      minWidth: 400,
       renderEditCell,
     },
     {
@@ -356,7 +359,7 @@ export function TaskTypes(props: TaskTypesProps) {
       <CustomizedCard
         className={styles.card}
       >
-        <CardHeader title={<Typography variant="pageHeader">Типы задач</Typography>} />
+        <CustomCardHeader title={'Типы задач'} />
         <Divider />
         <CardToolbar>
           <Button
