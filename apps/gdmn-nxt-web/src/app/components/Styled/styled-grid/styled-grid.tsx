@@ -98,6 +98,7 @@ export default function StyledGrid(props: IStyledGridProps) {
       display: 'inline-flex !important'
     },
     '& .MuiTablePagination-root': {
+      overflow: 'hidden',
       height: '100%'
     },
     '& .MuiTablePagination-toolbar': {

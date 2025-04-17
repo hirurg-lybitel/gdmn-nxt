@@ -451,8 +451,6 @@ export function Customers(props: CustomersProps) {
     return Object.keys(filters || {}).length > 0;
   }, [filteringData]);
 
-  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
-
   return (
     <CustomizedCard
       style={{

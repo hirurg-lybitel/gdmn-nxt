@@ -104,18 +104,18 @@ export default function CustomCardHeader(props: PageHeaderProps) {
         {addButton && <Box display="inline-flex" alignSelf="center">
           <IconButton
             size="small"
-            disabled={isFetching}
+            disabled={isFetching || isLoading}
             onClick={onAddClick}
           >
             <Tooltip arrow title={addButtonHint ?? ''}>
-              <AddCircleIcon color={isFetching ? 'disabled' : 'primary'} />
+              <AddCircleIcon color={(isFetching || isLoading) ? 'disabled' : 'primary'} />
             </Tooltip>
           </IconButton>
         </Box>}
         {refetch && (
           <CustomLoadingButton
             hint="Обновить данные"
-            loading={isFetching}
+            loading={isFetching || isLoading}
             onClick={() => onRefetch && onRefetch()}
           />
         )}
@@ -123,7 +123,7 @@ export default function CustomCardHeader(props: PageHeaderProps) {
           <Box display="inline-flex" alignSelf="center">
             <CustomFilterButton
               onClick={onFilterClick}
-              disabled={isFetching}
+              disabled={isFetching || isLoading}
               hasFilters={hasFilters}
             />
           </Box>

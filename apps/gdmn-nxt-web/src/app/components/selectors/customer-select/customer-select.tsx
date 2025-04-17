@@ -235,7 +235,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
   const mobile = useMediaQuery('(pointer: coarse)');
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', ...style }}>
       <Box
         ref={taskSelectAreaRef}
         display={{ xs: 'none', md: 'block' }}
