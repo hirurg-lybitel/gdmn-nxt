@@ -41,7 +41,11 @@ export function TabFeedback({ formik }: Readonly<TabFeedbackProps>) {
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        flexDirection: 'column',
+        '& .MuiAutocomplete-root .MuiFormLabel-root': {
+          paddingRight: '29px'
+        }
       }}
     >
       <Stack

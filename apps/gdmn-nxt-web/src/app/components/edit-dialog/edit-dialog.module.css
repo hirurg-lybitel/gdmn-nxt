@@ -1,3 +1,11 @@
 .button {
-  width: 100%;
+  width: 120px;
+  max-width: 120px;
+}
+
+@media (max-width:599px) {
+  .button {
+    width: 100%;
+    max-width: none;
+  }
 }

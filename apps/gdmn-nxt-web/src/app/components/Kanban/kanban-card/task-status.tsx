@@ -184,7 +184,8 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
           '& .MuiTypography-root': {
             lineHeight: 1,
           },
-          color: 'inherit'
+          color: 'inherit',
+          touchAction: 'manipulation'
         }}
         onRowDoubleClick={onRowDoubleClick}
         onRowClick={mobile ? onRowClick : undefined}

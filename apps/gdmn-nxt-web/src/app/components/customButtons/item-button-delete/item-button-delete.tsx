@@ -12,6 +12,7 @@ export interface ItemButtonDeleteProps extends IconButtonProps {
   title?: string;
   text?: string;
   hint?: string;
+  showHintAnyway?: boolean
 };
 
 export function ItemButtonDelete({
@@ -23,6 +24,7 @@ export function ItemButtonDelete({
   text = 'Вы уверены, что хотите продолжить?',
   hint = 'Удалить',
   disabled = false,
+  showHintAnyway = false,
   ...rest
 }: ItemButtonDeleteProps) {
   const Container = useMemo(() =>
@@ -42,14 +44,16 @@ export function ItemButtonDelete({
     };
   }
 
+  console.log(hint);
+
   const RootElement = (
     <Container
       disabled={disabled}
-      style={{ pointerEvents: disabled ? 'none' : 'all' }}
+      style={{ pointerEvents: (!showHintAnyway && disabled) ? 'none' : 'all' }}
       size="small"
       className="StyledDeleteButton"
     >
-      <Tooltip title={(label || disabled) ? '' : hint} arrow>
+      <Tooltip title={(label || (!showHintAnyway && disabled)) ? '' : hint} arrow>
         <span>
           <Stack
             direction="row"

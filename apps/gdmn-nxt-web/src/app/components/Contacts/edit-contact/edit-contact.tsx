@@ -515,11 +515,14 @@ export function EditContact({
     <EditDialog
       open={open}
       onClose={onClose}
+      form="contactEditForm"
       title={'Редактирование контакта'}
       confirmation={formik.dirty}
       onDeleteClick={handleDeleteClick}
       deleteButton={userPermissions?.contacts?.DELETE}
       fullwidth
+      submitButton={userPermissions?.contacts?.PUT}
+      submitButtonDisabled={!userPermissions?.contacts?.PUT}
     >
       <FormikProvider value={formik}>
         <Form
@@ -552,7 +555,7 @@ export function EditContact({
                 >
                   {matchDownMd && (
                     <Tab
-                      label="Редактирование"
+                      label="Информация"
                       value="1"
                     />
                   )}

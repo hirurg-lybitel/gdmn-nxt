@@ -287,12 +287,12 @@ export function KanbanCard(props: KanbanCardProps) {
           )
         }}
         sx={{
-          '&:hover .actions': {
+          '&:hover .actions': mobile ? {} : {
             display: 'inline',
             position: 'absolute',
             right: 0,
           },
-          '&:hover .number': {
+          '&:hover .number': mobile ? {} : {
             opacity: 0, visibility: 'hidden'
           },
           '&:hover': {
@@ -322,18 +322,12 @@ export function KanbanCard(props: KanbanCardProps) {
             >
               {card.DEAL?.USR$NAME}
             </Typography>
-            <Typography
-              className="number"
-              variant="caption"
-            >
-              {'#' + card.DEAL?.USR$NUMBER}
-            </Typography>
             {isFirstColumn
               ?
               <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
                 <div
                   className="actions"
-                  hidden
+                  hidden={!mobile}
                 >
                   <IconButton
                     size="small"
@@ -346,6 +340,12 @@ export function KanbanCard(props: KanbanCardProps) {
               </PermissionsGate>
               : null
             }
+            <Typography
+              className="number"
+              variant="caption"
+            >
+              {'#' + card.DEAL?.USR$NUMBER}
+            </Typography>
           </Stack>
           <Stack direction="row" spacing={1}>
             <Typography variant="body2" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>

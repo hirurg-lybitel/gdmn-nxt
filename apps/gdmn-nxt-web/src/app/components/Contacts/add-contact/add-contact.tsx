@@ -334,11 +334,15 @@ export function AddContact({
     <EditDialog
       open={open}
       onClose={onClose}
+      form="contactForm"
       title={'Добавление контакта'}
       confirmation={formik.dirty}
     >
       <FormikProvider value={formik}>
-        <Form id="contactForm" onSubmit={formik.handleSubmit}>
+        <Form
+          id="contactForm"
+          onSubmit={formik.handleSubmit}
+        >
           <Stack spacing={2}>
             <ContactName
               value={formik.values.nameInfo}

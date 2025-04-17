@@ -208,11 +208,15 @@ export function CustomerEdit({
     <EditDialog
       open={open}
       onClose={onCancel}
+      form={'customerEditForm'}
       title={customer ? 'Редактирование клиента' : 'Добавление клиента'}
       confirmation={formik.dirty}
       onDeleteClick={handleDeleteClick}
       deleteButton={!!customer && !!deleteable && userPermissions?.customers?.DELETE}
+      deleteConfirmText={`Вы действительно хотите удалить клиента ${customer?.NAME}?`}
       fullwidth
+      submitButtonDisabled={!userPermissions?.customers?.PUT || readOnly}
+      submitHint={readOnly ? 'Карточка в режиме просмотра' : ''}
     >
       <FormikProvider value={formik}>
         <Form
@@ -245,7 +249,7 @@ export function CustomerEdit({
                   {matchDownMd && (
                     <Tab
                       className={styles.tabHeader}
-                      label="Редактирование"
+                      label="Информация"
                       value="0"
                     />
                   )}

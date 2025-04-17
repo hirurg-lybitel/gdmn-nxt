@@ -101,7 +101,7 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                 defaultExpanded
                 TransitionProps={{ unmountOnExit: true }}
                 sx={{
-                  minWidth: '500px',
+                  minWidth: '550px',
                   '&.Mui-expanded': {
                     margin: 0,
                   },
@@ -111,6 +111,7 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                   expandIcon={<ExpandMoreIcon />}
                   style={{
                     flexDirection: 'row-reverse',
+                    height: 'fit-content'
                   }}
                   sx={{
                     height: '50px',
