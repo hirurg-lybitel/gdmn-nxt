@@ -124,7 +124,7 @@ export function Tasks(props: TasksProps) {
         hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
         addButton={userPermissions?.tasks?.POST}
         onAddClick={addTaskClick}
-        addButtonTooltip="Создать задачу"
+        addButtonHint="Создать задачу"
         action={
           <ToggleButtonGroup
             color="primary"

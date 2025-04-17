@@ -73,7 +73,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
     };
 
     /** Если были выбраны виды работ без указания заказов, то очищаем их при первичном выборе заказов */
-    if (entity === 'CONTRACTS' && !newObject['CONTRACTS']) {
+    if (entity === 'CONTRACTS' && !newObject?.['CONTRACTS']) {
       delete newObject['WORKTYPES'];
     };
 
@@ -96,10 +96,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
   return (
     <FilterDialog
       open={open}
-      onClear={() => {
-        onFilterClear();
-        onClose && onClose();
-      }}
+      onClear={onFilterClear}
       onClose={onClose}
       width={width}
     >
@@ -109,7 +106,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
             multiple
             limitTags={2}
             disableCloseOnSelect
-            value={filteringData.DEPARTMENTS}
+            value={filteringData?.DEPARTMENTS}
             onChange={(value) => handleOnChange('DEPARTMENTS', value)}
           />
           <Stack
@@ -125,7 +122,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
               color="default"
               name="DEPARTMENTS"
               onChange={handleMethodOnChange}
-              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false}
+              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)?.['DEPARTMENTS'] === 'OR' : false}
             />
             <Tooltip arrow title="Содержит один из выбранных отделов">
               <Typography variant="caption">Или</Typography>
@@ -136,7 +133,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
           <ContractsSelect
             multiple
             limitTags={2}
-            value={filteringData.CONTRACTS}
+            value={filteringData?.CONTRACTS}
             onChange={(value) => handleOnChange('CONTRACTS', value)}
             disableCloseOnSelect
           />
@@ -166,7 +163,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
             limitTags={2}
             disableCloseOnSelect
             onChange={(value) => handleOnChange('WORKTYPES', value)}
-            value={filteringData['WORKTYPES']}
+            value={filteringData?.['WORKTYPES']}
           />
           <Stack
             direction="row"
@@ -181,7 +178,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
               color="default"
               name="WORKTYPES"
               onChange={handleMethodOnChange}
-              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false}
+              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)?.['WORKTYPES'] === 'OR' : false}
             />
             <Tooltip arrow title="Содержит один из выбранных видов работ">
               <Typography variant="caption">Или</Typography>

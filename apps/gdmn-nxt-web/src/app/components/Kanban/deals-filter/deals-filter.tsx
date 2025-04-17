@@ -76,7 +76,6 @@ export function DealsFilter(props: Readonly<DealsFilterProps>) {
       onClear={() => {
         onFilterClear();
         setDealNumber('');
-        onClose && onClose();
       }}
       width={width}
     >

@@ -417,24 +417,6 @@ export function Customers(props: CustomersProps) {
     [openEditForm]
   );
 
-  const memoSearchBar = useMemo(
-    () => (
-      <SearchBar
-        disabled={customerIsLoading || filtersIsLoading}
-        onCancelSearch={filterHandlers.handleCancelSearch}
-        onRequestSearch={filterHandlers.handleRequestSearch}
-        cancelOnEscape
-        placeholder="Поиск клиента"
-        value={
-          filteringData && filteringData.NAME
-            ? filteringData.NAME[0]
-            : undefined
-        }
-      />
-    ),
-    [customerFetching, filteringData, filtersIsLoading]
-  );
-
   const memoFilter = useMemo(
     () => (
       <CustomersFilter
@@ -503,7 +485,7 @@ export function Customers(props: CustomersProps) {
         hasFilters={haveFilter}
         addButton={userPermissions?.customers.POST}
         onAddClick={handleAddOrganization}
-        addButtonTooltip="Создать клиента"
+        addButtonHint="Создать клиента"
       />
       <Divider />
       <CardContent
@@ -571,9 +553,6 @@ export function Customers(props: CustomersProps) {
             className={classes.row}
           >
             <StyledGrid
-              sx={{ '& .MuiTablePagination-input': {
-                display: 'inline-flex !important'
-              } }}
               autoHeightForFields={['LABELS']}
               onRowDoubleClick={lineDoubleClick}
               columns={columns}

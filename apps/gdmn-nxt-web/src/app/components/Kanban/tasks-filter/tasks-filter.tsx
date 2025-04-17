@@ -66,7 +66,6 @@ export function TasksFilter(props: TasksFilterProps) {
       onClear={() => {
         onFilterClear();
         setTaskNumber('');
-        onClose && onClose();
       }}
       onClose={onClose}
       width={width}

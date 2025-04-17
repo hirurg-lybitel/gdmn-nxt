@@ -20,7 +20,7 @@ interface PageHeaderProps {
   hasFilters?: boolean
   onAddClick?: () => void,
   addButton?: boolean
-  addButtonTooltip?: string,
+  addButtonHint?: string,
   action?: ReactNode,
   wrapAction?: ReactNode,
   search?: boolean,
@@ -42,7 +42,7 @@ export default function CustomCardHeader(props: PageHeaderProps) {
     hasFilters = false,
     onAddClick,
     addButton = false,
-    addButtonTooltip,
+    addButtonHint,
     action,
     wrapAction,
     search,
@@ -107,7 +107,7 @@ export default function CustomCardHeader(props: PageHeaderProps) {
             disabled={isFetching}
             onClick={onAddClick}
           >
-            <Tooltip arrow title={addButtonTooltip ?? ''}>
+            <Tooltip arrow title={addButtonHint ?? ''}>
               <AddCircleIcon color={isFetching ? 'disabled' : 'primary'} />
             </Tooltip>
           </IconButton>
