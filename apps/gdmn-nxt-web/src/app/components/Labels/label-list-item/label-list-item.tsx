@@ -47,17 +47,36 @@ export function LabelListItem(props: Readonly<LabelListItemProps>) {
 
   return (
     <Box className={styles.container}>
-      <Grid container alignItems="center">
+      <Grid
+        container
+        alignItems="center"
+        flexWrap={'nowrap'}
+      >
         <Grid
-          item
-          xs={4}
-          paddingLeft={2}
-          paddingRight={2}
+          container
+          direction={{ xs: 'column', sm: 'row' }}
+          padding={'10px 0px'}
+          sx={{ gap: { xs: 1, sm: 0 } }}
+          minWidth={0}
         >
-          <LabelMarker label={data} />
-        </Grid>
-        <Grid item flex={1}>
-          <Typography variant="body2">{data.USR$DESCRIPTION}</Typography>
+          <Grid
+            item
+            xs={4}
+            paddingLeft={{ xs: 0, sm: 2 }}
+            paddingRight={{ xs: 0, sm: 2 }}
+            minWidth={150}
+            container
+            alignItems={'center'}
+          >
+            <LabelMarker label={data} />
+          </Grid>
+          <Grid
+            item
+            flex={1}
+            display={data.USR$DESCRIPTION ? 'block' : 'none'}
+          >
+            <Typography variant="body2">{data.USR$DESCRIPTION}</Typography>
+          </Grid>
         </Grid>
         <Grid
           item

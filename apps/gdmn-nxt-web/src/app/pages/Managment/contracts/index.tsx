@@ -59,7 +59,7 @@ export function Contracts(props: ContractsProps) {
 
   const mobile = useMediaQuery('(pointer: coarse)');
 
-  const cols = columns[mobile ? 'mobile' : 'default'][ContractType.BG];
+  const cols = columns[mobile ? 'mobile' : 'default'][systemSettings?.CONTRACTTYPE ?? ContractType.GS];
 
   const pageOnChange = useCallback((pageNo: number) =>
     setPagination(prev => ({
