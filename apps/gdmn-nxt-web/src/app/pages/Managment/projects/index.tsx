@@ -322,7 +322,7 @@ export function Projects(props: IProjectsProps) {
           onFilterClick={filterHandlers.filterClick}
           hasFilters={
             Object.keys(filterData || {}).filter(f => f !== 'status' && f !== 'name').length > 0
-            || filterData.status !== defaultStatus
+            || filterData?.status !== defaultStatus
           }
         />
         {memoFIlter}
