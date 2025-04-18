@@ -130,7 +130,7 @@ export function Projects(props: IProjectsProps) {
       setOpenFilters(false);
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      saveFilters({ projectType: filterData?.projectType, status: defaultStatus });
+      saveFilters({ status: defaultStatus });
     }, [defaultStatus, filterData, saveFilters]),
   };
 
@@ -195,11 +195,12 @@ export function Projects(props: IProjectsProps) {
       field: 'name',
       headerName: 'Наименование',
       flex: 1,
+      minWidth: 300,
       renderCell: ({ value, row }) => {
         return <span style={{ color: row.isDone ? 'gray' : 'inherit' }}>{value}</span>;
       },
     },
-    { field: 'customer', headerName: 'Клиент', flex: 1,
+    { field: 'customer', headerName: 'Клиент', flex: 1, minWidth: 300,
       renderCell: ({ value, row }) => {
         return <span style={{ color: row.isDone ? 'gray' : 'inherit' }}>{value?.NAME || ''}</span>;
       }
@@ -280,8 +281,25 @@ export function Projects(props: IProjectsProps) {
 
   const theme = useTheme();
   const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const FilterContainer = useCallback((children: ReactNode) => matchDownLg ? children : (
+    <>
+      <Divider/>
+      <CardToolbar>{children}</CardToolbar>
+    </>
+  ), [matchDownLg]);
 
-  const FilterContainer = ({ children }: {children: ReactNode}) => matchDownLg ? children : <CardToolbar>{children}</CardToolbar>;
+  const memoFIlter = useMemo(() => {
+    return FilterContainer(
+      <ProjectsFilter
+        dialog={matchDownLg}
+        open={openFilters}
+        onClose={filterHandlers.filterClose}
+        filteringData={filterData}
+        onFilteringDataChange={handleFilteringDataChange}
+        onClear={filterHandlers.filterClear}
+      />
+    );
+  }, [FilterContainer, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange, matchDownLg, openFilters]);
 
   return (
     <>
@@ -302,18 +320,12 @@ export function Projects(props: IProjectsProps) {
           onAddClick={handleAdd}
           addButtonHint="Создать проект"
           onFilterClick={filterHandlers.filterClick}
+          hasFilters={
+            Object.keys(filterData || {}).filter(f => f !== 'status' && f !== 'name').length > 0
+            || filterData.status !== defaultStatus
+          }
         />
-        <Divider />
-        <CardToolbar style={{ padding: matchDownLg ? 0 : undefined, borderBottom: matchDownLg ? 'none' : undefined }}>
-          <ProjectsFilter
-            dialog={matchDownLg}
-            open={openFilters}
-            onClose={filterHandlers.filterClose}
-            filteringData={filterData}
-            onFilteringDataChange={handleFilteringDataChange}
-            onClear={filterHandlers.filterClear}
-          />
-        </CardToolbar>
+        {memoFIlter}
         <CardContent style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
           <Divider/>
           <div style={{ flex: '1' }}>

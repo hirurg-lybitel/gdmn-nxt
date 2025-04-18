@@ -7,7 +7,7 @@ import { ReactNode } from 'react';
 
 interface EditDialogProps {
   open: boolean,
-  title?: string,
+  title?: string | ReactNode,
   children: ReactNode,
   confirmation?: boolean,
   form?: string,
@@ -36,6 +36,7 @@ interface EditDialogProps {
   fullwidth?: boolean,
   disableEscape?: boolean,
   width?: number | string,
+  selectDialog?: boolean
 }
 
 export default function EditDialog(props: Readonly<EditDialogProps>) {
@@ -61,7 +62,8 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
     deleteButtonDisabled = false,
     submitButtonDisabled = false,
     submitButton = true,
-    submitHint = ''
+    submitHint = '',
+    selectDialog = false
   } = props;
 
   const theme = useTheme();
@@ -101,32 +103,44 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
             width: { xs: '100%', sm: 'fin-content' } }}
           justifyContent={'flex-end'}
         >
-          <ButtonWithConfirmation
-            className={styles.button}
-            variant="outlined"
-            onClick={onClose}
-            title={cancelConfirmTitle}
-            text={cancelConfirmText}
-            confirmation={confirmation}
-          >
-            Отменить
-          </ButtonWithConfirmation>
-          {submitButton && (
-            <Tooltip title={submitHint}>
-              <div>
-                <Button
-                  className={styles.button}
-                  type="submit"
-                  form={form}
-                  variant="contained"
-                  onClick={onSubmitClick}
-                  disabled={submitButtonDisabled}
-                >
-                  Сохранить
-                </Button>
-              </div>
-            </Tooltip>
-          )}
+          {selectDialog ?
+            (
+              <Button
+                className={styles.button}
+                variant="outlined"
+                onClick={onClose}
+              >
+                Закрыть
+              </Button>
+            )
+            : <>
+              <ButtonWithConfirmation
+                className={styles.button}
+                variant="outlined"
+                onClick={onClose}
+                title={cancelConfirmTitle}
+                text={cancelConfirmText}
+                confirmation={confirmation}
+              >
+                Отменить
+              </ButtonWithConfirmation>
+              {submitButton && (
+                <Tooltip title={submitHint}>
+                  <div>
+                    <Button
+                      className={styles.button}
+                      type="submit"
+                      form={form}
+                      variant="contained"
+                      onClick={onSubmitClick}
+                      disabled={submitButtonDisabled}
+                    >
+                      Сохранить
+                    </Button>
+                  </div>
+                </Tooltip>
+              )}
+            </>}
         </Stack>
       </DialogActions>
     </CustomizedDialog>

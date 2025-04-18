@@ -8,6 +8,7 @@ import { IFilteringData, ITemplate } from '@gsbelarus/util-api-types';
 import { useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import { useGetAllTemplateQuery } from '../../../features/Marketing/templates/templateApi';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 
 export interface SelectTemplateProps {
@@ -52,16 +53,18 @@ export function SelectTemplate({
   };
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={onCancel}
-      width="calc(100% - var(--menu-width))"
-    >
-      <DialogTitle>
+      fullwidth
+      selectDialog
+      title={(
         <Stack
           direction={'row'}
-          spacing={3}
-          alignItems={'center'}
+          spacing={{ xs: 0, sm: 3 }}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          sx={{ gap: { xs: '10px', sm: '0' } }}
         >
           <div style={{ textWrap: 'nowrap' }}>Выберите шаблон</div>
           <SearchBar
@@ -72,59 +75,52 @@ export function SelectTemplate({
             value={filter?.name}
           />
         </Stack>
-      </DialogTitle>
-      <DialogContent dividers>
+      )}
+    >
+      <Grid
+        container
+        spacing={{ xs: 2, md: 3 }}
+        columns={{ xs: 4, sm: 8, md: 12, lg: 12, ultraWide: 15 }}
+        minWidth={0}
+      >
         <Grid
-          container
-          spacing={{ xs: 2, md: 3 }}
-          columns={{ sm: 8, md: 12, lg: 12, ultraWide: 15 }}
+          item
+          xs={4}
+          sm={4}
+          md={4}
+          lg={3}
+          ultraWide={3}
+          key={1}
         >
+          <NewTemplate
+            onClick={newTemplateSelect}
+          />
+        </Grid>
+        {templates.map(template => (
           <Grid
             item
+            xs={4}
             sm={4}
             md={4}
             lg={3}
             ultraWide={3}
-            key={1}
+            key={template.ID}
           >
-            <NewTemplate
-              onClick={newTemplateSelect}
-            />
-          </Grid>
-          {templates.map(template => (
-            <Grid
-              item
-              sm={4}
-              md={4}
-              lg={3}
-              ultraWide={3}
-              key={template.ID}
+            <CustomizedCard
+              className={styles['card-item']}
+              onClick={onTemplateSelect(template)}
             >
-              <CustomizedCard
-                className={styles['card-item']}
-                onClick={onTemplateSelect(template)}
-              >
-                <div style={{ pointerEvents: 'none' }}>
-                  <EmailTemplateListItem
-                    template={template}
-                    editable={false}
-                  />
-                </div>
-              </CustomizedCard>
-            </Grid>
-          ))}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          className="DialogButton"
-          variant="outlined"
-          onClick={onCancel}
-        >
-          Закрыть
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+              <div style={{ pointerEvents: 'none' }}>
+                <EmailTemplateListItem
+                  template={template}
+                  editable={false}
+                />
+              </div>
+            </CustomizedCard>
+          </Grid>
+        ))}
+      </Grid>
+    </EditDialog>
   );
 }
 

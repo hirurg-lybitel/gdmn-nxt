@@ -3,7 +3,6 @@
   flex-direction: column;
   overflow: hidden;
   flex-wrap: wrap;
-  justify-content: center;
   min-width: 300px;
   padding: 20px;
   padding-right: 0;
@@ -22,7 +21,14 @@
   border-radius: var(--border-radius);
 }
 .templateScrollBox{
+  position: absolute;
+  inset: 20px;
   display: flex;
   justify-content: center;
-  padding: 20px;
+}
+
+@media (max-width: 799px) {
+  .templateScrollBox{
+    top: 0;
+  }
 }

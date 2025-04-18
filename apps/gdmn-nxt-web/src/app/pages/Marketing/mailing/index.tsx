@@ -28,6 +28,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 import { Recipients } from './recipients';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 interface StatusChipProps extends ChipOwnProps {
   onClick?: () => void;
@@ -120,7 +121,7 @@ export default function Mailing() {
   }, [filterData]);
 
   const columns: GridColDef<IMailing>[] = [
-    { field: 'NAME', headerName: 'Наименование', flex: 1, },
+    { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
     { field: 'STARTDATE', headerName: 'Дата запуска', width: 180,
       valueFormatter: ({ value }) => dayjs(value).isValid() ? dayjs(value).format('MMM DD, YYYY HH:mm') : ''
     },
@@ -198,6 +199,7 @@ export default function Mailing() {
     {
       field: 'ACTIONS',
       headerName: '',
+      type: 'actions',
       resizable: false,
       sortable: false,
       align: 'center',
@@ -323,42 +325,19 @@ export default function Mailing() {
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
-      <CardHeader
-        title={<Typography variant="pageHeader">Рассылки</Typography>}
-        action={
-          <Stack direction="row" spacing={1}>
-            <Box paddingX={'4px'} />
-            <SearchBar
-              disabled={isLoading}
-              onCancelSearch={cancelSearch}
-              onRequestSearch={requestSearch}
-              fullWidth
-              cancelOnEscape
-              value={
-                filterData?.name
-                  ? filterData.name[0]
-                  : undefined
-              }
-            />
-            <Box display="inline-flex" alignSelf="center">
-              <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
-                <CustomAddButton
-                  // disabled={contractsIsFetching}
-                  // disabled
-                  label="Создать рассылку"
-                  onClick={addMailingClick}
-                />
-              </PermissionsGate>
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomLoadingButton
-                hint="Обновить данные"
-                onClick={() => refetch()}
-                loading={isFetching}
-              />
-            </Box>
-          </Stack>
-        }
+      <CustomCardHeader
+        search
+        refetch
+        title={'Рассылки'}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        onCancelSearch={cancelSearch}
+        onRequestSearch={requestSearch}
+        searchValue={filterData?.name?.[0]}
+        onRefetch={refetch}
+        addButton={userPermissions?.contacts?.POST}
+        onAddClick={addMailingClick}
+        addButtonHint="Создать рассылку"
       />
       <Divider />
       <CardContent style={{ padding: 0 }}>

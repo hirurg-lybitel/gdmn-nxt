@@ -65,6 +65,7 @@ export default function EmployeesChoose({
         style={{
           zIndex: 1300,
           width: '600px',
+          maxWidth: 'calc(100% - 50px)'
         }}
         transition
       >

@@ -1,6 +1,6 @@
-import { ClickAwayListener, SxProps, TextField, Theme } from '@mui/material';
+import { ClickAwayListener, Fade, Popper, SxProps, TextField, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ColorResult, SketchPicker } from 'react-color';
 
 interface colorEditProps {
@@ -13,11 +13,6 @@ interface colorEditProps {
 
 const useStyles = makeStyles((theme: Theme) => ({
   piker: {
-    position: 'absolute',
-    zIndex: '1400 !important',
-    right: '10px',
-    moveTop: '10px',
-    top: 'top - 50px',
     '& .sketch-picker ': {
       backgroundColor: `${theme.mainContent.backgroundColor} !important`,
       color: `${theme.textColor} !important`
@@ -49,10 +44,13 @@ export default function ColorEdit({ value, onChange, errorMessage, sx, label }: 
 
   const classes = useStyles();
 
+  const ref = useRef(null);
+
   return (
     <ClickAwayListener onClickAway={handleClose}>
-      <div>
+      <div ref={ref} style={{ position: 'relative' }}>
         <TextField
+
           sx={sx}
           fullWidth
           label={label}
@@ -64,16 +62,27 @@ export default function ColorEdit({ value, onChange, errorMessage, sx, label }: 
           value={value}
           helperText={errorMessage}
         />
-        {isSelect &&
-        <div className={classes.piker}>
-          <>
-            <SketchPicker
-              color={value}
-              onChange= {handleChange}
-            />
-          </>
-        </div>
-        }
+        <Popper
+          open={isSelect}
+          anchorEl={ref.current}
+          placement="bottom-start"
+          transition
+          style={{ zIndex: 1300 }}
+        >
+          {({ TransitionProps }) => (
+            <Fade
+              {...TransitionProps}
+              timeout={350}
+            >
+              <div className={classes.piker}>
+                <SketchPicker
+                  color={value}
+                  onChange= {handleChange}
+                />
+              </div>
+            </Fade>
+          )}
+        </Popper>
       </div>
     </ClickAwayListener>
   );

@@ -1,5 +1,5 @@
 import { ICustomer, IFilteringData, IProjectType } from '@gsbelarus/util-api-types';
-import { ReactNode, useCallback } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo } from 'react';
 import { Autocomplete, Box, Button, Stack, TextField } from '@mui/material';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { ProjectTypeSelect } from '@gdmn-nxt/components/selectors/projectType-select/projectType-select';
@@ -54,21 +54,17 @@ export function ProjectsFilter({
   const handleChangeProjectType = useCallback((value: IProjectType | null) => {
     const data = { ...filteringData };
 
-    data['projectType'] = [value];
+    if (value) {
+      data['projectType'] = [value];
+    } else {
+      delete data['projectType'];
+    }
 
     onFilteringDataChange(data);
   }, [filteringData, onFilteringDataChange]);
 
-  const Container = ({ children }: {children: ReactNode}) => dialog ? (
-    <FilterDialog
-      open={open}
-      onClose={onClose}
-      onClear={filterClear}
-    >{children}</FilterDialog>
-  ) : children;
-
-  return (
-    <Container>
+  const memoFilter = useMemo(() => {
+    return (
       <Stack
         direction={dialog ? 'column' : 'row'}
         spacing={2}
@@ -123,6 +119,14 @@ export function ProjectsFilter({
           </Box>
         )}
       </Stack>
-    </Container>
-  );
+    );
+  }, [dialog, filterClear, filteringData?.customers, filteringData?.projectType, filteringData?.status, handleChangeProjectStatus, handleChangeProjectType, handleCustomerChange, onClose]);
+
+  return dialog ?
+    <FilterDialog
+      open={open}
+      onClose={onClose}
+      onClear={filterClear}
+    >{memoFilter}</FilterDialog>
+    : memoFilter;
 };

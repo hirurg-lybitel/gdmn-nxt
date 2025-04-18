@@ -1,4 +1,4 @@
-import { Box, IconButton, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, IconButton, SxProps, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import SearchBar from '../search-bar/search-bar';
 import CustomizedCard from '../Styled/customized-card/customized-card';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -6,6 +6,7 @@ import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import { ReactNode, useMemo } from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PermissionsGate from '../Permissions/permission-gate/permission-gate';
+import { Theme } from '@mui/material/styles';
 
 interface PageHeaderProps {
   title?: string,
@@ -25,7 +26,8 @@ interface PageHeaderProps {
   wrapAction?: ReactNode,
   search?: boolean,
   filter?: boolean,
-  refetch?: boolean
+  refetch?: boolean,
+  sx?: SxProps<Theme>
 }
 
 export default function CustomCardHeader(props: PageHeaderProps) {
@@ -47,7 +49,8 @@ export default function CustomCardHeader(props: PageHeaderProps) {
     wrapAction,
     search,
     filter,
-    refetch
+    refetch,
+    sx
   } = props;
 
   const theme = useTheme();
@@ -68,6 +71,7 @@ export default function CustomCardHeader(props: PageHeaderProps) {
   return (
     <CustomizedCard
       direction="row"
+      sx={sx}
       style={{
         display: 'flex',
         flexDirection: 'column',

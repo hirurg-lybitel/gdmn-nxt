@@ -428,6 +428,7 @@ export function DetailPanelContent({
       field: 'name',
       headerName: 'Наименование',
       flex: 1,
+      minWidth: 300,
       resizable: false,
       editable: true,
       cellClassName: 'name-cell',

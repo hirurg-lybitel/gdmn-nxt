@@ -44,8 +44,6 @@ export function ItemButtonDelete({
     };
   }
 
-  console.log(hint);
-
   const RootElement = (
     <Container
       disabled={disabled}
