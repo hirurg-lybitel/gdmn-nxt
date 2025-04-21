@@ -11,10 +11,10 @@ export function NotificationsSettings(props: NotificationsSettingsProps) {
       className={styles['item-card']}
       boxShadows
     >
-      <Box flex={1}>
+      <Box flex={1} sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <TextField
           label="Дней без срока"
-          sx={{ m: 1, width: '25ch' }}
+          sx={{ maxWidth: '25ch' }}
           InputProps={{
             startAdornment: <InputAdornment position="start">Дн.</InputAdornment>,
           }}
@@ -24,7 +24,7 @@ export function NotificationsSettings(props: NotificationsSettingsProps) {
         <TextField
           label="Время удаления уведомлений"
           id="outlined-start-adornment"
-          sx={{ m: 1, width: '25ch' }}
+          sx={{ maxWidth: '25ch' }}
           InputProps={{
             startAdornment: <InputAdornment position="start">Мин.</InputAdornment>,
           }}

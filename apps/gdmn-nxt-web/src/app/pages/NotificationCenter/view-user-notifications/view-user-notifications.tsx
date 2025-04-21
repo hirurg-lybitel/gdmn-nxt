@@ -15,10 +15,37 @@ import UserSelect from '@gdmn-nxt/components/selectors/user-select';
 export interface ViewUserNotificationsProps {}
 
 export function ViewUserNotifications(props: ViewUserNotificationsProps) {
-  const [messages, setMessages] = useState<IMessage[]>([]);
+  const [messages1, setMessages] = useState<IMessage[]>([]);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const { data: users = [], isFetching: usersIsFetching } = useGetUsersQuery();
   const [socketClient, setsocketClient] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
+
+  const messages = [
+    {
+      id: '1',
+      date: new Date(),
+      title: 'Увед1 asd asdasdasd da ss dd saasd  asd asdasd sd aad sasd',
+      text: 'Тескт уедомления1',
+    },
+    {
+      id: '2',
+      date: new Date(),
+      title: 'Увед2',
+      text: 'Текст уведомления2',
+    },
+    {
+      id: '1',
+      date: new Date(),
+      title: 'Увед1',
+      text: 'Тескт уедомления1',
+    },
+    {
+      id: '2',
+      date: new Date(),
+      title: 'Увед2',
+      text: 'Текст уведомления2',
+    }
+  ];
 
   const handleUserChange = useCallback((e: any, value: IUser | IUser[] | null) => {
     setSelectedUser(value as IUser);
@@ -66,8 +93,8 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
   return (
     <CustomizedCard
       className={styles['item-card']}
+      sx={{ marginTop: '24px', minHeight: '350px' }}
       boxShadows
-
     >
       <Stack
         direction="column"
@@ -83,8 +110,12 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
             ? <Box style={{ alignSelf: 'center' }}>
               <CustomNoData />
             </Box>
-            : <CustomizedScrollBox>
-              <NotificationList messages={messages} />
+            : <CustomizedScrollBox
+              externalScrollLock
+              style={{ paddingRight: '-16px' }}
+              container={{ style: { marginRight: '-19px' } }}
+              >
+              <NotificationList messages={messages as any} />
             </CustomizedScrollBox>}
         </Box>
       </Stack>

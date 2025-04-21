@@ -12,11 +12,13 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: 'initial',
       borderRadius: '4px',
     },
-    '&:hover .actions': {
-      display: 'inline',
+    '& .actions': {
       position: 'absolute',
       right: 0,
       top: 0
+    },
+    '&:hover .actions': {
+      display: 'inline'
     }
   },
   listItemSelected: {
