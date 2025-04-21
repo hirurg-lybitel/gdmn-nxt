@@ -70,8 +70,6 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     window.removeEventListener(wheelEvent(mobile), preventDefault, false);
   };
 
-  console.log(container?.style);
-
   return (
     <div
       aria-label="CustomizedScrollBox"

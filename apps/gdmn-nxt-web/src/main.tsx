@@ -164,11 +164,11 @@ const Main = () => {
                               <Route path="reconciliation" element={<ReconciliationAct />} />
                               <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
                               <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
+                              <Route path="topEarning" element={<TopEarningPage />} />
                               <Route path="expectedreceipts" element={<ExpectedReceipts/>}/>
                               <Route path="expectedreceiptsdev" element={<ExpectedReceiptsDev/>}/>
                               <Route path="expenses" element={<Expenses/>}/>
                               <Route path="debts" element={<Debts/>}/>
-                              <Route path="topEarning" element={<TopEarningPage />} />
                             </Route>
                             <Route path="salesfunnel" element={<SalesFunnel />} />
                           </Route>

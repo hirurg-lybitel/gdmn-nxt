@@ -9,6 +9,7 @@ import { useGetCustomersQuery } from '../../../features/customer/customerApi_new
 import ScrollToTop from '../../../components/scroll-to-top/scroll-to-top';
 import { DateRange } from '@mui/x-date-pickers-pro';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 
 const filterOptions = createFilterOptions({
@@ -69,10 +70,14 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
   };
 
   return (
-    <Box flex="1">
-      <Stack direction="column" spacing={2}>
+    <Box flex="1" minWidth={0}>
+      <Stack
+        minWidth={0}
+        direction="column"
+        spacing={2}
+      >
         <CustomizedCard>
-          <CardHeader title={<Typography variant="pageHeader">Акт сверки</Typography>} />
+          <CustomCardHeader title={'Акт сверки'} />
           <Divider />
           <CardContent>
             <Grid
@@ -83,7 +88,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
               <Grid
                 item
                 md={6}
-                sx={{ width: 'calc(50% - 12px)' }}
+                sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)' } }}
               >
                 <CustomerSelect
                   value={customers?.find(customer => customer.ID === customerId) || null}
@@ -132,7 +137,7 @@ export const ReconciliationAct = (props: IReconciliationAct) => {
 
         {generate
           ? <CustomizedCard
-            sx={{ p: 2 }}
+            sx={{ p: 2, overflow: 'auto' }}
             >
             <ReconciliationStatement
               custId={Number(inputParams?.cutomerId)}

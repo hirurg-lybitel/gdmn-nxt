@@ -62,8 +62,8 @@ export function ExpensesReport({ data, isFetching }: Readonly<ExpensesReportProp
               <thead>
                 <tr className={styles.tableRow} style={{ borderTop: 'none' }}>
                   <th className={styles.noTopBorder}>Статья</th>
-                  <th className={styles.noTopBorder}>Сумма, руб</th>
-                  <th className={styles.noTopBorder}>Сумма, USD</th>
+                  <th className={styles.noTopBorder} style={{ textWrap: 'nowrap' }}>Сумма, руб</th>
+                  <th className={styles.noTopBorder} style={{ textWrap: 'nowrap' }}>Сумма, USD</th>
                   <th className={styles.noTopBorder}>%</th>
                 </tr>
               </thead>

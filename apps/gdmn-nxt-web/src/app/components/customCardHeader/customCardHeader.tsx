@@ -83,7 +83,7 @@ export default function CustomCardHeader(props: PageHeaderProps) {
     >
       <div style={{ width: '100%', display: 'flex', alignItems: 'center', minHeight: '34px' }}>
 
-        {title && <Typography style={{ textWrap: 'nowrap', marginRight: '8px' }} variant="pageHeader">{title}</Typography>}
+        {title && <Typography sx={{ textWrap: { sx: 'wrap', sm: 'nowrap' }, marginRight: '8px' }} variant="pageHeader">{title}</Typography>}
         {action && (
           <Box>
             {action}
