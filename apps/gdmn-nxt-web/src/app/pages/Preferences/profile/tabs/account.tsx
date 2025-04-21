@@ -1,6 +1,6 @@
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
-import { Box, Button, Stack, TextField } from '@mui/material';
+import { Box, Button, Stack, TextField, useMediaQuery, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { IProfileSettings } from '@gsbelarus/util-api-types';
@@ -40,19 +40,24 @@ export default function AccountTab() {
     formik.submitForm();
   };
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <FormikProvider value={formik}>
       <Form id="accountTabForm" onSubmit={formik.handleSubmit}>
         <Stack height={'100%'}>
-          <Stack direction="row" spacing={2}>
-            <EditableAvatar
-              size={120}
-              value={formik.values.AVATAR ?? ''}
-              onChange={handleAvatarChange}
-              loading={isLoading || updateIsLoading}
-            />
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <div>
+              <EditableAvatar
+                size={matchDownSm ? 100 : 120}
+                value={formik.values.AVATAR ?? ''}
+                onChange={handleAvatarChange}
+                loading={isLoading || updateIsLoading}
+              />
+            </div>
             <Stack spacing={2} flex={1}>
-              <Stack direction="row" spacing={2}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   label="Имя"
                   value={userProfile?.fullName || ''}

@@ -19,6 +19,7 @@ import NotificationsTab from './tabs/notifications';
 import LinkTab from '@gdmn-nxt/components/link-tab/link-tab';
 import TuneIcon from '@mui/icons-material/Tune';
 import OptionsTab from './tabs/options';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
 export interface ProfileProps {}
@@ -34,10 +35,10 @@ export function Profile(props: ProfileProps) {
   const location = useLocation();
   const tabDefault = location.pathname.split('/').at(-1) as TabIndex ?? 'account';
   const [tabIndex, setTabIndex] = useState<TabIndex>(tabDefault);
+
   useEffect(() => {
     setTabIndex(tabDefault as TabIndex);
   }, [tabDefault]);
-
 
   const handleTabsChange = (event: any, newindex: TabIndex) => {
     setTabIndex(newindex);
@@ -45,11 +46,16 @@ export function Profile(props: ProfileProps) {
 
   return (
     <CustomizedCard className={styles.mainCard}>
-      <CardHeader title={<Typography variant="pageHeader">Настройки</Typography>} />
+      <CustomCardHeader title={'Настройки'} />
       <Divider />
       <CardContent className={styles['card-content']}>
         <TabContext value={tabIndex}>
-          <TabList onChange={handleTabsChange} className={styles.tabHeaderRoot}>
+          <TabList
+            onChange={handleTabsChange}
+            className={styles.tabHeaderRoot}
+            scrollButtons="auto"
+            variant="scrollable"
+          >
             <LinkTab
               label="Профиль"
               value="account"

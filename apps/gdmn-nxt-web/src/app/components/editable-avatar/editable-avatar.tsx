@@ -65,7 +65,7 @@ export function EditableAvatar({
   }
 
   return (
-    <div className={styles.mainContainer} style={{ height: size }}>
+    <div className={styles.mainContainer} style={{ height: size, width: size }}>
       <Avatar
         className={styles.avatar}
         sx={{ width: size, height: size }}

@@ -1,7 +1,7 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -35,6 +35,9 @@ export default function SecurityTab() {
   const [disableOtp] = useDisableOtpMutation();
 
   const dispatch = useDispatch();
+
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const initValue: Partial<IProfileSettings> = {
     ENABLED_2FA: settings?.ENABLED_2FA ?? false,
@@ -205,9 +208,9 @@ export default function SecurityTab() {
             >
               <FormControlLabel
                 style={{
-                  width: '155px'
+                  width: matchDownSm ? undefined : '155px'
                 }}
-                label={<Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
+                label={matchDownSm ? undefined : <Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
                 disabled={formik.values.REQUIRED_2FA}
                 control={
                   <Switch
@@ -267,63 +270,70 @@ export default function SecurityTab() {
                       <Grid
                         container
                         alignItems="center"
-                        spacing={2}
                         sx={{ px: 2 }}
                       >
                         <Grid
+                          container
                           item
-                          xs={12}
-                          md={4}
+                          alignItems="center"
+                          xs={11.5}
+                          md={11.3}
+                          spacing={2}
                         >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            {getDeviceIcon(item.device?.os?.name ?? '')}
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: item.current ? 600 : 400 }}>
-                                {item.device?.os?.name ?? 'Не определено'}
-                                {item.current && (
-                                  <Typography
-                                    component="span"
-                                    variant="caption"
-                                    sx={{ ml: 1, color: 'primary.main' }}
-                                  >
+                          <Grid
+                            item
+                            xs={12}
+                            md={4}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              {getDeviceIcon(item.device?.os?.name ?? '')}
+                              <Box>
+                                <Typography variant="body2" sx={{ fontWeight: item.current ? 600 : 400 }}>
+                                  {item.device?.os?.name ?? 'Не определено'}
+                                  {item.current && (
+                                    <Typography
+                                      component="span"
+                                      variant="caption"
+                                      sx={{ ml: 1, color: 'primary.main' }}
+                                    >
                                     (текущая сессия)
-                                  </Typography>
-                                )}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {item.device?.browser?.name ?? 'Не определено'}
+                                    </Typography>
+                                  )}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {item.device?.browser?.name ?? 'Не определено'}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={4}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <LocationOnIcon fontSize="small" color="action" />
+                              <Typography variant="body2" color="text.secondary">
+                                {item.location ? `${item.location.city}, ${item.location.country}` : 'Местоположение неизвестно'}
                               </Typography>
                             </Box>
-                          </Box>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={4}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <AccessTimeIcon fontSize="small" color="action" />
+                              <Typography variant="body2" color="text.secondary">
+                                {date.format('DD.MM.YYYY HH:mm')}
+                              </Typography>
+                            </Box>
+                          </Grid>
                         </Grid>
                         <Grid
-                          item
-                          xs={12}
-                          md={3}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <LocationOnIcon fontSize="small" color="action" />
-                            <Typography variant="body2" color="text.secondary">
-                              {item.location ? `${item.location.city}, ${item.location.country}` : 'Местоположение неизвестно'}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid
-                          item
-                          xs={12}
-                          md={3}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <AccessTimeIcon fontSize="small" color="action" />
-                            <Typography variant="body2" color="text.secondary">
-                              {date.format('DD.MM.YYYY HH:mm')}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid
-                          item
-                          xs={12}
-                          md={2}
+                          xs={0.5}
+                          md={0.7}
                           sx={{ display: 'flex', justifyContent: 'flex-end' }}
                         >
                           {!item.current && (
