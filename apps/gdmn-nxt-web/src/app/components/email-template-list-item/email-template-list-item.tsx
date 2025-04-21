@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Typography, useMediaQuery } from '@mui/material';
 import ReactHtmlParser from 'react-html-parser';
 import { useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -24,6 +24,8 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
     onOpen && onOpen(template);
   };
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <div
       onMouseLeave={() => setShow(false)}
@@ -38,7 +40,7 @@ const EmailTemplateListItem = (props: EmailTemplateListItemProps) => {
         </div>
         <Box flex={1}/>
         {editable &&
-          <div style={{ position: 'absolute', right: 5, top: 5, visibility: show ? 'visible' : 'hidden' }}>
+          <div style={{ position: 'absolute', right: 5, top: 5, visibility: (show || mobile) ? 'visible' : 'hidden' }}>
             <IconButton onClick={editClick(template)} size="small"><EditIcon /></IconButton>
           </div>
         }

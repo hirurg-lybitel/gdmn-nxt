@@ -42,7 +42,7 @@ export const columns: {default: Columns<IActCompletion>, mobile: Columns<IActCom
   mobile: {
     [ContractType.GS]: [
       { field: 'NUMBER', headerName: 'Номер', minWidth: 150 },
-      { field: 'DOCUMENTDATE', headerName: 'Дата', width: 130, minWidth: 130,
+      { field: 'DOCUMENTDATE', headerName: 'Дата', width: 130,
         type: 'date',
         renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }),
       },
@@ -56,7 +56,7 @@ export const columns: {default: Columns<IActCompletion>, mobile: Columns<IActCom
     ],
     [ContractType.BG]: [
       { field: 'NUMBER', headerName: 'Номер', minWidth: 150 },
-      { field: 'DOCUMENTDATE', headerName: 'Дата', width: 130, minWidth: 130,
+      { field: 'DOCUMENTDATE', headerName: 'Дата', width: 130,
         type: 'date',
         renderCell: ({ value }) => value.toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }),
       },

@@ -24,6 +24,7 @@ import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes
 import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 export interface SegmentUpsertProps {
   segment?: ISegment;
@@ -143,7 +144,6 @@ export function SegmentUpsert({
   };
 
   const onClose = () => {
-    setConfirmOpen(false);
     onCancel();
     formik.resetForm();
   };
@@ -169,21 +169,6 @@ export function SegmentUpsert({
     };
   }, [formik.values, segment]);
 
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const handleCancel = () => {
-    setConfirmOpen(false);
-  };
-
-  const handleCancelClick = () => {
-    if (formik.dirty) {
-      setConfirmOpen(true);
-      return;
-    }
-    onClose();
-  };
-
   const handleAutocompleteChange = useCallback((fieldName: string) => (e: any, value: any) => {
     formik.setFieldValue(fieldName, value);
 
@@ -194,144 +179,110 @@ export function SegmentUpsert({
     formik.setFieldValue('CUSTOMERS', []);
   }, []);
 
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={'Внимание'}
-      text={'Изменения будут утеряны. Продолжить?'}
-      confirmClick={onClose}
-      cancelClick={handleCancel}
-    />,
-  [confirmOpen, handleCancel]);
-
   return (
-    <>
+    <EditDialog
+      open={open}
+      onClose={onClose}
+      form="segmentForm"
+      title={segment ? `Редактирование: ${segment.NAME}` : 'Добавление нового сегмента'}
+      confirmation={formik.dirty}
 
-      <CustomizedDialog
-        open={open}
-        onClose={handleCancelClick}
-        width="calc(100% - var(--menu-width))"
-      >
-        <DialogTitle>
-          {segment ? `Редактирование: ${segment.NAME}` : 'Добавление нового сегмента'}
-        </DialogTitle>
-        <DialogContent dividers>
-          <FormikProvider value={formik}>
-            <Form
-              id="segmentForm"
-              onSubmit={formik.handleSubmit}
+      deleteButton={!!segment}
+      onDeleteClick={handleDeleteClick}
+    >
+      <FormikProvider value={formik}>
+        <Form
+          id="segmentForm"
+          onSubmit={formik.handleSubmit}
+        >
+          <Stack spacing={2}>
+            <TextField
+              autoFocus
+              label="Наименование"
+              name="NAME"
+              value={formik.values.NAME}
+              onChange={formik.handleChange}
+              error={formik.touched.NAME && Boolean(formik.errors.NAME)}
+              helperText={formik.touched.NAME && formik.errors.NAME}
+            />
+            <Accordion
+              sx={{
+                '& .MuiButtonBase-root': {
+                  padding: 0,
+                  marginLeft: '12px',
+                },
+                '& .MuiAccordionDetails-root': {
+                  paddingRight: 0, paddingLeft: 0
+                },
+                '&:before': { height: '0px' }
+              }}
+              defaultExpanded
             >
-              <Stack spacing={2}>
-                <TextField
-                  autoFocus
-                  label="Наименование"
-                  name="NAME"
-                  value={formik.values.NAME}
-                  onChange={formik.handleChange}
-                  error={formik.touched.NAME && Boolean(formik.errors.NAME)}
-                  helperText={formik.touched.NAME && formik.errors.NAME}
-                />
-                <Accordion
-                  sx={{
-                    '& .MuiButtonBase-root': {
-                      padding: 0,
-                      marginLeft: '12px',
-                    },
-                    '& .MuiAccordionDetails-root': {
-                      paddingRight: 0, paddingLeft: 0
-                    },
-                    '&:before': { height: '0px' }
-                  }}
-                  defaultExpanded
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                  >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+              >
                     Список полей для фильтрации клиентов
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Stack spacing={2}>
-                      <Box>
-                        <DepartmentsSelect
-                          multiple
-                          limitTags={2}
-                          value={formik.values.DEPARTMENTS}
-                          onChange={(value) => handleAutocompleteChange('DEPARTMENTS')({}, value)}
-                          disableCloseOnSelect
-                        />
-                      </Box>
-                      <Box>
-                        <ContractsSelect
-                          multiple
-                          limitTags={2}
-                          disableCloseOnSelect
-                          onChange={(value) => handleAutocompleteChange('CUSTOMERCONTRACTS')({}, value)}
-                          value={formik.values.CUSTOMERCONTRACTS}
-                        />
-                      </Box>
-                      <Box>
-                        <WorktypesSelect
-                          multiple
-                          limitTags={2}
-                          disableCloseOnSelect
-                          onChange={(value) => handleAutocompleteChange('WORKTYPES')({}, value)}
-                          value={formik.values.WORKTYPES}
-                        />
-                      </Box>
-                      <LabelsSelect
-                        labels={formik.values.LABELS}
-                        onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="end">
-                              <TagIcon />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                      <BusinessProcessesSelect
-                        value={formik.values.BUSINESSPROCESSES ?? null}
-                        onChange={value => handleAutocompleteChange('BUSINESSPROCESSES')({}, value)}
-                        multiple
-                        limitTags={2}
-                        disableCloseOnSelect
-                      />
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-                <CustomerSelect
-                  value={formik.values.CUSTOMERS}
-                  disableCloseOnSelect
-                  multiple
-                  limitTags={2}
-                  onChange={value => handleAutocompleteChange('CUSTOMERS')({}, value)}
-                />
-              </Stack>
-            </Form>
-          </FormikProvider>
-        </DialogContent>
-        <DialogActions>
-          {segment && <ItemButtonDelete onClick={handleDeleteClick} button />}
-          <Box flex={1}/>
-          <Button
-            className="DialogButton"
-            onClick={handleCancelClick}
-            variant="outlined"
-            color="primary"
-          >
-                Отменить
-          </Button>
-          <Button
-            variant="contained"
-            form="segmentForm"
-            type="submit"
-            className="DialogButton"
-          >
-                Сохранить
-          </Button>
-        </DialogActions>
-      </CustomizedDialog>
-      {memoConfirmDialog}
-    </>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Stack spacing={2}>
+                  <Box>
+                    <DepartmentsSelect
+                      multiple
+                      limitTags={2}
+                      value={formik.values.DEPARTMENTS}
+                      onChange={(value) => handleAutocompleteChange('DEPARTMENTS')({}, value)}
+                      disableCloseOnSelect
+                    />
+                  </Box>
+                  <Box>
+                    <ContractsSelect
+                      multiple
+                      limitTags={2}
+                      disableCloseOnSelect
+                      onChange={(value) => handleAutocompleteChange('CUSTOMERCONTRACTS')({}, value)}
+                      value={formik.values.CUSTOMERCONTRACTS}
+                    />
+                  </Box>
+                  <Box>
+                    <WorktypesSelect
+                      multiple
+                      limitTags={2}
+                      disableCloseOnSelect
+                      onChange={(value) => handleAutocompleteChange('WORKTYPES')({}, value)}
+                      value={formik.values.WORKTYPES}
+                    />
+                  </Box>
+                  <LabelsSelect
+                    labels={formik.values.LABELS}
+                    onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="end">
+                          <TagIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  <BusinessProcessesSelect
+                    value={formik.values.BUSINESSPROCESSES ?? null}
+                    onChange={value => handleAutocompleteChange('BUSINESSPROCESSES')({}, value)}
+                    multiple
+                    limitTags={2}
+                    disableCloseOnSelect
+                  />
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
+            <CustomerSelect
+              value={formik.values.CUSTOMERS}
+              disableCloseOnSelect
+              multiple
+              limitTags={2}
+              onChange={value => handleAutocompleteChange('CUSTOMERS')({}, value)}
+            />
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 };

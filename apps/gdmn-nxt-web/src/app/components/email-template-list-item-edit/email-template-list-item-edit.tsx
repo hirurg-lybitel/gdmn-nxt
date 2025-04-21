@@ -9,6 +9,7 @@ import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-del
 import { ErrorTooltip } from '@gdmn-nxt/components/Styled/error-tooltip/error-tooltip';
 import { ITemplate } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
+import EditDialog from '../edit-dialog/edit-dialog';
 
 interface EmailTemplateListItemEditProps {
   template?: ITemplate,
@@ -120,16 +121,17 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
 
   return (
     <>
-      <CustomizedDialog
+      <EditDialog
         open={open}
         onClose={handleCancel}
-        disableEscape
-        width="calc(100% - var(--menu-width))"
+        title={!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateOld.NAME}
+        fullwidth
+        onSubmitClick={handleSubmitClick}
+
+        onDeleteClick={() => handeSubmit(true)}
+        deleteButton={!!templateOld}
       >
-        <DialogTitle style={{ display: 'flex' }}>
-          {!templateOld ? 'Создание шаблона' : 'Редактирование шаблона: ' + templateOld.NAME}
-        </DialogTitle>
-        <DialogContent dividers>
+        <div>
           <ErrorTooltip
             open={!!error}
             title={error}
@@ -148,31 +150,8 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
               onChange={setTemplate}
             />
           </div>
-        </DialogContent>
-        <DialogActions>
-          {templateOld &&
-          <ItemButtonDelete
-            button
-            onClick={() => handeSubmit(true)}
-          />}
-          <Box flex={1}/>
-          <Button
-            onClick={handleCancel}
-            variant="outlined"
-            color="primary"
-            className="DialogButton"
-          >
-             Отменить
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmitClick}
-            className="DialogButton"
-          >
-            Сохранить
-          </Button>
-        </DialogActions>
-      </CustomizedDialog>
+        </div>
+      </EditDialog>
       {memoConfirmDialog}
     </>
   );

@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { IContactPerson, ILabel, IPaginationData } from '@gsbelarus/util-api-types';
 import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { ButtonBaseProps, Avatar, Box, Divider, IconButton, List, ListItemButton, Stack, TablePagination, Tooltip, TooltipProps, Typography, tooltipClasses, useMediaQuery, useTheme } from '@mui/material';
+import { ButtonBaseProps, Avatar, Box, Divider, IconButton, List, ListItemButton, Stack, Tooltip, TooltipProps, Typography, tooltipClasses, useMediaQuery, useTheme } from '@mui/material';
 import { socialMedia } from '@gdmn-nxt/components/social-media-input';
 import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
@@ -20,6 +20,7 @@ import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { styled } from '@mui/styles';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { parseToMessengerLink } from '@gdmn-nxt/components/social-media-input/parseToLink';
+import CustomTablePagination from '@gdmn-nxt/components/CustomTablePagination/CustomTablePagination';
 
 interface CardLabelsProps {
   labels: ILabel[];
@@ -482,8 +483,6 @@ export function ContactCards({
     paginationClick({ ...paginationData, pageNo: newPage });
   };
 
-  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
-
   return (
     <div className={`container ${styles['container']}`}>
       {contacts?.length === 0
@@ -500,9 +499,9 @@ export function ContactCards({
           </CustomizedScrollBox>
           <Divider />
           <div className={styles.footer}>
-            <TablePagination
+            <CustomTablePagination
               component="div"
-              labelRowsPerPage={matchDownSm ? '' : 'Карточек на странице:'}
+              labelRowsPerPage={'Карточек на странице:'}
               count={contactsCount}
               page={paginationData.pageNo}
               rowsPerPageOptions={pageOptions}

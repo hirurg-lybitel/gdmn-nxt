@@ -122,7 +122,7 @@ export default function Mailing() {
 
   const columns: GridColDef<IMailing>[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 200 },
-    { field: 'STARTDATE', headerName: 'Дата запуска', width: 180,
+    { field: 'STARTDATE', headerName: 'Дата запуска', width: 180, minWidth: 200,
       valueFormatter: ({ value }) => dayjs(value).isValid() ? dayjs(value).format('MMM DD, YYYY HH:mm') : ''
     },
     { field: 'STATUS', headerName: 'Статус', width: 170,

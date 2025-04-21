@@ -99,20 +99,20 @@ export const columns: {default: Columns<IContract>, mobile: Columns<IContract>} 
           );
         },
       },
-      { field: 'DOCUMENTDATE', headerName: 'Дата', width: 120, minWidth: 120, type: 'date', disableColumnMenu: true,
+      { field: 'DOCUMENTDATE', headerName: 'Дата', width: 120, type: 'date', disableColumnMenu: true,
         valueFormatter: (params) => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
       },
       { field: 'DATEBEGIN', headerName: 'Начала', width: 130, type: 'date', disableColumnMenu: true,
         valueFormatter: ({ value }) => value ? new Date(value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }) : null
       },
-      { field: 'DATEEND', headerName: 'Окончание', width: 150, minWidth: 150, type: 'date', disableColumnMenu: true,
+      { field: 'DATEEND', headerName: 'Окончание', width: 150, type: 'date', disableColumnMenu: true,
         valueFormatter: ({ value }) => value ? new Date(value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' }) : null
       },
       { field: 'SUMNCU', headerName: 'Сумма', width: 120, align: 'right', disableColumnMenu: true,
         valueFormatter: ({ value }) => value > 0 ? (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '' },
-      { field: 'SUMCURNCU', headerName: 'Сумма вал.', width: 150, minWidth: 150, align: 'right', disableColumnMenu: true,
+      { field: 'SUMCURNCU', headerName: 'Сумма вал.', width: 150, align: 'right', disableColumnMenu: true,
         valueFormatter: ({ value }) => value > 0 ? (Math.round(value * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '' },
-      { field: 'ISACTIVE', headerName: 'Действующий', type: 'boolean', width: 170, minWidth: 170, resizable: false, sortable: false },
+      { field: 'ISACTIVE', headerName: 'Действующий', type: 'boolean', width: 170, resizable: false, sortable: false },
     ],
     [ContractType.BG]: [
       { field: 'NUMBER', headerName: 'Клиент', minWidth: 250, flex: 1, disableColumnMenu: true,
@@ -134,14 +134,14 @@ export const columns: {default: Columns<IContract>, mobile: Columns<IContract>} 
       { field: 'DATEEND', headerName: 'Окончание', width: 130, type: 'date', disableColumnMenu: true,
         valueFormatter: (params) => new Date(params?.value).toLocaleString('default', { day: '2-digit', month: '2-digit', year: '2-digit' })
       },
-      { field: 'DEPT_NAME', headerName: 'Отдел', width: 140, minWidth: 140 },
-      { field: 'JOB_NUMBER', headerName: 'Заказ', width: 140, minWidth: 140 },
-      { field: 'SUMNCU', headerName: 'Сумма', width: 140, minWidth: 140, align: 'right',
+      { field: 'DEPT_NAME', headerName: 'Отдел', width: 140 },
+      { field: 'JOB_NUMBER', headerName: 'Заказ', width: 140 },
+      { field: 'SUMNCU', headerName: 'Сумма', width: 140, align: 'right',
         renderCell: ({ value }) => (Math.round(Number(value) * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-      { field: 'SUMCURNCU', headerName: 'Сумма вал.', width: 170, minWidth: 170, align: 'right',
+      { field: 'SUMCURNCU', headerName: 'Сумма вал.', width: 170, align: 'right',
         renderCell: ({ value }) => (Math.round((Number(value) * 100)) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
       { field: 'ISACTIVE', headerName: 'Действующий', type: 'boolean', width: 140, resizable: false },
-      { field: 'ISBUDGET', headerName: 'Бюджетный', type: 'boolean', width: 180, minWidth: 180 },
+      { field: 'ISBUDGET', headerName: 'Бюджетный', type: 'boolean', width: 180 },
     ]
   }
 };

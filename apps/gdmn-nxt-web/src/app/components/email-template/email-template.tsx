@@ -389,8 +389,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
 
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [scroll, setScroll] = useState(true);
-
   const mobile = useMediaQuery('(pointer: coarse)');
 
   const onDragStart = (id: number) => () => {
