@@ -1,4 +1,4 @@
-import { Box, Button, CardContent, CardHeader, Divider, List, ListItem, ListItemText, Skeleton, Stack, Theme, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, ClickAwayListener, Divider, IconButton, List, ListItem, ListItemText, Skeleton, Stack, Theme, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -12,7 +12,10 @@ import AddIcon from '@mui/icons-material/Add';
 import { GroupList } from './groupList';
 import UserGroupEdit from '../../../components/Permissions/user-group-edit/user-group-edit';
 import UserGroupLineEdit from '../../../components/Permissions/user-group-line-edit/user-group-line-edit';
-
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const ItemGroupSkeleton = () => {
   return (
@@ -114,92 +117,133 @@ export function UserGroups(props: UserGroupsProps) {
     <Users group={userGroups?.find(ug => ug.ID === selectedUserGroup?.ID)}/>,
   [selectedUserGroup, userGroups]);
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [open, setOpen] = useState(true);
+
+  const groupList = useMemo(() => {
+    return (
+      <Stack
+        sx={matchDownSm ? {
+          position: 'absolute',
+          background: 'var(--color-paper-bg)',
+          zIndex: 1300,
+          bottom: 0,
+          top: 0,
+          left: open ? 0 : '-272px',
+          transition: '0.3s'
+        } : undefined}
+        borderRight={'1px solid var(--color-grid-borders)'}
+        flex={0.3}
+        minWidth={250}
+        p={2}
+        paddingRight={0}
+        spacing={2}
+      >
+        <Stack direction="row" marginRight={'16px !important'}>
+          {!matchDownSm && <Box flex={1} />}
+          <Button
+            variant="contained"
+            disabled={userGroupsLoading}
+            startIcon={<AddIcon fontSize="large" />}
+            onClick={userGroupHandlers.handleAdd}
+          >
+            Группа
+          </Button>
+          {matchDownSm && <>
+            <Box flex={1} />
+            <IconButton size="small" onClick={() => setOpen(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton >
+          </>}
+        </Stack>
+        <div style={{ marginRight: '16px' }}>
+          <SearchBar
+            disabled={userGroupsLoading}
+            onCancelSearch={filterHandlers.handleCancelSearch}
+            onChange={filterHandlers.handleRequestSearch}
+            cancelOnEscape
+            fullWidth
+            placeholder="Поиск группы"
+          />
+        </div>
+        <CustomizedScrollBox
+          style={{
+            paddingRight: 15
+          }}
+        >
+          {userGroupsLoading
+            ? [...Array(4)].map((el, idx) =>
+              <div key={idx}>
+                {idx !== 0 ? <Divider /> : <></>}
+                <ItemGroupSkeleton />
+              </div>)
+            : <GroupList
+              groups={
+                userGroups?.filter(group => group.NAME.toUpperCase().includes(searchName.toUpperCase()))
+                    || []
+              }
+              setSelectedUserGroup={setSelectedUserGroup}
+              selectedUserGroup={selectedUserGroup!}
+              onEdit={userGroupHandlers.handleOnEdit}
+              />}
+        </CustomizedScrollBox>
+        <UserGroupEdit
+          open={openEditUserGroupForm}
+          userGroup={userGroups?.find(ug => ug.ID === selectedUserGroup?.ID)}
+          onSubmit={userGroupHandlers.handleOnSubmit}
+          onCancel={userGroupHandlers.handleCancel}
+          onClose={userGroupHandlers.handleClose}
+        />
+        <UserGroupEdit
+          open={openAddUserGroupForm}
+          onSubmit={userGroupHandlers.handleOnSubmit}
+          onCancel={userGroupHandlers.handleCancel}
+          onClose={userGroupHandlers.handleClose}
+        />
+      </Stack>
+    );
+  }, [filterHandlers.handleCancelSearch, filterHandlers.handleRequestSearch, matchDownSm, open, openAddUserGroupForm, openEditUserGroupForm, searchName, selectedUserGroup, userGroupHandlers.handleAdd, userGroupHandlers.handleCancel, userGroupHandlers.handleClose, userGroupHandlers.handleOnEdit, userGroupHandlers.handleOnSubmit, userGroups, userGroupsLoading]);
+
   return (
     <CustomizedCard
       style={{
         flex: 1,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column'
       }}
     >
-      <CardHeader title={<Typography variant="pageHeader">Группы пользователей</Typography>} />
+      <CustomCardHeader title={'Группы пользователей'} />
       <Divider />
       <CardContent
         style={{
           flex: 1,
           display: 'flex',
-          padding: 0,
+          padding: 0
         }}
       >
-        <Stack direction="row" flex={1}>
-          <Stack
-            flex={0.3}
-            p={2}
-            spacing={2}
-          >
-            <Stack direction="row">
-              <Box flex={1} />
-              <Button
-                variant="contained"
-                disabled={userGroupsLoading}
-                startIcon={<AddIcon fontSize="large" />}
-                onClick={userGroupHandlers.handleAdd}
-              >
-                Группа
-              </Button>
-            </Stack>
-            <SearchBar
-              disabled={userGroupsLoading}
-              onCancelSearch={filterHandlers.handleCancelSearch}
-              onChange={filterHandlers.handleRequestSearch}
-              cancelOnEscape
-              fullWidth
-              placeholder="Поиск группы"
-            />
-            <PerfectScrollbar
-              style={{
-                maxHeight: 'calc(100vh - 230px)',
-                marginRight: -15,
-                paddingRight: 15
-              }}
-            >
-              {userGroupsLoading
-                ? [...Array(4)].map((el, idx) =>
-                  <div key={idx}>
-                    {idx !== 0 ? <Divider /> : <></>}
-                    <ItemGroupSkeleton />
-                  </div>)
-                : <GroupList
-                  groups={
-                    userGroups?.filter(group => group.NAME.toUpperCase().includes(searchName.toUpperCase()))
-                    || []
-                  }
-                  setSelectedUserGroup={setSelectedUserGroup}
-                  selectedUserGroup={selectedUserGroup!}
-                  onEdit={userGroupHandlers.handleOnEdit}
-                />}
-            </PerfectScrollbar>
-            <UserGroupEdit
-              open={openEditUserGroupForm}
-              userGroup={userGroups?.find(ug => ug.ID === selectedUserGroup?.ID)}
-              onSubmit={userGroupHandlers.handleOnSubmit}
-              onCancel={userGroupHandlers.handleCancel}
-              onClose={userGroupHandlers.handleClose}
-            />
-            <UserGroupEdit
-              open={openAddUserGroupForm}
-              onSubmit={userGroupHandlers.handleOnSubmit}
-              onCancel={userGroupHandlers.handleCancel}
-              onClose={userGroupHandlers.handleClose}
-            />
-          </Stack>
-          <Divider orientation="vertical" flexItem />
+        <Stack
+          direction="row"
+          flex={1}
+          position={'relative'}
+        >
+          {!matchDownSm && groupList}
           <Stack
             flex={1}
             p={2}
             spacing={2}
           >
+
             <Stack direction="row">
+              {matchDownSm && <ClickAwayListener onClickAway={() => matchDownSm && setOpen(false)}>
+                <div>
+                  {groupList}
+                  <IconButton onClick={() => setOpen(true)}>
+                    <MenuIcon />
+                  </IconButton>
+                </div>
+              </ClickAwayListener>}
               <Box flex={1} />
               <Button
                 variant="contained"

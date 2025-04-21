@@ -64,6 +64,7 @@ export function Users(props: IUsersProps) {
       field: 'CONTACT',
       headerName: 'Сотрудник',
       flex: 1,
+      minWidth: 250,
       sortComparator: (a, b) => ('' + a.NAME).localeCompare(b.NAME),
       renderCell({ row }) {
         const value = row.USER?.CONTACT;
@@ -88,7 +89,7 @@ export function Users(props: IUsersProps) {
       field: 'NAME', headerName: 'Логин', minWidth: 140,
       valueGetter: ({ row }) => row.USER?.NAME,
     },
-    { field: 'isActivated', headerName: 'Активирован', resizable: false, type: 'boolean', width: 150,
+    { field: 'isActivated', headerName: 'Активирован', resizable: false, type: 'boolean', width: 200,
       valueGetter: (params) => params.row.USER?.isActivated ?? false
     },
     { field: 'status', headerName: '', width: 60, resizable: false, disableColumnMenu: true, sortable: false,
@@ -102,7 +103,7 @@ export function Users(props: IUsersProps) {
           </div>
         </Tooltip>
     },
-    { field: 'REQUIRED_2FA', headerName: '2FA', width: 70, resizable: false,
+    { field: 'REQUIRED_2FA', headerName: '2FA', width: 80, type: 'actions', resizable: false,
       renderCell: ({ value = false, row }) =>
         <Tooltip
           arrow
@@ -119,6 +120,7 @@ export function Users(props: IUsersProps) {
     {
       field: 'ACTIONS',
       headerName: '',
+      type: 'actions',
       resizable: false,
       width: 50,
       align: 'center',

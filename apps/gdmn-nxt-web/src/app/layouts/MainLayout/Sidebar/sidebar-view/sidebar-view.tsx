@@ -27,7 +27,7 @@ export function Sidebar(props: SidebarProps) {
       <BrowserView style={{ position: 'relative', flex: 1 }}>
         <MenuList />
       </BrowserView>
-      <MobileView style={{ position: 'relative', flex: 1 }}>
+      <MobileView style={{ position: 'relative', flex: 1, zIndex: 1500 }}>
         <MenuList onItemClick={menuItemClick} />
       </MobileView>
     </>
@@ -57,10 +57,11 @@ export function Sidebar(props: SidebarProps) {
         anchor="left"
         ModalProps={{ keepMounted: true }}
         sx={{
+          zIndex: '1500',
           '& .MuiDrawer-paper': {
             ...theme.menu,
             width: theme.drawerWidth,
-            borderRight: 'none',
+            borderRight: 'none'
           }
         }}
       >

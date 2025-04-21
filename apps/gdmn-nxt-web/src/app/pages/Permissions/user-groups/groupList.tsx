@@ -1,5 +1,5 @@
 import { IUserGroup } from '@gsbelarus/util-api-types';
-import { IconButton, List, ListItem, ListItemText, Theme, Typography } from '@mui/material';
+import { IconButton, List, ListItem, ListItemText, Theme, Typography, useMediaQuery } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Dispatch, SetStateAction } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -48,6 +48,8 @@ export const GroupList = (props: IGroupList) => {
     setSelectedUserGroup && setSelectedUserGroup(group);
   };
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return <List>
     {groups.map(group =>
       <ListItem
@@ -68,7 +70,7 @@ export const GroupList = (props: IGroupList) => {
           <Typography variant="caption" className="caption">{group.DESCRIPTION}</Typography>
           <div
             className="actions"
-            hidden
+            hidden={!mobile}
           >
             <IconButton size="small" onClick={onEdit(group)}>
               <EditIcon fontSize="small" color="primary" />
