@@ -102,6 +102,8 @@ export default function FAQ() {
 
   const classes = useStyles();
 
+  const buttons = userPermissions?.faq.PUT || userPermissions?.faq.DELETE;
+
   return (
     <>
       {!componentIsFetching &&
@@ -153,6 +155,14 @@ export default function FAQ() {
                     >
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
+                        sx={{
+                          '& .MuiAccordionSummary-content': {
+                            marginTop: buttons ? { xs: '25px', sm: '12px' } : {},
+                          },
+                          '& .MuiAccordionSummary-expandIconWrapper': {
+                            marginTop: buttons ? { xs: '12.5px', sm: '0px' } : {},
+                          }
+                        }}
                       >
                         <Stack
                           direction={{ xs: 'column', sm: 'row' }}
@@ -166,7 +176,17 @@ export default function FAQ() {
                           </Typography>
                           <Box flex={1} />
                           {!componentIsFetching &&
-                            <Box sx={{ display: 'flex', gap: '5px', marginRight: '5px', marginLeft: { xs: 0, sm: '10px' } }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                gap: '5px',
+                                marginRight: '5px',
+                                marginLeft: { xs: 0, sm: '10px' },
+                                position: { xs: 'absolute', sm: 'initial' },
+                                right: '6px',
+                                top: '5px'
+                              }}
+                            >
                               <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
                                 <ItemButtonEdit
                                   button
