@@ -81,7 +81,7 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
       <DialogTitle sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {title}
       </DialogTitle>
-      <DialogContent dividers style={{ display: 'grid', background: 'rgb(34 26 41)' }}>
+      <DialogContent dividers style={{ display: 'grid' }}>
         {children}
       </DialogContent>
       <DialogActions>
