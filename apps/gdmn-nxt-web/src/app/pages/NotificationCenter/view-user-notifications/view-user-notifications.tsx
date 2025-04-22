@@ -15,37 +15,10 @@ import UserSelect from '@gdmn-nxt/components/selectors/user-select';
 export interface ViewUserNotificationsProps {}
 
 export function ViewUserNotifications(props: ViewUserNotificationsProps) {
-  const [messages1, setMessages] = useState<IMessage[]>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const { data: users = [], isFetching: usersIsFetching } = useGetUsersQuery();
   const [socketClient, setsocketClient] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>();
-
-  const messages = [
-    {
-      id: '1',
-      date: new Date(),
-      title: 'Увед1 asd asdasdasd da ss dd saasd  asd asdasd sd aad sasd',
-      text: 'Тескт уедомления1',
-    },
-    {
-      id: '2',
-      date: new Date(),
-      title: 'Увед2',
-      text: 'Текст уведомления2',
-    },
-    {
-      id: '1',
-      date: new Date(),
-      title: 'Увед1',
-      text: 'Тескт уедомления1',
-    },
-    {
-      id: '2',
-      date: new Date(),
-      title: 'Увед2',
-      text: 'Текст уведомления2',
-    }
-  ];
 
   const handleUserChange = useCallback((e: any, value: IUser | IUser[] | null) => {
     setSelectedUser(value as IUser);

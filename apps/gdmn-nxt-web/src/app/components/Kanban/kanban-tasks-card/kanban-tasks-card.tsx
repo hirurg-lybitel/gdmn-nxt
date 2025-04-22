@@ -109,6 +109,7 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
         onDoubleClick={doubleClick}
         onClick={mobile ? onCardClick : undefined}
         style={{
+          touchAction: 'manipulation',
           backgroundColor: 'var(--color-card-bg)',
           padding: '12px',
           cursor: 'pointer',

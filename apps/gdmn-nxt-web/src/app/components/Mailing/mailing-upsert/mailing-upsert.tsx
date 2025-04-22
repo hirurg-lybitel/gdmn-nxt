@@ -11,7 +11,7 @@ import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
+import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
@@ -325,6 +325,7 @@ export function MailingUpsert({
         : 'Создание новой рассылки'}
       deleteButton={formik.values.ID > 0 && userPermissions?.mailings.DELETE}
       deleteConfirmText={`Вы действительно хотите удалить рассылку ${mailing?.NAME}?`}
+      onDeleteClick={onDelete}
     >
       <FormikProvider value={formik}>
         <Form
@@ -457,7 +458,7 @@ export function MailingUpsert({
                 ))}
               </TextField>
               {selectedSendType?.id === 3 &&
-                <DesktopDateTimePicker
+                <DateTimePicker
                   name="LAUNCHDATE"
                   label="Дата запуска"
                   value={formik.values.LAUNCHDATE ? new Date(formik.values.LAUNCHDATE) : null}

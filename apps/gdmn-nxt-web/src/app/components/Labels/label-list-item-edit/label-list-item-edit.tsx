@@ -104,7 +104,11 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
       confirmation={formik.dirty}
     >
       <FormikProvider value={formik}>
-        <Form id="mainForm" onSubmit={formik.handleSubmit}>
+        <Form
+          style={{ minWidth: 0 }}
+          id="mainForm"
+          onSubmit={formik.handleSubmit}
+        >
           <Stack direction="column" spacing={2}>
             <Stack
               direction="row"

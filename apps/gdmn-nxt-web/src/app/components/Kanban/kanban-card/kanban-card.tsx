@@ -250,6 +250,7 @@ export function KanbanCard(props: KanbanCardProps) {
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
+          touchAction: 'manipulation',
           backgroundColor: 'var(--color-card-bg)',
           ...(card?.STATUS &&
             'isRead' in (card?.STATUS ?? {}) &&

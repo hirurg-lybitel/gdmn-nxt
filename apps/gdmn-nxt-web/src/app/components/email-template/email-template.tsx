@@ -396,6 +396,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
     handleChangeAllowChangePrimary(false)();
   };
 
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDown380 = useMediaQuery('(max-width:400px)');
+
   return (
     <div
       style={{
@@ -433,7 +436,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
               )}
               <div style={{ paddingRight: '5px', display: 'flex', marginLeft: '10px' }}>
                 {tabIndex === '2' && <>
-                  <Tooltip title={'Компьютер'}>
+                  {!matchDownSm && <Tooltip title={'Компьютер'}>
                     <IconButton
                       style={{ marginRight: '5px' }}
                       color={previewMode === '700px' ? 'primary' : 'default'}
@@ -443,28 +446,31 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     >
                       <ComputerIcon/>
                     </IconButton>
-                  </Tooltip>
-                  <Tooltip title={'Планшет'}>
-                    <IconButton
-                      style={{ marginRight: '5px' }}
-                      color={previewMode === '500px' ? 'primary' : 'default'}
-                      onClick={() => {
-                        setPreviewmode('500px');
-                      }}
-                    >
-                      <TabletIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={'Телефон'}>
-                    <IconButton
-                      color={previewMode === '300px' ? 'primary' : 'default'}
-                      onClick={() => {
-                        setPreviewmode('300px');
-                      }}
-                    >
-                      <PhoneAndroidIcon/>
-                    </IconButton>
-                  </Tooltip>
+                  </Tooltip>}
+                  {!matchDown380 && <>
+                    <Tooltip title={'Планшет'}>
+                      <IconButton
+                        style={{ marginRight: '5px' }}
+                        color={previewMode === '500px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('500px');
+                        }}
+                      >
+                        <TabletIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={'Телефон'}>
+                      <IconButton
+                        color={previewMode === '300px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('300px');
+                        }}
+                      >
+                        <PhoneAndroidIcon/>
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                  }
                 </>}
               </div>
             </div>

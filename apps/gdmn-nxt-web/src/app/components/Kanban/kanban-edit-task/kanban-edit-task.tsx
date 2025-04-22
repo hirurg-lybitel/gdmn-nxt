@@ -7,7 +7,6 @@ import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers-pro';
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useAddTaskMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import filterOptions from '@gdmn-nxt/helpers/filter-options';

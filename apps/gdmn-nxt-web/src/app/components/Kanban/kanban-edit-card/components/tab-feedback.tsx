@@ -1,5 +1,5 @@
 import { Box, Stack, TextField, FormControl, InputLabel, Select, MenuItem, Autocomplete, Checkbox, FormControlLabel, Typography } from '@mui/material';
-import { DatePicker, DesktopDatePicker } from '@mui/x-date-pickers-pro';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { FormikProps } from 'formik';
 import { IKanbanCard } from '@gsbelarus/util-api-types';
 import { useGetFeedbackCompetencesQuery, useGetFeedbackResultsQuery, useGetFeedbackSatisfactionRatesQuery, useGetFeedbackSatisfactionsQuery } from 'apps/gdmn-nxt-web/src/app/features/deal-feedback';

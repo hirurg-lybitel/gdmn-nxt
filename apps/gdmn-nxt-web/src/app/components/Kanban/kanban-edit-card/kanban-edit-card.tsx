@@ -29,7 +29,7 @@ import * as yup from 'yup';
 import { IContactWithID, IKanbanCard, IKanbanColumn } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import KanbanHistory from '../kanban-history/kanban-history';
-import { DatePicker, DesktopDatePicker } from '@mui/x-date-pickers-pro';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import KanbanTasks from '../kanban-tasks/kanban-tasks';
@@ -643,7 +643,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                             error={getIn(formik.touched, 'DEAL.USR$AMOUNT') && Boolean(getIn(formik.errors, 'DEAL.USR$AMOUNT'))}
                             helperText={getIn(formik.touched, 'DEAL.USR$AMOUNT') && getIn(formik.errors, 'DEAL.USR$AMOUNT')}
                           />
-                          <DesktopDatePicker
+                          <DatePicker
                             label="Срок"
                             value={formik.values.DEAL?.USR$DEADLINE ? new Date(formik.values.DEAL?.USR$DEADLINE) : null}
                             format="dd.MM.yyyy"

@@ -131,7 +131,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
         onDeleteClick={() => handeSubmit(true)}
         deleteButton={!!templateOld}
       >
-        <div>
+        <div style={{ minWidth: 0 }}>
           <ErrorTooltip
             open={!!error}
             title={error}
@@ -144,7 +144,7 @@ const EmailTemplateListItemEdit = (props: EmailTemplateListItemEditProps) => {
               onChange={handleTemplateNameChange}
             />
           </ErrorTooltip>
-          <div style={{ height: 'calc(100% - 60px)' }}>
+          <div style={{ height: 'calc(100% - 60px)', minHeight: '600px' }}>
             <EmailTemplate
               value={template}
               onChange={setTemplate}

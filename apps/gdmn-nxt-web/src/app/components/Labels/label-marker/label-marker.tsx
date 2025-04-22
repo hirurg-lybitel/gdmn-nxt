@@ -109,7 +109,8 @@ export function LabelMarker(props: LabelMarkerProps) {
         fontSize: '0.8125rem',
         fontWeight: 600,
         textTransform: 'none',
-        color: colors.text
+        color: colors.text,
+        minWidth: 0
       }}
     >
       {(icon || USR$ICON) &&
