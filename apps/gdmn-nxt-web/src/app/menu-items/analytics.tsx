@@ -66,7 +66,8 @@ const analytics: IMenuItem = {
             name: 'reports/expected-receipts-dev',
             method: 'GET'
           },
-        }, {
+        },
+        {
           id: 'expenses',
           title: 'Расходы',
           url: 'analytics/reports/expenses',
@@ -75,13 +76,24 @@ const analytics: IMenuItem = {
             name: 'reports/expenses',
             method: 'GET'
           },
-        }, {
+        },
+        {
           id: 'debts',
           title: 'Задолженности',
           url: 'analytics/reports/debts',
           type: 'item',
           actionCheck: {
             name: 'reports/debts',
+            method: 'GET'
+          },
+        },
+        {
+          id: 'revenue',
+          title: 'Выручка',
+          url: 'analytics/reports/revenue',
+          type: 'item',
+          actionCheck: {
+            name: 'reports/revenue',
             method: 'GET'
           },
         },
