@@ -379,6 +379,7 @@ export type ActionName =
   'reports/remains-by-invoices' |
   'reports/reconciliation-statement' |
   'reports/debts' |
+  'reports/revenue' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -665,4 +666,11 @@ export interface IDebt {
   done: number,
   paid: number,
   change: number
+}
+
+export interface IRevenue {
+  customer: ICustomer,
+  date: string,
+  amount: number,
+  amountCurrency: number
 }

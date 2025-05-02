@@ -1,4 +1,4 @@
-import { IDebt, IExpectedReceipt, IExpectedReceiptDev, IExpense, IQueryOptions, IReconciliationStatement, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { IDebt, IExpectedReceipt, IExpectedReceiptDev, IExpense, IQueryOptions, IReconciliationStatement, IRequestResult, IRevenue, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 import { DateRange } from '@mui/x-date-pickers-pro';
@@ -30,6 +30,12 @@ interface IDebts{
 };
 
 type IDebtRequestResult = IRequestResult<IDebts>;
+
+interface IRevenues{
+  revenue: IRevenue[];
+};
+
+type IRevenueRequestResult = IRequestResult<IRevenues>;
 
 type IRemainInvoicesRequestResult = IRequestResult<IRemainInvoices>;
 
@@ -92,6 +98,14 @@ export const reportsApi = createApi({
       transformResponse: (res: IDebtRequestResult) => res.queries?.debts || [],
       keepUnusedDataFor: 0
     }),
+    getRevenue: builder.query<IRevenue[], { onDate: DateRange<Date>, options: Partial<IQueryOptions> | void }>({
+      query: ({ onDate, options }) => {
+        const params = queryOptionsToParamsString(options);
+        return `revenue/${onDate[0]?.getTime()}-${onDate[1]?.getTime()}${params ? `?${params}` : ''}`;
+      },
+      transformResponse: (res: IRevenueRequestResult) => res.queries?.revenue || [],
+      keepUnusedDataFor: 0
+    }),
   }),
 });
 
@@ -102,5 +116,6 @@ export const {
   useGetRemainsInvoicesQuery,
   useGetReconciliationStatementQuery,
   useGetTopEarningMutation: useGetTopEarningQuery,
-  useGetDebtsQuery
+  useGetDebtsQuery,
+  useGetRevenueQuery
 } = reportsApi;
