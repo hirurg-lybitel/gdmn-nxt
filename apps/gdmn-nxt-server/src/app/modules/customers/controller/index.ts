@@ -5,6 +5,7 @@ import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../../../utils/cachedRequests';
 import { resultError } from '@gsbelarus/util-helpers';
 import { customersService } from '../service';
+import { feedbackRepository } from '@gdmn-nxt/modules/customer-feedback/repository';
 
 export const getContacts: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
@@ -71,7 +72,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
   if (id && !parseInt(id)) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
 
-  const { NAME, PHONE, EMAIL, ADDRESS, TAXID, LABELS, BUSINESSPROCESSES } = req.body;
+  const { NAME, PHONE, EMAIL, ADDRESS, TAXID, LABELS, BUSINESSPROCESSES, feedback } = req.body;
   const { attachment, transaction } = await startTransaction(req.sessionID);
 
   try {
@@ -133,8 +134,11 @@ export const upsertContact: RequestHandler = async (req, res) => {
       params: [ID, NAME, EMAIL, PHONE, ADDRESS, TAXID],
     };
 
-
     const row = await Promise.resolve(execQuery(query));
+
+    await Promise.resolve(feedback.map(async (feedback) => {
+      return await feedbackRepository.save(req.sessionID, { ...feedback, customer: { ...feedback, ID: (row[1] as any).ID } });
+    }));
 
     cachedRequets.cacheRequest('customers');
 

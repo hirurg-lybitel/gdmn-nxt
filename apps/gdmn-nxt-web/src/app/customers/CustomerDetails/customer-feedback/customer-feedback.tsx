@@ -20,11 +20,15 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 
 export interface CustomerFeedbackProps {
-  customerId: number
+  customerId: number,
+  value?: ICustomerFeedback[],
+  onChange: (value: ICustomerFeedback[]) => void
 }
 
 export function CustomerFeedback({
-  customerId
+  customerId,
+  value,
+  onChange
 }: CustomerFeedbackProps) {
   const {
     data: historyType = [],
@@ -73,7 +77,8 @@ export function CustomerFeedback({
       }
     })();
 
-    addFeedback({
+    const data: ICustomerFeedback = {
+      ID: -1,
       type,
       response,
       toDo,
@@ -85,7 +90,14 @@ export function CustomerFeedback({
         ID: userId,
         NAME: ''
       }
-    });
+    };
+
+    if (value) {
+      onChange([...value, data]);
+    } else {
+      addFeedback(data);
+    }
+
 
     if (responseRef.current) {
       responseRef.current.value = '';
@@ -98,6 +110,20 @@ export function CustomerFeedback({
     if (typeRef.current) {
       typeRef.current.value = '';
     }
+  };
+
+  const localSave = (index: number) => (feedback: ICustomerFeedback) => {
+    if (value === undefined) return;
+    const newValue = [...value];
+    newValue[index] = feedback;
+    onChange(newValue);
+  };
+
+  const localRemove = (index: number) => () => {
+    if (value === undefined) return;
+    const newValue = [...value];
+    newValue.splice(index, 1);
+    onChange(newValue);
   };
 
   const saveFeedback = (feedback: ICustomerFeedback) => {
@@ -188,13 +214,13 @@ export function CustomerFeedback({
             },
           }}
         >
-          {feedback.map((f, idx) => (
+          {(value ?? feedback).map((f, idx) => (
             <FeedbackItem
               key={idx}
               feedback={f}
               isLast={idx === feedback.length - 1}
-              onSave={saveFeedback}
-              onDelete={removeFeedback(f.ID)}
+              onSave={value ? localSave(idx) : saveFeedback}
+              onDelete={value ? localRemove(idx) : removeFeedback(f.ID)}
             />))}
         </Timeline>
       </CustomizedScrollBox>
