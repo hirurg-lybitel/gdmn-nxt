@@ -136,7 +136,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
     const row = await Promise.resolve(execQuery(query));
 
-    await Promise.resolve(feedback.map(async (feedback) => {
+    await Promise.resolve(feedback?.map(async (feedback) => {
       return await feedbackRepository.save(req.sessionID, { ...feedback, customer: { ...feedback, ID: (row[1] as any).ID } });
     }));
 
@@ -268,7 +268,12 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
         LABELKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$LABELKEY = ?
       )
       RETURNS(
-        ID TYPE OF COLUMN USR$CRM_LABELS.ID
+        ID TYPE OF COLUMN USR$CRM_LABELS.ID,
+        USR$COLOR TYPE OF COLUMN USR$CRM_LABELS.USR$COLOR,
+        USR$DESCRIPTION TYPE OF COLUMN USR$CRM_LABELS.USR$DESCRIPTION,
+        USR$ICON TYPE OF COLUMN USR$CRM_LABELS.USR$ICON,
+        USR$NAME TYPE OF COLUMN USR$CRM_LABELS.USR$NAME,
+        USR$CONTACTKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$CONTACTKEY
       )
       AS
       BEGIN
@@ -277,10 +282,12 @@ const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabe
         INSERT INTO USR$CRM_CUSTOMER_LABELS(USR$CONTACTKEY, USR$LABELKEY)
         VALUES(:CONTACTKEY, :LABELKEY);
 
-        SELECT ID
+        SELECT ID, USR$COLOR, USR$DESCRIPTION, USR$ICON, USR$NAME
         FROM USR$CRM_LABELS
         WHERE ID = :LABELKEY
-        INTO :ID;
+        INTO :ID, :USR$COLOR, :USR$DESCRIPTION, :USR$ICON, :USR$NAME;
+
+        USR$CONTACTKEY = :CONTACTKEY;
 
         SUSPEND;
       END`;
