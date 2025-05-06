@@ -245,83 +245,90 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
           </StyledToolTip>
           {
             Array.isArray(contact.PHONES) && contact.PHONES.length > 0
-              ? <Stack
-                direction="row"
-                spacing={1}
-                className={styles.infoItem}
-              >
-                <PhoneIcon fontSize="small" color="primary" />
-                <a
-                  className={styles.link}
-                  onClick={handleStopPropagation}
-                  href={`tel:${contact.PHONES[0].USR$PHONENUMBER.replace(/\s+/g, '')}`}
-                  rel="noreferrer"
-                  target="_blank"
+              ? (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  className={styles.infoItem}
                 >
-                  <Typography variant="caption" data-searchable={true}>{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
-                </a>
-                <CopyToClipboardButton
-                  className={styles.clipboard}
-                  label="номер"
-                  onClick={handleClickWithClipboard('phone', contact.PHONES[0]?.USR$PHONENUMBER)}
-                />
-              </Stack>
+                  <PhoneIcon fontSize="small" color="primary" />
+                  <a
+                    className={styles.link}
+                    onClick={handleStopPropagation}
+                    href={`tel:${contact.PHONES[0].USR$PHONENUMBER.replace(/\s+/g, '')}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Typography variant="caption" data-searchable={true}>{contact.PHONES[0]?.USR$PHONENUMBER}</Typography>
+                  </a>
+                  <CopyToClipboardButton
+                    className={styles.clipboard}
+                    label="номер"
+                    onClick={handleClickWithClipboard('phone', contact.PHONES[0]?.USR$PHONENUMBER)}
+                  />
+                </Stack>
+              )
               : <Box height={20} />
           }
           {
             Array.isArray(contact.EMAILS) && contact.EMAILS.length > 0
-              ? <Stack
-                direction="row"
-                spacing={1}
-                className={styles.infoItem}
-              >
-                <EmailIcon fontSize="small" color="primary" />
-                <a
-                  className={styles.link}
-                  onClick={handleStopPropagation}
-                  href={`mailto:${contact.EMAILS[0]?.EMAIL}`}
-                  rel="noreferrer"
-                  target="_blank"
+              ? (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  className={styles.infoItem}
                 >
-                  <Typography variant="caption" data-searchable={true}>{contact.EMAILS[0]?.EMAIL}</Typography>
-                </a>
-                <CopyToClipboardButton
-                  className={styles.clipboard}
-                  label="Email"
-                  onClick={handleClickWithClipboard('email', contact.EMAILS[0]?.EMAIL)}
-                />
-              </Stack>
+                  <EmailIcon fontSize="small" color="primary" />
+                  <a
+                    className={styles.link}
+                    onClick={handleStopPropagation}
+                    href={`mailto:${contact.EMAILS[0]?.EMAIL}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Typography variant="caption" data-searchable={true}>{contact.EMAILS[0]?.EMAIL}</Typography>
+                  </a>
+                  <CopyToClipboardButton
+                    className={styles.clipboard}
+                    label="Email"
+                    onClick={handleClickWithClipboard('email', contact.EMAILS[0]?.EMAIL)}
+                  />
+                </Stack>
+              )
               : <Box height={20} />
           }
           {
             Array.isArray(contact.MESSENGERS) && contact.MESSENGERS.length > 0
-              ? <Stack
-                direction="row"
-                spacing={1}
-                className={styles.infoItem}
-              >
-                <div className={styles['messenger-icon']}>
-                  <img
-                    src={socialMedia[contact.MESSENGERS[0]?.CODE].icon}
-                    width={16}
-                    height={16}
-                  />
-                </div>
-                <a
-                  className={`${styles.link} ${!socialMedia[contact.MESSENGERS[0]?.CODE].link ? styles.linkDisabled : ''}`}
-                  onClick={handleStopPropagation}
-                  href={parseToMessengerLink(contact.MESSENGERS[0]?.CODE, contact.MESSENGERS[0]?.USERNAME)}
-                  rel="noreferrer"
-                  target="_blank"
+              ? (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  className={styles.infoItem}
                 >
-                  <Typography variant="caption" data-searchable={true}>{contact.MESSENGERS[0]?.USERNAME}</Typography>
-                </a>
-                <CopyToClipboardButton
-                  className={styles.clipboard}
-                  label="мессенджер"
-                  onClick={handleClickWithClipboard('messanger', contact.MESSENGERS[0]?.USERNAME)}
-                />
-              </Stack>
+                  <div className={styles['messenger-icon']}>
+                    <img
+                      alt={'messenger-icon'}
+                      src={socialMedia[contact.MESSENGERS[0]?.CODE].icon}
+                      width={16}
+                      height={16}
+                    />
+                  </div>
+                  <a
+                    className={`${styles.link} ${!socialMedia[contact.MESSENGERS[0]?.CODE].link ? styles.linkDisabled : ''}`}
+                    onClick={handleStopPropagation}
+                    href={parseToMessengerLink(contact.MESSENGERS[0]?.CODE, contact.MESSENGERS[0]?.USERNAME)}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Typography variant="caption" data-searchable={true}>{contact.MESSENGERS[0]?.USERNAME}</Typography>
+                  </a>
+                  <CopyToClipboardButton
+                    className={styles.clipboard}
+                    label="мессенджер"
+                    onClick={handleClickWithClipboard('messanger', contact.MESSENGERS[0]?.USERNAME)}
+                  />
+                </Stack>
+              )
               : <Box height={20} />
           }
           {memoCardLabels}
@@ -409,6 +416,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
                 >
                   <div className={styles['messenger-icon']}>
                     <img
+                      alt={'messenger-icon'}
                       src={socialMedia[mes.CODE].icon}
                       width={16}
                       height={16}
@@ -451,7 +459,7 @@ export function ContactCards({
   onEditClick,
   paginationData,
   paginationClick,
-}: ContactCardsProps) {
+}: Readonly<ContactCardsProps>) {
   const [pageOptions, setPageOptions] = useState<number[]>([]);
   const theme = useTheme();
   const matchUpUW = useMediaQuery(theme.breakpoints.up('ultraWide'));

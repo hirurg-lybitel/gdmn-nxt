@@ -330,16 +330,14 @@ export function TimeTracker() {
                       </AccordionSummary>
                       <AccordionDetails style={{ padding: '0 16px' }}>
                         {items.map((item, index) => (
-                          <>
-                            <TimeTrackerItem
-                              key={item.ID}
-                              item={item}
-                              isFetching={isFetching}
-                              filterData={filterData}
-                              setInitial={setInitial}
-                              lastItem={items.length - 1 === index}
-                            />
-                          </>
+                          <TimeTrackerItem
+                            key={item.ID}
+                            item={item}
+                            isFetching={isFetching}
+                            filterData={filterData}
+                            setInitial={setInitial}
+                            lastItem={items.length - 1 === index}
+                          />
                         ))}
                       </AccordionDetails>
                     </Accordion>

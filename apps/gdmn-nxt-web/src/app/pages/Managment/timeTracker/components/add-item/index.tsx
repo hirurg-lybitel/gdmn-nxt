@@ -351,7 +351,7 @@ export const AddItem = ({
                   disabled={projectsIsLoading || projectsIsFetching}
                   // style={{ marginTop: '16px' }}
                   ListboxComponent={TasksListboxComponent}
-                  options={data?.projects || []}
+                  options={data?.projects || null}
                   getOptionLabel={() => formik.values.task?.name ?? ''}
                   filterOptions={filterProjects()}
                   onChange={projectOnChange}
@@ -433,7 +433,6 @@ export const AddItem = ({
                   placeholder="Над чем вы работали?"
                   name="description"
                   multiline
-                  minRows={1}
                   {...(!descriptionOnFocus && { rows: 1 })}
                   fullWidth
                   value={formik.values.description}

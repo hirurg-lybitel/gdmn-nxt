@@ -164,8 +164,8 @@ export function useAutocompleteGridVirtualization({ width, columnCount, rowHeigh
     return ref;
   }
 
-  const ListboxComponent = (listprops: React.HTMLAttributes<HTMLElement>) => {
-    const { children, ...other } = listprops;
+  const ListboxComponent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLElement>>(function ListboxComponent(props, ref) {
+    const { children, ...other } = props;
     const itemData: React.ReactElement[] = [];
     (children as React.ReactElement[]).forEach(
       (item: React.ReactElement & { children?: React.ReactElement[] }) => {
@@ -213,6 +213,7 @@ export function useAutocompleteGridVirtualization({ width, columnCount, rowHeigh
 
     return (
       <div>
+        <div ref={ref}/>
         <OuterElementContext.Provider value={other}>
           <VariableSizeGrid
             className={classes.gridList}
@@ -232,7 +233,7 @@ export function useAutocompleteGridVirtualization({ width, columnCount, rowHeigh
         </OuterElementContext.Provider>
       </div>
     );
-  };
+  });
 
   const memoListBox = useMemo(() => ListboxComponent, [columnCount]);
 

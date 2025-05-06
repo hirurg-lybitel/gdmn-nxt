@@ -271,6 +271,7 @@ export default function SecurityTab() {
                         container
                         alignItems="center"
                         sx={{ px: 2 }}
+                        item
                       >
                         <Grid
                           container
@@ -335,6 +336,7 @@ export default function SecurityTab() {
                           xs={0.5}
                           md={0.7}
                           sx={{ display: 'flex', justifyContent: 'flex-end' }}
+                          item
                         >
                           {!item.current && (
                             <Confirmation

@@ -88,8 +88,8 @@ export function UpdatesList(props: UpdatesListProps) {
           </PermissionsGate>
         </div>
       </CardToolbar>
-      <CardContent>
-        <CustomizedScrollBox>
+      <CardContent style={{ marginRight: '-16px' }}>
+        <CustomizedScrollBox style={{ paddingRight: '16px' }}>
           {isLoading
             ? [...Array(5)].map((u, idx) => (
               <Fragment key={idx}>

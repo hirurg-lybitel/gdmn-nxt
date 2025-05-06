@@ -631,12 +631,14 @@ const CustomerTasks = ({
   };
 
   useEffect(() => {
-    if (!task?.project) {
+    if (!task?.project || !projects) {
       return;
     }
 
-    setSelectedProject(task?.project);
-  }, [task?.project]);
+    const project = projects.find(project => project.ID === task?.project?.ID);
+    if (!project) return;
+    setSelectedProject(project);
+  }, [projects, task?.project]);
 
   const CustomPopper = (props: any) => {
     return <Popper {...props} style={{ width: 'fit-content' }} />;

@@ -238,25 +238,31 @@ export default function Contacts() {
       <CardContent style={{ padding: 0 }}>
         {viewMode === 1
           ? isLoading
-            ? <Box height={'100%'} display="flex">
-              <CircularIndeterminate open={true} size={70} />
-            </Box>
-            : <ContactCards
-              contacts={persons?.records}
+            ? (
+              <Box height={'100%'} display="flex">
+                <CircularIndeterminate open={true} size={70} />
+              </Box>
+            )
+            : (
+              <ContactCards
+                contacts={persons?.records ?? []}
+                contactsCount={persons?.count ?? 0}
+                onEditClick={handleContactEdit}
+                paginationData={paginationData}
+                paginationClick={(data) => setPaginationData(data)}
+              />
+            )
+          : (
+            <ContactList
+              contacts={persons?.records ?? []}
               contactsCount={persons?.count ?? 0}
               onEditClick={handleContactEdit}
+              isLoading={isLoading}
               paginationData={paginationData}
               paginationClick={(data) => setPaginationData(data)}
+              onSortChange={handleSortChange}
             />
-          : <ContactList
-            contacts={persons?.records ?? []}
-            contactsCount={persons?.count ?? 0}
-            onEditClick={handleContactEdit}
-            isLoading={isLoading}
-            paginationData={paginationData}
-            paginationClick={(data) => setPaginationData(data)}
-            onSortChange={handleSortChange}
-          />}
+          )}
         {memoAddContact}
         {memoEditContact}
         {memoFilter}

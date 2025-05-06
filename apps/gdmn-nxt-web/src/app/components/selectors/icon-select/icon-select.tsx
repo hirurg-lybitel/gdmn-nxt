@@ -2,7 +2,7 @@ import { Autocomplete, Button, IconButton, TextField, Tooltip, useMediaQuery, us
 import styles from './icon-select.module.less';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useMemo, useRef, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import * as iconsSource from '@mui/icons-material';
 import { IconByName } from '../../icon-by-name';
@@ -96,10 +96,8 @@ export function IconSelect(props: Readonly<IconSelectProps>) {
   const { icon, setIcon } = props;
 
   const [toggleSelect, setToggleSelect] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handlecloseToggleSelect = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
     setToggleSelect(prev => !prev);
   };
 
