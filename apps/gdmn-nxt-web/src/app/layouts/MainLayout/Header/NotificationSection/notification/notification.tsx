@@ -32,10 +32,14 @@ import addNotification from 'react-push-notification';
 import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
+import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
     zIndex: 2000,
+    [theme.breakpoints.down('sm')]: {
+      width: '100%'
+    },
   },
   arrow: {
     overflow: 'hidden',
@@ -63,6 +67,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginRight: 16,
     width: '20vw',
     minWidth: '400px',
+    [theme.breakpoints.down('sm')]: {
+      width: 'auto',
+      minWidth: 'auto',
+    },
     minHeight: '300px',
     display: 'flex',
   },
@@ -119,9 +127,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 /* eslint-disable-next-line */
-export interface NotificationProps {}
+export interface NotificationProps {
+  menuItemClick: (item: IMenuItem, level: number) => void
+}
 
-export function Notification(props: NotificationProps) {
+export function Notification({ menuItemClick }: NotificationProps) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
@@ -262,8 +272,9 @@ export function Notification(props: NotificationProps) {
           deadline: [dealsDateFilter.find(f => f.CODE === 6)],
           dealNumber: actionContent
         };
-
-        navigate('managment/deals/list');
+        const url = 'managment/deals/list';
+        menuItemClick({ url, id: '', type: 'item' }, 0);
+        navigate(url);
 
         dispatch(saveFilterData({ 'deals': newDealsFilters }));
 
@@ -273,7 +284,9 @@ export function Notification(props: NotificationProps) {
         const newTasksFilters = {
           taskNumber: actionContent
         };
-        navigate('managment/tasks/list');
+        const url = 'managment/tasks/list';
+        menuItemClick({ url, id: '', type: 'item' }, 0);
+        navigate(url);
         dispatch(saveFilterData({ 'tasks': newTasksFilters }));
         break;
       }

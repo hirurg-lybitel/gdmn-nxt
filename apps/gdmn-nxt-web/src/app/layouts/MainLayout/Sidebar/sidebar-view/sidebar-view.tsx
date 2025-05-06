@@ -66,7 +66,11 @@ export function Sidebar(props: SidebarProps) {
         }}
       >
         <Toolbar style={{ backgroundColor: theme.menu?.backgroundColor, paddingLeft: '16px' }}>
-          <Header mobile={matchDownMd} onDrawerToggle={onToogle} />
+          <Header
+            menuItemClick={menuItemClick}
+            mobile={matchDownMd}
+            onDrawerToggle={onToogle}
+          />
         </Toolbar>
         {drawer}
       </Drawer>

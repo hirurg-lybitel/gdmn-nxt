@@ -274,8 +274,7 @@ export function ChartColumn(props: ChartColumnProps) {
         },
         [theme.breakpoints.up('lg')]: {
           minHeight: 'calc(100vh - 130px)',
-        },
-        maxHeight: 'calc(100vh - 130px)',
+        }
       })}
     >
       <Stack
@@ -292,20 +291,21 @@ export function ChartColumn(props: ChartColumnProps) {
             <Stack direction="row" spacing={1}>
               <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
-                  style={{ paddingLeft: '15.8px' }}
+                  style={{ paddingLeft: '15.8px', marginRight: '16px' }}
                   variant="h6"
                   onClick={() => {
                     analyticsDataRefetch();
                     departmentsRefetch();
                   }}
                 >
-                Продажи за период
+                  Продажи за период
                 </Typography>
 
                 <TextField
                   style={{
                     width: '100px',
-                    marginRight: '15.8px'
+                    marginRight: '15.8px',
+                    minWidth: '100px'
                   }}
                   select
                   value={periodType?.value}
@@ -375,13 +375,24 @@ export function ChartColumn(props: ChartColumnProps) {
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Box flex={1} style={{ color: 'black', paddingRight: '6px ' }}>
-              <Chart
-                options={chartOptions}
-                series={chartData.series}
-                height="100%"
-                type="bar"
-              />
+            <Box
+              flex={1}
+              sx={{
+                color: 'black',
+                paddingRight: '6px',
+                minHeight: '300px',
+                overflowX: 'auto',
+                overflowY: 'hidden'
+              }}
+            >
+              <div style={{ minWidth: '500px', height: '100%' }}>
+                <Chart
+                  options={chartOptions}
+                  series={chartData.series}
+                  height="100%"
+                  type="bar"
+                />
+              </div>
             </Box>
             <Autocomplete
               style={{ paddingLeft: '15.8px', paddingRight: '15.8px' }}

@@ -97,7 +97,7 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
           />
         )}
         <Stack
-          direction={{ xs: 'column-reverse', sm: 'row' }}
+          direction={'row'}
           sx={{
             gap: { xs: '10px', sm: '14px' },
             width: { xs: '100%', sm: 'fin-content' } }}
@@ -126,7 +126,7 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
               </ButtonWithConfirmation>
               {submitButton && (
                 <Tooltip title={submitHint}>
-                  <div>
+                  <div className={styles.button}>
                     <Button
                       className={styles.button}
                       type="submit"

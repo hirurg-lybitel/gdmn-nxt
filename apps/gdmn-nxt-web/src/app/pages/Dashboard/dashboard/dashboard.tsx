@@ -118,12 +118,12 @@ export function Dashboard(props: DashboardProps) {
   };
 
   return (
-    <Grid
-      container
-      direction="column"
-      justifyContent="flex-start"
-      alignItems="center"
-      spacing={3}
+    <div
+      style={{
+        display: 'flex', flex: 1,
+        flexDirection: 'column', width: '100%',
+        gap: '24px'
+      }}
     >
       <Grid
         container
@@ -167,39 +167,50 @@ export function Dashboard(props: DashboardProps) {
           </ToggleButtonGroup>
         </CustomizedCard>
       </Grid>
-      <Grid container item>
-        <DealsSummarize period={period} />
-      </Grid>
-      <Grid
-        container
-        item
-        spacing={3}
-        columns={{ xs: 12, lg: 12 }}
-      >
-        <Grid
-          className={styles.TaskSummarize}
-          container
-          item
-          spacing={3}
-          columns={{ xs: 1, sm: 2, md: 4, lg: 12 }}
-          xs={12}
-          lg={5}
-        >
-          <TasksSummarize period={period} />
-        </Grid>
-        <Grid
-          container
-          item
-          xs={12}
-          lg={7}
-        >
-          <ChartDonut period={period} />
-        </Grid>
-      </Grid>
-      <Grid container item>
-        <ChartColumn />
-      </Grid>
-    </Grid>
+      <div style={{ position: 'relative', flex: 1, overflow: 'auto', marginRight: '-16px' }}>
+        <div style={{ position: 'absolute', inset: '0px 6px 0px 0px' }}>
+          <Grid
+            container
+            item
+            spacing={3}
+            overflow={'auto'}
+          >
+            <Grid container item>
+              <DealsSummarize period={period} />
+            </Grid>
+            <Grid
+              container
+              item
+              spacing={3}
+              columns={{ xs: 12, lg: 12 }}
+            >
+              <Grid
+                className={styles.TaskSummarize}
+                container
+                item
+                spacing={3}
+                columns={{ xs: 1, sm: 2, md: 4, lg: 12 }}
+                xs={12}
+                lg={5}
+              >
+                <TasksSummarize period={period} />
+              </Grid>
+              <Grid
+                container
+                item
+                xs={12}
+                lg={7}
+              >
+                <ChartDonut period={period} />
+              </Grid>
+            </Grid>
+            <Grid container item>
+              <ChartColumn />
+            </Grid>
+          </Grid>
+        </div>
+      </div>
+    </div>
   );
 }
 

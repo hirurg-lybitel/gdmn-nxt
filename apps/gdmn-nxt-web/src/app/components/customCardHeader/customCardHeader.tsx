@@ -1,4 +1,4 @@
-import { Box, IconButton, SxProps, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, IconButton, Stack, SxProps, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import SearchBar from '../search-bar/search-bar';
 import CustomizedCard from '../Styled/customized-card/customized-card';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
@@ -76,9 +76,10 @@ export default function CustomCardHeader(props: PageHeaderProps) {
         display: 'flex',
         flexDirection: 'column',
         overflow: matchDownSm ? 'visible' : 'hidden',
-        minHeight: matchDownSm ? 'auto' : '54px',
-        padding: '10px 16px',
-        alignItems: 'center'
+        minHeight: matchDownSm ? 'auto' : '50px',
+        padding: '8px 24px',
+        alignItems: 'center',
+        border: 'none'
       }}
     >
       <div style={{ width: '100%', display: 'flex', alignItems: 'center', minHeight: '34px' }}>
@@ -104,34 +105,40 @@ export default function CustomCardHeader(props: PageHeaderProps) {
             {searchBar}
           </Box>
         )}
-
-        {addButton && <Box display="inline-flex" alignSelf="center">
-          <IconButton
-            size="small"
-            disabled={isFetching || isLoading}
-            onClick={onAddClick}
-          >
-            <Tooltip arrow title={addButtonHint ?? ''}>
-              <AddCircleIcon color={(isFetching || isLoading) ? 'disabled' : 'primary'} />
-            </Tooltip>
-          </IconButton>
-        </Box>}
-        {refetch && (
-          <CustomLoadingButton
-            hint="Обновить данные"
-            loading={isFetching || isLoading}
-            onClick={() => onRefetch && onRefetch()}
-          />
-        )}
-        {filter && (
-          <Box display="inline-flex" alignSelf="center">
-            <CustomFilterButton
-              onClick={onFilterClick}
+        <Stack
+          display={'flex'}
+          direction={'row'}
+          spacing={1}
+          marginRight={'-8px'}
+        >
+          {addButton && <Box display="inline-flex" alignSelf="center">
+            <IconButton
+              size="small"
               disabled={isFetching || isLoading}
-              hasFilters={hasFilters}
+              onClick={onAddClick}
+            >
+              <Tooltip arrow title={addButtonHint ?? ''}>
+                <AddCircleIcon color={(isFetching || isLoading) ? 'disabled' : 'primary'} />
+              </Tooltip>
+            </IconButton>
+          </Box>}
+          {refetch && (
+            <CustomLoadingButton
+              hint="Обновить данные"
+              loading={isFetching || isLoading}
+              onClick={() => onRefetch && onRefetch()}
             />
-          </Box>
-        )}
+          )}
+          {filter && (
+            <Box display="inline-flex" alignSelf="center">
+              <CustomFilterButton
+                onClick={onFilterClick}
+                disabled={isFetching || isLoading}
+                hasFilters={hasFilters}
+              />
+            </Box>
+          )}
+        </Stack>
       </div>
       <Box style={{ width: '100% ', marginTop: wrapAction ? '10px' : '0px' }} display={{ xs: 'block', sm: 'none' }}>
         {wrapAction}
