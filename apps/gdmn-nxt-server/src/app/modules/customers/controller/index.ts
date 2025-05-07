@@ -79,7 +79,7 @@ export const createContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.log('[ create customer ]', error);
+    console.error('[ create customer ]', error);
     res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
@@ -103,7 +103,7 @@ export const updateContact: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    console.log('[ update customer ]', error);
+    console.error('[ update customer ]', error);
     res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
