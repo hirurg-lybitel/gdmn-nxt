@@ -136,7 +136,7 @@ export const upsertContact: RequestHandler = async (req, res) => {
 
     const row = await Promise.resolve(execQuery(query));
 
-    await Promise.resolve(feedback?.map(async (feedback) => {
+    await Promise.all(feedback?.map(async (feedback) => {
       return await feedbackRepository.save(req.sessionID, { ...feedback, customer: { ...feedback, ID: (row[1] as any).ID } });
     }));
 
