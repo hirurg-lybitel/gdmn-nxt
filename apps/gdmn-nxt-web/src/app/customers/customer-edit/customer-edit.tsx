@@ -269,7 +269,7 @@ export function CustomerEdit({
                   <Divider />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
                     <CustomerFeedback
-                      value={!customer?.ID ? (formik.values.feedback ?? []) : undefined}
+                      data={!customer?.ID ? (formik.values.feedback ?? []) : undefined}
                       onChange={handleFeedbackChange}
                       customerId={Number(customer?.ID)}
                     />
