@@ -40,6 +40,7 @@ export interface ICustomer extends IContactWithID {
   taskCount?: number;
   agreementCount?: number;
   debt?: number;
+  feedback?: ICustomerFeedback[];
 };
 
 interface IMapOfArrays {

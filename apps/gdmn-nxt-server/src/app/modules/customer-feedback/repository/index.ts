@@ -158,11 +158,9 @@ const save: SaveHandler<ICustomerFeedback> = async (
       }
     );
 
-    const feedback = await findOne(sessionID, { ID: newFeedback.ID });
-
     await releaseTransaction();
 
-    return feedback;
+    return await findOne(sessionID, { ID: newFeedback.ID });
   } catch (error) {
     await releaseTransaction(false);
     throw new Error(error);

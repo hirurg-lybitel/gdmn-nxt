@@ -13,7 +13,7 @@ import {
   Tab,
   Tooltip
 } from '@mui/material';
-import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
+import { ICustomer, ICustomerFeedback, ILabel } from '@gsbelarus/util-api-types';
 import { useEffect, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -126,6 +126,10 @@ export function CustomerEdit({
     formik.setFieldValue('PHONE', value);
   };
 
+  const handleFeedbackChange = (value: ICustomerFeedback[]) => {
+    formik.setFieldValue('feedback', value);
+  };
+
   return (
     <CustomizedDialog
       open={open}
@@ -225,7 +229,6 @@ export function CustomerEdit({
                       className={styles.tabHeader}
                       label="Общение"
                       value="1"
-                      disabled={!customer?.ID}
                     />
                     <Tab
                       className={styles.tabHeader}
@@ -265,7 +268,11 @@ export function CustomerEdit({
                   </TabList>
                   <Divider />
                   <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
-                    <CustomerFeedback customerId={Number(customer?.ID)} />
+                    <CustomerFeedback
+                      data={!customer?.ID ? (formik.values.feedback ?? []) : undefined}
+                      onChange={handleFeedbackChange}
+                      customerId={Number(customer?.ID)}
+                    />
                   </TabPanel>
                   <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
                     <CustomerContacts customerId={Number(customer?.ID)} />

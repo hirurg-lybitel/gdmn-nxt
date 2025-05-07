@@ -11,8 +11,8 @@ router.get('/', customerController.getContacts);
 router.get('/customerId/:customerId', customerController.getContacts);
 router.get('/taxId/:taxId', customerController.getContacts);
 router.get('/rootId/:rootId', customerController.getContacts);
-router.put('/:id', customerController.upsertContact);
-router.post('/', customerController.upsertContact);
+router.put('/:id', customerController.updateContact);
+router.post('/', customerController.createContact);
 
 router.delete('/:id', customerController.deleteContact);
 router.get('/hierarchy', customerController.getContactHierarchy);
