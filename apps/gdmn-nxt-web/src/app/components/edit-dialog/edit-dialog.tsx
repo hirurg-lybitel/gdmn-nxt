@@ -67,7 +67,6 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
   } = props;
 
   const theme = useTheme();
-  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <CustomizedDialog

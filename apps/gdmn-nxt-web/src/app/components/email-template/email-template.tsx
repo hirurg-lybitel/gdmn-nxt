@@ -413,7 +413,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             <div style={{ display: 'flex', alignItems: 'center', overflow: 'auto' }} >
               <TabList
                 onChange={handleTabsChange}
-                centered
                 sx={{
                   position: 'relative'
                 }}
