@@ -22,16 +22,23 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 
 export interface CustomerFeedbackProps {
-  customerId: number
+  customerId: number,
+  data?: ICustomerFeedback[],
+  onChange?: (value: ICustomerFeedback[]) => void
 }
 
 export function CustomerFeedback({
-  customerId
-}: CustomerFeedbackProps) {
+  customerId,
+  data: localData,
+  onChange
+}: Readonly<CustomerFeedbackProps>) {
   const {
     data: historyType = [],
     isFetching: historyTypeIsFetching
   } = useGetClientHistoryTypeQuery();
+
+  const isLocalProcessing = !!localData;
+
   const {
     data: feedback = [],
     isLoading: feedbackIsLoading
@@ -39,8 +46,9 @@ export function CustomerFeedback({
     customerId,
     {
       refetchOnMountOrArgChange: true,
-      skip: customerId <= 0 || isNaN(customerId)
-    });
+      skip: customerId <= 0 || isNaN(customerId) || isLocalProcessing
+    }
+  );
 
   const [addFeedback] = useAddFeedbackMutation();
   const [updateFeedback] = useUpdateFeedbackMutation();
@@ -75,7 +83,8 @@ export function CustomerFeedback({
       }
     })();
 
-    addFeedback({
+    const data: ICustomerFeedback = {
+      ID: -1,
       type,
       response,
       toDo,
@@ -87,7 +96,14 @@ export function CustomerFeedback({
         ID: userId,
         NAME: ''
       }
-    });
+    };
+
+    if (isLocalProcessing) {
+      onChange?.([...localData, data]);
+    } else {
+      addFeedback(data);
+    }
+
 
     if (responseRef.current) {
       responseRef.current.value = '';
@@ -102,11 +118,26 @@ export function CustomerFeedback({
     }
   };
 
-  const saveFeedback = (feedback: ICustomerFeedback) => {
+  const saveFeedback = (idx: number) => (feedback: ICustomerFeedback) => {
+    if (isLocalProcessing) {
+      const newValue = [...localData];
+      newValue[idx] = feedback;
+      onChange?.(newValue);
+
+      return;
+    }
     updateFeedback(feedback);
   };
 
-  const removeFeedback = (id: number) => () => {
+  const removeFeedback = (idx: number, id: number) => () => {
+    if (isLocalProcessing) {
+      const newValue = [...localData];
+      newValue.splice(idx, 1);
+      onChange?.(newValue);
+
+      return;
+    }
+
     deleteFeedback(id);
   };
 
@@ -196,13 +227,13 @@ export function CustomerFeedback({
             minWidth: '500px'
           }}
         >
-          {feedback.map((f, idx) => (
+          {(localData ?? feedback).map((f, idx) => (
             <FeedbackItem
               key={idx}
               feedback={f}
-              isLast={idx === feedback.length - 1}
-              onSave={saveFeedback}
-              onDelete={removeFeedback(f.ID)}
+              isLast={idx === (localData ?? feedback).length - 1}
+              onSave={saveFeedback(idx)}
+              onDelete={removeFeedback(idx, f.ID)}
             />))}
         </Timeline>
       </CustomizedScrollBox>

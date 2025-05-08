@@ -1,11 +1,16 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, ICustomer, IFavoriteContact, ITimeTrackTask, LessThanOrEqual } from '@gsbelarus/util-api-types';
-import { ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
+import { FindHandler, IBusinessProcess, ICustomer, ICustomerFeedback, IFavoriteContact, ILabel, ILabelsContact, ITimeTrackTask, LessThanOrEqual, RemoveOneHandler } from '@gsbelarus/util-api-types';
+import { cachedRequets, ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import task from '@gdmn-nxt/controllers/kanban/task';
 import { contractsService } from '@gdmn-nxt/modules/contracts/service';
 import { debtsRepository } from '../repository/debts';
 import dayjs from '@gdmn-nxt/dayjs';
+import { customerRepository } from '../repository';
+import { commitTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { feedbackService } from '@gdmn-nxt/modules/customer-feedback/service';
+
+type CustomerDto = Omit<ICustomer, 'ID'>;
 
 const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) => {
   const {
@@ -248,7 +253,219 @@ const findOne = async (
   return customers[0];
 };
 
+const createCustomer = async (
+  sessionID: string,
+  body: CustomerDto
+) => {
+  const { attachment, transaction } = await startTransaction(sessionID);
+  try {
+    const newCustomer = await customerRepository.save(sessionID, body);
+
+    try {
+      newCustomer.LABELS = await upsertLabels({ attachment, transaction }, newCustomer.ID, body.LABELS);
+      newCustomer.BUSINESSPROCESSES = await upsertBusinessProcesses({ attachment, transaction }, newCustomer.ID, body.BUSINESSPROCESSES);
+      newCustomer.feedback = await upsertFeedback(sessionID, newCustomer, body.feedback);
+    } catch (error) {
+      await rollbackTransaction(sessionID, transaction);
+      await customerRepository.remove(sessionID, newCustomer.ID);
+
+      throw error;
+    }
+
+    await commitTransaction(sessionID, transaction);
+
+    return newCustomer;
+  } catch (error) {
+    await rollbackTransaction(sessionID, transaction);
+    throw error;
+  }
+};
+
+const updateCustomer = async (
+  sessionID: string,
+  id: number,
+  body: Partial<CustomerDto>
+) => {
+  const { attachment, transaction } = await startTransaction(sessionID);
+  try {
+    const newCustomer = await customerRepository.update(sessionID, id, body);
+
+    try {
+      newCustomer.LABELS = await upsertLabels({ attachment, transaction }, newCustomer.ID, body.LABELS);
+      newCustomer.BUSINESSPROCESSES = await upsertBusinessProcesses({ attachment, transaction }, newCustomer.ID, body.BUSINESSPROCESSES);
+      newCustomer.feedback = await upsertFeedback(sessionID, newCustomer, body.feedback);
+    } catch (error) {
+      await rollbackTransaction(sessionID, transaction);
+
+      throw error;
+    }
+
+    await commitTransaction(sessionID, transaction);
+
+    return newCustomer;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const deleteCustomer: RemoveOneHandler = async (sessionID, id) => {
+  try {
+    await customerRepository.remove(sessionID, id);
+    cachedRequets.cacheRequest('customers');
+
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const customersService = {
   find,
-  findOne
+  findOne,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer
+};
+
+
+const upsertLabels = async(firebirdProps: any, contactId: number, labels: ILabel[]): Promise<ILabel[]> => {
+  const { attachment, transaction } = firebirdProps;
+
+
+  if (!labels || labels?.length === 0) {
+    try {
+      const sql = `
+        DELETE FROM USR$CRM_CUSTOMER_LABELS
+        WHERE USR$CONTACTKEY = ?` ;
+
+      await attachment.execute(transaction, sql, [contactId]);
+      cachedRequets.cacheRequest('customerLabels');
+    } catch (error) {
+      console.error('upsertLabels', error);
+    }
+    return [];
+  };
+
+  const contactLabels = labels.map(label => ({ CONTACT: contactId, LABELKEY: label.ID }));
+
+  try {
+    /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
+    const deleteSQL = 'DELETE FROM USR$CRM_CUSTOMER_LABELS WHERE USR$CONTACTKEY = ?';
+
+    await Promise.all(
+      [...new Set(contactLabels.map(el => el.CONTACT))]
+        .map(async contact => {
+          await attachment.execute(transaction, deleteSQL, [contact]);
+        })
+    );
+
+    const insertSQL = `
+      EXECUTE BLOCK(
+        CONTACTKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$CONTACTKEY = ?,
+        LABELKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$LABELKEY = ?
+      )
+      RETURNS(
+        ID TYPE OF COLUMN USR$CRM_LABELS.ID,
+        USR$COLOR TYPE OF COLUMN USR$CRM_LABELS.USR$COLOR,
+        USR$DESCRIPTION TYPE OF COLUMN USR$CRM_LABELS.USR$DESCRIPTION,
+        USR$ICON TYPE OF COLUMN USR$CRM_LABELS.USR$ICON,
+        USR$NAME TYPE OF COLUMN USR$CRM_LABELS.USR$NAME,
+        USR$CONTACTKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$CONTACTKEY
+      )
+      AS
+      BEGIN
+        DELETE FROM USR$CRM_CUSTOMER_LABELS WHERE USR$CONTACTKEY = :CONTACTKEY AND USR$LABELKEY = :LABELKEY ;
+
+        INSERT INTO USR$CRM_CUSTOMER_LABELS(USR$CONTACTKEY, USR$LABELKEY)
+        VALUES(:CONTACTKEY, :LABELKEY);
+
+        SELECT ID, USR$COLOR, USR$DESCRIPTION, USR$ICON, USR$NAME
+        FROM USR$CRM_LABELS
+        WHERE ID = :LABELKEY
+        INTO :ID, :USR$COLOR, :USR$DESCRIPTION, :USR$ICON, :USR$NAME;
+
+        USR$CONTACTKEY = :CONTACTKEY;
+
+        SUSPEND;
+      END`;
+
+    const records = await Promise.all(contactLabels.map(async label => {
+      return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
+    }));
+    cachedRequets.cacheRequest('customerLabels');
+
+    return records as ILabel[];
+  } catch (error) {
+    console.error('upsertLabels', error);
+
+    return;
+  };
+};
+
+const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, businessProcesses: IBusinessProcess[]) => {
+  const { attachment, transaction } = firebirdPropsL;
+
+  if (!businessProcesses || businessProcesses?.length === 0) {
+    try {
+      const sql = `
+        DELETE FROM USR$CROSS1242_1980093301
+        WHERE USR$GD_CONTACTKEY = ?` ;
+
+      await attachment.execute(transaction, sql, [contactId]);
+      cachedRequets.cacheRequest('businessProcesses');
+    } catch (error) {
+      console.error('upsertBusinessProcesses', error);
+    }
+    return [];
+  };
+
+  try {
+    const params = businessProcesses.map(bp => ({ contactId, businessProcessId: bp.ID }));
+
+    const sql = `
+      EXECUTE BLOCK(
+        contactId INTEGER = ?,
+        businessProcessId INTEGER = ?
+      )
+      RETURNS(
+        ID INTEGER
+      )
+      AS
+      BEGIN
+        DELETE FROM USR$CROSS1242_1980093301
+        WHERE USR$GD_CONTACTKEY = :contactId AND USR$BG_BISNESS_PROCKEY = :businessProcessId ;
+
+        UPDATE OR INSERT INTO USR$CROSS1242_1980093301(USR$GD_CONTACTKEY, USR$BG_BISNESS_PROCKEY)
+        VALUES(:contactId, :businessProcessId)
+        MATCHING(USR$GD_CONTACTKEY, USR$BG_BISNESS_PROCKEY)
+        RETURNING USR$BG_BISNESS_PROCKEY INTO :ID;
+
+        SUSPEND;
+      END`;
+
+    const records: IBusinessProcess[] = await Promise.all(params.map(async bp => {
+      return (await attachment.executeReturningAsObject(transaction, sql, Object.values(bp)));
+    }));
+    cachedRequets.cacheRequest('businessProcesses');
+
+    return records;
+  } catch (error) {
+    console.error('upsertBusinessProcesses', error);
+  };
+};
+
+const upsertFeedback = async (
+  sessionId: string,
+  customer: ICustomer,
+  feedback: ICustomerFeedback[]
+) => {
+  if (!feedback) return [];
+  if (feedback.length === 0) return [];
+
+
+  try {
+    return await Promise.all(feedback?.map(async (f) => await feedbackService.createFeedback(sessionId, { ...f, customer })));
+  } catch (error) {
+    throw error;
+  }
 };

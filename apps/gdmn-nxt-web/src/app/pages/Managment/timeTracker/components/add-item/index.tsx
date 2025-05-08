@@ -21,6 +21,7 @@ import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { useAddFavoriteTaskMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery, useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
+import { useGetCustomersQuery } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 
 const durationMask = [
   /[0-9]/,
@@ -316,6 +317,16 @@ export const AddItem = ({
     skip: !formik.values.customer
   });
 
+  const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({
+    filter: {
+      withTasks: true
+    }
+  });
+
+  const taskCount = useMemo(() => customersResponse?.data.find(
+    (customer: ICustomer) => customer.ID === formik.values.customer?.ID)?.taskCount ?? 0,
+  [customersResponse?.data, formik.values.customer?.ID]);
+
   return (
     <CustomizedCard className={styles.itemCard}>
       <FormikProvider value={formik}>
@@ -556,7 +567,8 @@ export const AddItem = ({
                       className={styles.startButton}
                       variant="contained"
                       onClick={addClick}
-                      disabled={!formik.values.customer || !formik.values.duration}
+                      disabled={!formik.values.customer || !formik.values.duration || customersIsLoading
+                        || customersIsFetching || (taskCount > 0 && !formik.values.task)}
                     >
                       Добавить
                     </Button>}

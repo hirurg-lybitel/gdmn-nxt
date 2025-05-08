@@ -166,7 +166,7 @@ export const FeedbackItem = ({
         </TimelineDot>
         <TimelineConnector hidden={isLast} />
       </TimelineSeparator>
-      <TimelineContent>
+      <TimelineContent sx={{ pt: 0 }}>
         <CustomizedCard sx={{ boxShadow: 3 }}>
           <Accordion expanded={expanded} onChange={handleChange}>
             <AccordionSummary>

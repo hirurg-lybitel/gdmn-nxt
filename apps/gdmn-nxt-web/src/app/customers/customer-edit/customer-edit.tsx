@@ -15,7 +15,7 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import { ICustomer, ILabel } from '@gsbelarus/util-api-types';
+import { ICustomer, ICustomerFeedback, ILabel } from '@gsbelarus/util-api-types';
 import { useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -129,6 +129,10 @@ export function CustomerEdit({
 
   const handlePhoneChange = (value: string) => {
     formik.setFieldValue('PHONE', value);
+  };
+
+  const handleFeedbackChange = (value: ICustomerFeedback[]) => {
+    formik.setFieldValue('feedback', value);
   };
 
   const editForm = useMemo(() => {
@@ -313,7 +317,11 @@ export function CustomerEdit({
                 )
                 }
                 <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
-                  <CustomerFeedback customerId={Number(customer?.ID)} />
+                  <CustomerFeedback
+                    data={!customer?.ID ? (formik.values.feedback ?? []) : undefined}
+                    onChange={handleFeedbackChange}
+                    customerId={Number(customer?.ID)}
+                  />
                 </TabPanel>
                 <TabPanel value="2" className={tabIndex === '2' ? styles.tabPanel : ''} >
                   <CustomerContacts customerId={Number(customer?.ID)} />

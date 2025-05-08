@@ -1,8 +1,8 @@
-import { IBusinessProcess, IContactPerson, IDataSchema, ILabelsContact, IRequestResult, SortMode } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, IContactPerson, IRequestResult, SortMode } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
-import { genId, getReadTransaction, releaseReadTransaction, releaseTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { ContactBusiness, ContactLabel, Customer, CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../../../utils/cachedRequests';
+import { CustomerInfo, CustomerPerson, Phone, cachedRequets } from '../../../utils/cachedRequests';
 import { resultError } from '@gsbelarus/util-helpers';
 import { customersService } from '../service';
 
@@ -66,119 +66,62 @@ export const getContacts: RequestHandler = async (req, res) => {
   }
 };
 
-export const upsertContact: RequestHandler = async (req, res) => {
-  const { id } = req.params;
-
-  if (id && !parseInt(id)) return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
-
-  const { NAME, PHONE, EMAIL, ADDRESS, TAXID, LABELS, BUSINESSPROCESSES } = req.body;
-  const { attachment, transaction } = await startTransaction(req.sessionID);
-
+export const createContact: RequestHandler = async (req, res) => {
   try {
-    let ID = parseInt(id);
-    if (!ID) {
-      ID = await genId(attachment, transaction);
-    };
-
-    const _schema = {};
-
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
-      const data = await attachment.executeSingletonAsObject(transaction, query, params);
-
-      data['LABELS'] = await upsertLabels({ attachment, transaction }, data['ID'], LABELS);
-      data['BUSINESSPROCESSES'] = await upsertBusinessProcesses({ attachment, transaction }, data['ID'], BUSINESSPROCESSES);
-
-      return [name, data];
-    };
-
-    const query = {
-      name: 'contact',
-      query: `
-        EXECUTE BLOCK(
-          in_ID  TYPE OF COLUMN GD_CONTACT.ID = ?,
-          in_NAME  TYPE OF COLUMN GD_CONTACT.NAME = ?,
-          in_EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL = ?,
-          in_PHONE TYPE OF COLUMN GD_CONTACT.PHONE = ?,
-          in_ADDRESS TYPE OF COLUMN GD_CONTACT.ADDRESS = ?,
-          in_TAXID TYPE OF COLUMN GD_COMPANYCODE.TAXID = ?
-        )
-        RETURNS(
-          ID    INTEGER,
-          NAME  TYPE OF COLUMN GD_CONTACT.NAME,
-          EMAIL TYPE OF COLUMN GD_CONTACT.EMAIL,
-          PHONE TYPE OF COLUMN GD_CONTACT.PHONE,
-          ADDRESS TYPE OF COLUMN GD_CONTACT.ADDRESS,
-          AXID TYPE OF COLUMN GD_COMPANYCODE.TAXID
-        )
-        AS
-        BEGIN
-          UPDATE OR INSERT INTO GD_CONTACT(ID, CONTACTTYPE, PARENT, NAME, PHONE, EMAIL, ADDRESS)
-          VALUES(:in_ID, 3, (SELECT ID FROM GD_RUID WHERE XID = 147002208 AND DBID = 31587988 ROWS 1), :in_NAME, :in_PHONE, :in_EMAIL, :in_ADDRESS)
-          MATCHING(ID)
-          RETURNING ID, NAME, PHONE, EMAIL, ADDRESS
-          INTO :ID, :NAME, :PHONE, :EMAIL, :ADDRESS;
-
-          IF (ID IS NOT NULL) THEN
-            UPDATE OR INSERT INTO GD_COMPANY(CONTACTKEY)
-            VALUES(:ID)
-            MATCHING(CONTACTKEY);
-          IF (ID IS NOT NULL) THEN
-            UPDATE OR INSERT INTO GD_COMPANYCODE(COMPANYKEY, TAXID)
-            VALUES(:ID, :in_TAXID)
-            MATCHING(COMPANYKEY)
-            RETURNING TAXID
-            INTO :in_TAXID;
-          SUSPEND;
-        END`,
-      params: [ID, NAME, EMAIL, PHONE, ADDRESS, TAXID],
-    };
-
-
-    const row = await Promise.resolve(execQuery(query));
+    const newCustomer = await customersService.createCustomer(req.sessionID, req.body);
 
     cachedRequets.cacheRequest('customers');
 
-    const result: IRequestResult = {
-      queries: {
-        ...Object.fromEntries([row])
-      },
-      _schema
+    const result = {
+      queries: { contact: newCustomer },
+      _schema: {}
     };
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseTransaction(req.sessionID, transaction);
+    console.error('[ create customer ]', error);
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+export const updateContact: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+
+  if (id && !parseInt(id)) {
+    return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
   };
+
+  try {
+    const newCustomer = await customersService.updateCustomer(req.sessionID, parseInt(id), req.body);
+
+    cachedRequets.cacheRequest('customers');
+
+    const result = {
+      queries: { contact: newCustomer },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[ update customer ]', error);
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
 };
 
 export const deleteContact: RequestHandler = async (req, res) => {
   const { id } = req.params;
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  if (id && !parseInt(id)) {
+    return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
+  };
 
   try {
-    await attachment.execute(
-      transaction,
-      `EXECUTE BLOCK(
-        ID INTEGER = ?
-      )
-      AS
-      BEGIN
-        DELETE FROM GD_COMPANYCODE WHERE COMPANYKEY = :ID;
-        DELETE FROM GD_COMPANY WHERE CONTACTKEY = :ID;
-        DELETE FROM GD_CONTACT WHERE ID = :ID;
-      END`,
-      [id]
-    );
-
+    await customersService.deleteCustomer(req.sessionID, parseInt(id));
     cachedRequets.cacheRequest('customers');
 
     return res.status(200).send(id);
   } catch (error) {
+    console.error('[ delete customer ]', error);
     return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseTransaction();
   }
 };
 
@@ -226,72 +169,6 @@ export const getContactHierarchy: RequestHandler = async (req, res) => {
   } finally {
     await releaseReadTransaction(req.sessionID);
   }
-};
-
-const upsertLabels = async(firebirdPropsL: any, contactId: number, labels: ILabelsContact[]): Promise<ILabelsContact[]> => {
-  const { attachment, transaction } = firebirdPropsL;
-
-  if (!labels || labels?.length === 0) {
-    try {
-      const sql = `
-        DELETE FROM USR$CRM_CUSTOMER_LABELS
-        WHERE USR$CONTACTKEY = ?` ;
-
-      await attachment.execute(transaction, sql, [contactId]);
-      cachedRequets.cacheRequest('customerLabels');
-    } catch (error) {
-      console.error('upsertLabels', error);
-    }
-    return [];
-  };
-
-  const contactLabels = labels.map(label => ({ CONTACT: contactId, LABELKEY: label.ID }));
-
-  try {
-    /** Поскольку мы передаём весь массив лейблов, то удалим все прежние  */
-    const deleteSQL = 'DELETE FROM USR$CRM_CUSTOMER_LABELS WHERE USR$CONTACTKEY = ?';
-
-    await Promise.all(
-      [...new Set(contactLabels.map(el => el.CONTACT))]
-        .map(async contact => {
-          await attachment.execute(transaction, deleteSQL, [contact]);
-        })
-    );
-
-    const insertSQL = `
-      EXECUTE BLOCK(
-        CONTACTKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$CONTACTKEY = ?,
-        LABELKEY TYPE OF COLUMN USR$CRM_CUSTOMER_LABELS.USR$LABELKEY = ?
-      )
-      RETURNS(
-        ID TYPE OF COLUMN USR$CRM_LABELS.ID
-      )
-      AS
-      BEGIN
-        DELETE FROM USR$CRM_CUSTOMER_LABELS WHERE USR$CONTACTKEY = :CONTACTKEY AND USR$LABELKEY = :LABELKEY ;
-
-        INSERT INTO USR$CRM_CUSTOMER_LABELS(USR$CONTACTKEY, USR$LABELKEY)
-        VALUES(:CONTACTKEY, :LABELKEY);
-
-        SELECT ID
-        FROM USR$CRM_LABELS
-        WHERE ID = :LABELKEY
-        INTO :ID;
-
-        SUSPEND;
-      END`;
-
-    const records = await Promise.all(contactLabels.map(async label => {
-      return (await attachment.executeReturningAsObject(transaction, insertSQL, Object.values(label)));
-    }));
-    cachedRequets.cacheRequest('customerLabels');
-
-    return records as ILabelsContact[];
-  } catch (error) {
-    console.error('upsertLabels', error);
-
-    return;
-  };
 };
 
 export const getCustomersCross: RequestHandler = async (req, res) => {
@@ -438,13 +315,12 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
   };
 };
 
-
 export const customerController = {
   upsertBusinessProcesses,
   getCustomersCross,
-  upsertLabels,
   getContactHierarchy,
   deleteContact,
-  upsertContact,
-  getContacts
+  getContacts,
+  createContact,
+  updateContact
 };
