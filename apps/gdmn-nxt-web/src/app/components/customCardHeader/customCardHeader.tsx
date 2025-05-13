@@ -18,16 +18,16 @@ interface PageHeaderProps {
   searchPlaceholder?: string,
   onRefetch?: () => void,
   onFilterClick?: () => void,
-  hasFilters?: boolean
+  hasFilters?: boolean;
   onAddClick?: () => void,
-  addButton?: boolean
+  addButton?: boolean;
   addButtonHint?: string,
   action?: ReactNode,
   wrapAction?: ReactNode,
   search?: boolean,
   filter?: boolean,
   refetch?: boolean,
-  sx?: SxProps<Theme>
+  sx?: SxProps<Theme>;
 }
 
 export default function CustomCardHeader(props: PageHeaderProps) {
@@ -108,7 +108,7 @@ export default function CustomCardHeader(props: PageHeaderProps) {
         <Stack
           display={'flex'}
           direction={'row'}
-          spacing={1}
+          spacing={{ xs: 0, sm: 1 }}
           marginRight={'-8px'}
         >
           {addButton && <Box display="inline-flex" alignSelf="center">
