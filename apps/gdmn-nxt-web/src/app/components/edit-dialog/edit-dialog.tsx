@@ -1,4 +1,4 @@
-import { Box, Button, DialogActions, DialogContent, DialogTitle, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Button, DialogActions, DialogContent, DialogTitle, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
 import ButtonWithConfirmation from '../button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '../customButtons/item-button-delete/item-button-delete';
@@ -6,37 +6,37 @@ import styles from './edit-dialog.module.css';
 import { ReactNode } from 'react';
 
 interface EditDialogProps {
-  open: boolean,
-  title?: string | ReactNode,
-  children: ReactNode,
-  confirmation?: boolean,
-  form?: string,
+  open: boolean;
+  title?: string | ReactNode;
+  children: ReactNode;
+  confirmation?: boolean;
+  form?: string;
 
   // cancelButtonProps
-  onClose: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown' | 'swipe') => void,
-  cancelConfirmTitle?: string,
-  cancelConfirmText?: string,
+  onClose: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown' | 'swipe') => void;
+  cancelConfirmTitle?: string;
+  cancelConfirmText?: string;
 
   // deleteButtonProps
-  onDeleteClick?: () => void,
-  deleteButton?: boolean,
-  deleteConfirmTitle?: string,
-  deleteConfirmText?: string,
-  deleteButtonDisabled?: boolean
-  deleteButtoHint?: string
-  showDeleteButtonHintAnyway?: boolean
+  onDeleteClick?: () => void;
+  deleteButton?: boolean;
+  deleteConfirmTitle?: string;
+  deleteConfirmText?: string;
+  deleteButtonDisabled?: boolean;
+  deleteButtoHint?: string;
+  showDeleteButtonHintAnyway?: boolean;
 
   // sumbitButtonProps
-  onSubmitClick?: () => void,
-  submitButtonDisabled?: boolean,
-  submitButton?: boolean
-  submitHint?: string
+  onSubmitClick?: () => void;
+  submitButtonDisabled?: boolean;
+  submitButton?: boolean;
+  submitHint?: string;
 
   // DealogProps
-  fullwidth?: boolean,
-  disableEscape?: boolean,
-  width?: number | string,
-  selectDialog?: boolean
+  fullwidth?: boolean;
+  disableEscape?: boolean;
+  width?: number | string;
+  selectDialog?: boolean;
 }
 
 export default function EditDialog(props: Readonly<EditDialogProps>) {
@@ -99,7 +99,8 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
           direction={'row'}
           sx={{
             gap: { xs: '10px', sm: '14px' },
-            width: { xs: '100%', sm: 'fin-content' } }}
+            width: { xs: '100%', sm: 'fin-content' }
+          }}
           justifyContent={'flex-end'}
         >
           {selectDialog ?
@@ -113,16 +114,18 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
               </Button>
             )
             : <>
-              <ButtonWithConfirmation
-                className={styles.button}
-                variant="outlined"
-                onClick={onClose}
-                title={cancelConfirmTitle}
-                text={cancelConfirmText}
-                confirmation={confirmation}
-              >
-                Отменить
-              </ButtonWithConfirmation>
+              <div className={styles.button}>
+                <ButtonWithConfirmation
+                  className={styles.button}
+                  variant="outlined"
+                  onClick={onClose}
+                  title={cancelConfirmTitle}
+                  text={cancelConfirmText}
+                  confirmation={confirmation}
+                >
+                  Отменить
+                </ButtonWithConfirmation>
+              </div>
               {submitButton && (
                 <Tooltip title={submitHint}>
                   <div className={styles.button}>
