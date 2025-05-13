@@ -68,16 +68,16 @@ const filterOptions = (limit = 50, fieldName = '') => createFilterOptions({
 });
 
 interface IAnalyticsDataParams {
-  dateBegin: number,
-  dateEnd: number,
-  departments?: IContactWithID[],
-  workTypes?: IWorkType[]
-  contracts?: ICustomerContract[]
+  dateBegin: number;
+  dateEnd: number;
+  departments?: IContactWithID[];
+  workTypes?: IWorkType[];
+  contracts?: ICustomerContract[];
 };
 
 
 /* eslint-disable-next-line */
-export interface ChartColumnProps {}
+export interface ChartColumnProps { }
 
 export function ChartColumn(props: ChartColumnProps) {
   const theme = useTheme();
@@ -134,7 +134,7 @@ export function ChartColumn(props: ChartColumnProps) {
       initialSeries[index] = 0;
     };
   } else {
-    initialSeries[0] = 0 ;
+    initialSeries[0] = 0;
     activeYears.forEach(year =>
       seriesMap[year] = { ...initialSeries }
     );
@@ -160,7 +160,7 @@ export function ChartColumn(props: ChartColumnProps) {
     }
   });
 
-  const series: {name?: string, data: number[]}[] = [];
+  const series: { name?: string, data: number[]; }[] = [];
 
   // for (const [key, value] of Object.entries(seriesMap)) {
   //   series.push({ name: key, data: Object.values(value) });
