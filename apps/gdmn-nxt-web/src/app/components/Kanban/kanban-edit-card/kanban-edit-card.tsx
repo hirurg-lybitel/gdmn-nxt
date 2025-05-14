@@ -41,8 +41,6 @@ import { useGetDenyReasonsQuery } from '../../../features/kanban/kanbanCatalogsA
 import { DenyReasonsSelect } from '../../selectors/deny-reasons-select/deny-reasons-select';
 import { TabDescription } from './components/tab-description';
 import { TabFeedback } from './components/tab-feedback';
-import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
-import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import { DealDocuments } from './components/deal-documents';
 import { ClientHistory } from './components/client-history';
@@ -50,8 +48,6 @@ import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutl
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
-import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
-import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useGetDealsFilesQuery } from '../../../features/kanban/kanbanApi';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
@@ -267,17 +263,17 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
 
   useEffect(() => {
     if ((getIn(formik.touched, 'DEAL.USR$NAME"') && Boolean(getIn(formik.errors, 'DEAL.USR$NAME"'))) ||
-    (getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))) ||
-    (getIn(formik.touched, 'DEAL.DEPARTMENT') && Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))) ||
-    (getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL')))) {
+      (getIn(formik.touched, 'DEAL.CONTACT') && Boolean(getIn(formik.errors, 'DEAL.CONTACT'))) ||
+      (getIn(formik.touched, 'DEAL.DEPARTMENT') && Boolean(getIn(formik.errors, 'DEAL.DEPARTMENT'))) ||
+      (getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL')))) {
       setTabIndex('1');
     };
 
     if ((getIn(formik.touched, 'DEAL.REQUESTNUMBER') && Boolean(getIn(formik.errors, 'DEAL.REQUESTNUMBER'))) ||
-        (getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))) ||
-        (getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))) ||
-        (getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))) ||
-        (getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE')))) {
+      (getIn(formik.touched, 'DEAL.PRODUCTNAME') && Boolean(getIn(formik.errors, 'DEAL.PRODUCTNAME'))) ||
+      (getIn(formik.touched, 'DEAL.CONTACT_NAME') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_NAME'))) ||
+      (getIn(formik.touched, 'DEAL.CONTACT_EMAIL') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_EMAIL'))) ||
+      (getIn(formik.touched, 'DEAL.CONTACT_PHONE') && Boolean(getIn(formik.errors, 'DEAL.CONTACT_PHONE')))) {
       setTabIndex('2');
     };
   }, [formik.touched, formik.errors]);
@@ -304,17 +300,15 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
     formik.setFieldValue('DEAL.CONTACT_PHONE', value);
   };
 
-  const checkDoneAndTasks = useMemo(() =>
-    !(formik.values.DEAL?.USR$DONE) &&
+  const checkDoneAndTasks = useMemo(() => (!(formik.values.DEAL?.USR$DONE) &&
     (formik.values.TASKS?.reduce((acc, task) => acc + Number(!task.USR$CLOSED), 0) || 0) > 0
-  , [formik.values.DEAL?.USR$DONE, formik.values.TASKS]);
+  ), [formik.values.DEAL?.USR$DONE, formik.values.TASKS]);
 
   const KanbanRequestInfo = useMemo(() => {
     return (
       <Stack
         flex={1}
         spacing={2}
-        paddingTop={1}
         maxWidth={600}
         paddingBottom={'1px'}
       >
@@ -453,9 +447,9 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
   const maxFileSize = 5000000; // in bytes
 
   const userPermissions = usePermissions();
-  const checkDeletePermissions = useMemo(() =>
-    userPermissions?.deals.DELETE || contactkey === card?.DEAL?.CREATOR?.ID,
-  [card?.DEAL?.CREATOR?.ID, contactkey, userPermissions?.deals.DELETE]);
+  const checkDeletePermissions = useMemo(() => (
+    userPermissions?.deals.DELETE || contactkey === card?.DEAL?.CREATOR?.ID
+  ), [card?.DEAL?.CREATOR?.ID, contactkey, userPermissions?.deals.DELETE]);
 
   const tasksExist = useMemo(() => card?.TASKS && card?.TASKS?.length > 0, [card?.TASKS]);
 
@@ -495,7 +489,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                 alignItems={'center'}
                 justifyContent={'center'}
                 spacing={2}
-                >
+              >
                 <IconButton
                   color="primary"
                   onClick={handleStepBack}
@@ -525,7 +519,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                 activeStep={stages.findIndex(stage => stage.ID === formik.values.USR$MASTERKEY)}
                 alternativeLabel
                 nonLinear
-                >
+              >
                 {stages.map((stage, idx) =>
                   <Step
                     key={stage.ID}
@@ -560,6 +554,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
               <Divider style={{ margin: 0 }} />
               <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
                 <CustomizedScrollBox
+                  labelOffset
                   container={{ className: classes.scrollContainer }}
                   className={classes.scrollBox}
                 >
@@ -572,7 +567,6 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                     <Stack
                       flex={1}
                       spacing={2}
-                      paddingTop={1}
                       maxWidth={600}
                     >
                       <TextField
@@ -836,9 +830,9 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                                 label="Отказ"
                               />
                               {formik.values.DEAL?.DENIED &&
-                                    <Stack flex={1} spacing={2}>
-                                      <DenyReasonsSelect formik={formik} />
-                                    </Stack>}
+                                <Stack flex={1} spacing={2}>
+                                  <DenyReasonsSelect formik={formik} />
+                                </Stack>}
                             </Stack>
                             {/* : <></> */}
                             {/* } */}
@@ -847,18 +841,18 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                         </Stack>
                       </Stack>
                       {(formik.values.DEAL?.DENIED || formik.values.DEAL?.USR$DONE) &&
-                            <TextField
-                              label="Комментарий"
-                              ref={refComment}
-                              type="text"
-                              name="COMMENT"
-                              multiline
-                              minRows={4}
-                              onChange={(e) => {
-                                formik.setFieldValue('DEAL.COMMENT', e.target.value);
-                              }}
-                              value={formik.values.DEAL?.COMMENT}
-                            />
+                        <TextField
+                          label="Комментарий"
+                          ref={refComment}
+                          type="text"
+                          name="COMMENT"
+                          multiline
+                          minRows={4}
+                          onChange={(e) => {
+                            formik.setFieldValue('DEAL.COMMENT', e.target.value);
+                          }}
+                          value={formik.values.DEAL?.COMMENT}
+                        />
                       }
                       <div>
                         <Dropzone
@@ -875,7 +869,11 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                 </CustomizedScrollBox>
               </TabPanel>
               <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
-                <CustomizedScrollBox container={{ className: classes.scrollContainer }} className={classes.scrollBox}>
+                <CustomizedScrollBox
+                  labelOffset
+                  container={{ className: classes.scrollContainer }}
+                  className={classes.scrollBox}
+                >
                   <Box
                     sx={{
                       display: 'flex',
@@ -890,7 +888,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                 <KanbanTasks card={formik.values} formik={formik} />
               </TabPanel>
               <TabPanel value="4" className={tabIndex === '4' ? classes.tabPanel : ''}>
-                <DealDocuments dealId={card?.DEAL?.ID ?? -1}/>
+                <DealDocuments dealId={card?.DEAL?.ID ?? -1} />
               </TabPanel>
               <TabPanel value="5" className={tabIndex === '5' ? classes.tabPanel : ''}>
                 <CustomizedCard

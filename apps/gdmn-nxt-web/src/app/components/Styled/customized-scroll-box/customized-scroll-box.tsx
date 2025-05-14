@@ -1,6 +1,6 @@
 import styles from './customized-scroll-box.module.less';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import PerfectScrollbar, { ScrollBarProps } from 'react-perfect-scrollbar';
 import { CSSProperties } from '@mui/styles';
 
@@ -16,7 +16,8 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
     style?: CSSProperties;
     className?: string;
   },
-  externalScrollLock?: boolean
+  externalScrollLock?: boolean,
+  labelOffset?: boolean;
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
@@ -26,6 +27,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     backgroundColor = 'rgba(0, 0, 0, 0)',
     container,
     externalScrollLock = false,
+    labelOffset,
     ...style
   } = props;
 
@@ -39,7 +41,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     const { scrollTop, scrollHeight, clientHeight } = container;
 
     const showTop = scrollTop > 0;
-    const showBottom = clientHeight + scrollTop < scrollHeight ;
+    const showBottom = clientHeight + scrollTop < scrollHeight;
 
     setShowScrollBlurs({ top: showTop, bottom: showBottom });
   };
@@ -51,7 +53,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
   const wheelEvent = useCallback((mobile: boolean) => mobile ? 'touchmove' : 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
 
-  const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
+  const keys: { [key: string]: number; } = { 'ArrowUp': 1, 'ArrowDown': 1 };
   const preventDefaultForScrollKeys = useCallback((e: KeyboardEvent) => {
     if (keys[e.key]) {
       preventDefault(e);
@@ -87,9 +89,11 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
       />
       <div
         className={styles.scrollBox}
+        style={{ marginTop: labelOffset ? '-5px' : undefined }}
       >
         <PerfectScrollbar
           {...style}
+          style={{ paddingTop: labelOffset ? '5px' : undefined, ...style.style }}
           containerRef={(ref) => containerRef.current = ref}
           onScrollY={handleScroll}
           onMouseEnter={onScrollStart(false)}

@@ -236,7 +236,7 @@ export function CustomerEdit({
           >
             {!matchDownMd && <>
               <div className={styles.editPanel}>
-                <CustomizedScrollBox>
+                <CustomizedScrollBox labelOffset>
                   {editForm}
                 </CustomizedScrollBox>
               </div>
@@ -306,8 +306,8 @@ export function CustomerEdit({
                     className={tabIndex === '0' ? styles.tabPanel : ''}
                   >
                     <div style={{ flex: 1, marginRight: '-20px' }}>
-                      <CustomizedScrollBox>
-                        <div style={{ paddingBottom: '1px', paddingTop: '5px' }}>
+                      <CustomizedScrollBox labelOffset>
+                        <div style={{ paddingBottom: '1px' }}>
                           {editForm}
                         </div>
 

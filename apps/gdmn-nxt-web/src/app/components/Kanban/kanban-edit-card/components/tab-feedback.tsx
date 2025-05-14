@@ -42,7 +42,6 @@ export function TabFeedback({ formik }: Readonly<TabFeedbackProps>) {
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        flexDirection: 'column',
         '& .MuiAutocomplete-root .MuiFormLabel-root': {
           paddingRight: '29px'
         }
@@ -51,7 +50,6 @@ export function TabFeedback({ formik }: Readonly<TabFeedbackProps>) {
       <Stack
         flex={1}
         spacing={2}
-        paddingTop={1}
         maxWidth={600}
       >
         <Stack direction="row" spacing={2}>

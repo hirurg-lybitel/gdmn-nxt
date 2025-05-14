@@ -105,7 +105,7 @@ export function ProjectEdit(props: ProjectEditProps) {
     setLastId(lastId + 1);
   }, [formik, lastId]);
 
-  const changeTaskFvorite = useCallback((data: {taskId: number, projectId: number}, favorite: boolean) => {
+  const changeTaskFvorite = useCallback((data: { taskId: number, projectId: number; }, favorite: boolean) => {
     const newTasks = formik.values.tasks ? [...formik.values.tasks] : [];
     const index = newTasks.findIndex(item => item.ID === data.taskId);
     newTasks[index] = { ...newTasks[index], isFavorite: favorite };
@@ -124,7 +124,6 @@ export function ProjectEdit(props: ProjectEditProps) {
       <Stack
         spacing={2}
         paddingRight={'16px'}
-        paddingTop={'4px'}
       >
         <TextField
           style={{ width: '100%' }}
@@ -207,7 +206,7 @@ export function ProjectEdit(props: ProjectEditProps) {
           >
             {!matchDownMd && <>
               <div className={styles.editPanel}>
-                <CustomizedScrollBox>
+                <CustomizedScrollBox labelOffset>
                   {editForm}
                 </CustomizedScrollBox>
               </div>
@@ -253,7 +252,7 @@ export function ProjectEdit(props: ProjectEditProps) {
                 <Divider />
                 {matchDownMd && <TabPanel value="0" className={tabIndex === '0' ? styles.tabPanel : ''}>
                   <div style={{ width: '100%', marginRight: '-16px !important' }}>
-                    <CustomizedScrollBox>
+                    <CustomizedScrollBox labelOffset>
                       <div>
                         {editForm}
                       </div>
@@ -277,7 +276,7 @@ export function ProjectEdit(props: ProjectEditProps) {
                   <ProjectStatistics projectId={formik.values.ID !== -1 ? formik.values.ID : undefined} />
                 </TabPanel>
                 <TabPanel value="4" className={tabIndex === '4' ? styles.tabPanel : ''} >
-                  <ProjectNote message={formik.values.note} onChange={(note) => formik.setFieldValue('note', note)}/>
+                  <ProjectNote message={formik.values.note} onChange={(note) => formik.setFieldValue('note', note)} />
                 </TabPanel>
               </TabContext>
             </Stack>
