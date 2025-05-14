@@ -8,9 +8,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     borderRadius: 0,
     '&:hover': {
-      backgroundColor: theme.color.grey[300],
-      color: 'initial',
-      borderRadius: '4px',
+      color: theme.palette.text.primary,
+      '& .caption': {
+        color: theme.palette.text.primary,
+      }
     },
     '& .actions': {
       position: 'absolute',
@@ -22,14 +23,14 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
   },
   listItemSelected: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.secondary.main,
+    backgroundColor: theme.palette.primary.main + '!important',
+    color: theme.palette.secondary.main + '!important',
     borderRadius: '4px',
     '& .caption': {
-      color: theme.palette.secondary.main,
+      color: theme.palette.secondary.main + '!important',
     },
-    '&:hover  .caption': {
-      color: 'initial',
+    '& .action': {
+      color: theme.palette.primary.contrastText
     }
   }
 }));
@@ -75,7 +76,11 @@ export const GroupList = (props: IGroupList) => {
             hidden={!mobile}
           >
             <IconButton size="small" onClick={onEdit(group)}>
-              <EditIcon fontSize="small" color="primary" />
+              <EditIcon
+                className="action"
+                fontSize="small"
+                color={(mobile && group.ID === selectedUserGroup?.ID) ? 'action' : 'primary'}
+              />
             </IconButton>
           </div>
         </ListItemText>

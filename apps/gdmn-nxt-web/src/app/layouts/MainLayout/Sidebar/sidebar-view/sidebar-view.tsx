@@ -25,7 +25,7 @@ export function Sidebar(props: SidebarProps) {
   const drawer = (
     <>
       <BrowserView style={{ position: 'relative', flex: 1 }}>
-        <MenuList />
+        <MenuList onItemClick={menuItemClick} />
       </BrowserView>
       <MobileView style={{ position: 'relative', flex: 1, zIndex: 1500 }}>
         <MenuList onItemClick={menuItemClick} />
