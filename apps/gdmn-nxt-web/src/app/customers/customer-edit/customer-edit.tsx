@@ -138,7 +138,6 @@ export function CustomerEdit({
   const editForm = useMemo(() => {
     return (
       <Stack
-        style={{ marginRight: matchDownMd ? '20px' : '16px' }}
         spacing={2}
       >
         <TextField
@@ -236,7 +235,7 @@ export function CustomerEdit({
           >
             {!matchDownMd && <>
               <div className={styles.editPanel}>
-                <CustomizedScrollBox labelOffset>
+                <CustomizedScrollBox className={styles.scrollBox}>
                   {editForm}
                 </CustomizedScrollBox>
               </div>
@@ -305,17 +304,11 @@ export function CustomerEdit({
                     value="0"
                     className={tabIndex === '0' ? styles.tabPanel : ''}
                   >
-                    <div style={{ flex: 1, marginRight: '-20px' }}>
-                      <CustomizedScrollBox labelOffset>
-                        <div style={{ paddingBottom: '1px' }}>
-                          {editForm}
-                        </div>
-
-                      </CustomizedScrollBox>
-                    </div>
+                    <CustomizedScrollBox className={styles.scrollBox} container={{ className: styles.scrollContainer }}>
+                      {editForm}
+                    </CustomizedScrollBox>
                   </TabPanel>
-                )
-                }
+                )}
                 <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
                   <CustomerFeedback
                     data={!customer?.ID ? (formik.values.feedback ?? []) : undefined}

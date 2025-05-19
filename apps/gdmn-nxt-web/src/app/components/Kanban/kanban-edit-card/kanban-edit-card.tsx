@@ -74,10 +74,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginTop: '12px !important',
   },
   scrollContainer: {
-    marginRight: -16
+    marginTop: -12,
+    marginRight: -24
   },
   scrollBox: {
-    paddingRight: 16
+    paddingTop: 12,
+    paddingRight: 24
   }
 }));
 
@@ -554,7 +556,6 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
               <Divider style={{ margin: 0 }} />
               <TabPanel value="1" className={tabIndex === '1' ? classes.tabPanel : ''}>
                 <CustomizedScrollBox
-                  labelOffset
                   container={{ className: classes.scrollContainer }}
                   className={classes.scrollBox}
                 >
@@ -870,7 +871,6 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
               </TabPanel>
               <TabPanel value="2" className={tabIndex === '2' ? classes.tabPanel : ''}>
                 <CustomizedScrollBox
-                  labelOffset
                   container={{ className: classes.scrollContainer }}
                   className={classes.scrollBox}
                 >

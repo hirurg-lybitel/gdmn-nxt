@@ -17,7 +17,6 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
     className?: string;
   },
   externalScrollLock?: boolean,
-  labelOffset?: boolean;
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
@@ -27,7 +26,6 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     backgroundColor = 'rgba(0, 0, 0, 0)',
     container,
     externalScrollLock = false,
-    labelOffset,
     ...style
   } = props;
 
@@ -89,11 +87,9 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
       />
       <div
         className={styles.scrollBox}
-        style={{ marginTop: labelOffset ? '-5px' : undefined }}
       >
         <PerfectScrollbar
           {...style}
-          style={{ paddingTop: labelOffset ? '5px' : undefined, ...style.style }}
           containerRef={(ref) => containerRef.current = ref}
           onScrollY={handleScroll}
           onMouseEnter={onScrollStart(false)}

@@ -123,7 +123,6 @@ export function ProjectEdit(props: ProjectEditProps) {
     return (
       <Stack
         spacing={2}
-        paddingRight={'16px'}
       >
         <TextField
           style={{ width: '100%' }}
@@ -206,7 +205,7 @@ export function ProjectEdit(props: ProjectEditProps) {
           >
             {!matchDownMd && <>
               <div className={styles.editPanel}>
-                <CustomizedScrollBox labelOffset>
+                <CustomizedScrollBox style={{ paddingTop: '12px', paddingRight: '16px' }}>
                   {editForm}
                 </CustomizedScrollBox>
               </div>
@@ -251,13 +250,9 @@ export function ProjectEdit(props: ProjectEditProps) {
                 </TabList>
                 <Divider />
                 {matchDownMd && <TabPanel value="0" className={tabIndex === '0' ? styles.tabPanel : ''}>
-                  <div style={{ width: '100%', marginRight: '-16px !important' }}>
-                    <CustomizedScrollBox labelOffset>
-                      <div>
-                        {editForm}
-                      </div>
-                    </CustomizedScrollBox>
-                  </div>
+                  <CustomizedScrollBox className={styles.scrollBox} container={{ className: styles.scrollContainer }}>
+                    {editForm}
+                  </CustomizedScrollBox>
                 </TabPanel>}
                 <TabPanel value="1" className={tabIndex === '1' ? styles.tabPanel : ''} >
                   <div style={{ width: '100%', height: '100%' }}>
