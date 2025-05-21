@@ -188,10 +188,11 @@ export const FeedbackItem = ({
         <CustomizedCard sx={{ boxShadow: 3 }}>
           <Accordion expanded={expanded} onChange={handleChange}>
             <AccordionSummary >
-              <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', paddingTop: { xs: '16px', sm: 0 } }}>
                 <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 0, sm: '16px' } }}>
                   {matchDownSm && <Typography
-                    variant="body2"
+                    sx={{ position: 'absolute', top: '5px', right: '10px' }}
+                    variant="caption"
                     color="textSecondar"
                   >
                     {dayjs(creationDate).format('MMM D, YYYY')}
