@@ -24,7 +24,7 @@ import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 export interface CustomerFeedbackProps {
   customerId: number,
   data?: ICustomerFeedback[],
-  onChange?: (value: ICustomerFeedback[]) => void
+  onChange?: (value: ICustomerFeedback[]) => void;
 }
 
 export function CustomerFeedback({
@@ -223,8 +223,7 @@ export function CustomerFeedback({
             padding: 0,
             [`& .${timelineOppositeContentClasses.root}`]: {
               flex: 0.1,
-            },
-            minWidth: '500px'
+            }
           }}
         >
           {(localData ?? feedback).map((f, idx) => (
