@@ -152,7 +152,7 @@ export const FeedbackItem = ({
 
   return (
     <TimelineItem>
-      <TimelineOppositeContent sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column' }}>
+      <TimelineOppositeContent sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column', minWidth: '80px' }}>
         <Typography variant="body2" color="textSecondary">
           {dayjs(creationDate).format('MMM D, YYYY')}
         </Typography>
@@ -198,7 +198,7 @@ export const FeedbackItem = ({
                     {dayjs(creationDate).format('MMM D, YYYY')}
                     {' ' + dayjs(creationDate).format('H:mm')}
                   </Typography>}
-                  <Typography fontWeight={600}>
+                  <Typography fontWeight={600} sx={{ display: 'flex', alignItems: 'center' }}>
                     {(() => {
                       switch (type) {
                         case CustomerFeedbackType.email:
