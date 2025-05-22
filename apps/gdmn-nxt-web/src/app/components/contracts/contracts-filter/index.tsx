@@ -7,6 +7,7 @@ import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/c
 import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { DateRange } from '@mui/lab';
 import dayjs from '@gdmn-nxt/dayjs';
+import FilterDialog from '@gdmn-nxt/components/filter-dialog/filter-dialog';
 
 export interface ContractsFilterProps {
   open: boolean;
@@ -55,48 +56,34 @@ export function ContractsFilter({
   };
 
   return (
-    <CustomizedDialog
+    <FilterDialog
       open={open}
+      onClear={filterClear}
       onClose={onClose}
-      width={400}
     >
-      <CardContent style={{ flex: 1 }}>
-        <Stack spacing={2}>
-          <CustomerSelect
-            label="Клиенты"
-            placeholder="Выберите клиента"
-            multiple
-            value={filteringData?.customers as ICustomer[] ?? []}
-            onChange={(value) => handleOnChange('customers', value)}
-          />
-          <DateRangePicker
-            value={period}
-            onChange={dateRangePickerChange}
-            slotProps={{ textField: { variant: 'outlined' } }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={filteringData?.isActive ?? false}
-                onChange={(e) => handleOnChange('isActive', e.target.checked)}
-              />
-            }
-            label="Только действуюшие"
-          />
-        </Stack>
-      </CardContent>
-      <CardActions style={{ padding: '16px' }}>
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={() => {
-            filterClear();
-            onClose();
-          }}
-        >
-            Очистить
-        </Button>
-      </CardActions>
-    </CustomizedDialog>
+      <Stack spacing={2}>
+        <CustomerSelect
+          label="Клиенты"
+          placeholder="Выберите клиента"
+          multiple
+          value={filteringData?.customers as ICustomer[] ?? []}
+          onChange={(value) => handleOnChange('customers', value)}
+        />
+        <DateRangePicker
+          value={period}
+          onChange={dateRangePickerChange}
+          slotProps={{ textField: { variant: 'outlined' } }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filteringData?.isActive ?? false}
+              onChange={(e) => handleOnChange('isActive', e.target.checked)}
+            />
+          }
+          label="Только действуюшие"
+        />
+      </Stack>
+    </FilterDialog>
   );
 };

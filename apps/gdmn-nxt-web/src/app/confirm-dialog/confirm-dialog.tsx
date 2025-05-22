@@ -50,6 +50,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
   return (
     <Dialog
+      closeAfterTransition={false}
       open={open}
       aria-label="confirmation"
       TransitionComponent={Transition}

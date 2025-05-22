@@ -9,6 +9,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -81,88 +82,59 @@ export function UserGroupEdit(props: UserGroupEditProps) {
   }, [open]);
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={onClose}
+      form="mainForm"
+      title={userGroup ? `Редактирование: ${userGroup.NAME}` : 'Добавление группы'}
       confirmation={formik.dirty}
+      onDeleteClick={onDeleteClick}
+      deleteButton={!!userGroup}
+      deleteConfirmText={`Вы действительно хотите удалить группу ${userGroup?.NAME}?`}
     >
-      <DialogTitle>
-        {userGroup ? `Редактирование: ${userGroup.NAME}` : 'Добавление группы'}
-      </DialogTitle>
-      <DialogContent dividers>
-        <FormikProvider value={formik}>
-          <Form
-            id="mainForm"
-            onSubmit={formik.handleSubmit}
-          >
-            <Stack direction="column" spacing={2}>
-              <TextField
-                label="Наименование"
-                type="text"
-                required
-                autoFocus
-                name="NAME"
-                onKeyDown={disableSubmitOnEnter}
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.NAME}
-                helperText={formik.errors.NAME}
-              />
-              <TextField
-                label="Описание"
-                type="text"
-                name="DESCRIPTION"
-                multiline
-                minRows={4}
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.DESCRIPTION}
-                helperText={formik.errors.DESCRIPTION}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formik.values.REQUIRED_2FA}
-                    name="REQUIRED_2FA"
-                  />
-                }
-                onChange={formik.handleChange}
-                label="Обязательная двухфакторная аутентификация"
-              />
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        {userGroup &&
-          <ItemButtonDelete
-            button
-            text={`Вы действительно хотите удалить группу ${userGroup.NAME}?`}
-            onClick={onDeleteClick}
-          />
-        }
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={classes.button}
-          variant="outlined"
-          color="primary"
-          onClick={onCancel}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
+      <FormikProvider value={formik}>
+        <Form
+          id="mainForm"
+          onSubmit={formik.handleSubmit}
         >
-          Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={classes.button}
-          variant="contained"
-          form="mainForm"
-          type="submit"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+          <Stack direction="column" spacing={2}>
+            <TextField
+              label="Наименование"
+              type="text"
+              required
+              autoFocus
+              name="NAME"
+              onKeyDown={disableSubmitOnEnter}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.NAME}
+              helperText={formik.errors.NAME}
+            />
+            <TextField
+              label="Описание"
+              type="text"
+              name="DESCRIPTION"
+              multiline
+              minRows={4}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+              value={formik.values.DESCRIPTION}
+              helperText={formik.errors.DESCRIPTION}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formik.values.REQUIRED_2FA}
+                  name="REQUIRED_2FA"
+                />
+              }
+              onChange={formik.handleChange}
+              label="Обязательная двухфакторная аутентификация"
+            />
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

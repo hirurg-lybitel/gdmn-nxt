@@ -10,10 +10,11 @@ import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { fullFaq } from '../../../features/FAQ/faqApi';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 interface PopupProps {
   close: () => void
-  isOpened: boolean
+  open: boolean
   isAddPopup: boolean
   faq?: fullFaq,
   addFaq?: (values: fullFaq) => void,
@@ -26,7 +27,7 @@ interface IShippingFields {
   USR$ANSWER: string
 }
 
-export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFaq }: PopupProps) {
+export default function Popup({ close, open, isAddPopup, faq, addFaq, editFaq }: PopupProps) {
   const [tabIndex, setTabIndex] = useState('1');
 
   const formik = useFormik<IShippingFields>({
@@ -43,13 +44,19 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
       USR$ANSWER: yup.string().required('Не указан вопрос'),
     }),
     onSubmit: (values) => {
+      close();
+      handleClose();
+      if (isAddPopup) {
+        addFaq && addFaq(formik.values);
+        return;
+      }
+      editFaq && editFaq(formik.values);
     },
     onReset: (values) => {
     }
   });
 
-  const closePopup = useCallback(() => {
-    setConfirmOpen(false);
+  const handleClose = useCallback(() => {
     setTabIndex('1');
     close();
     formik.resetForm();
@@ -59,60 +66,6 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
     setTabIndex(newindex);
   }, [faq]);
 
-  const escPressed = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      handleClose();
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('keydown', escPressed);
-    return () => {
-      document.removeEventListener('keydown', escPressed);
-    };
-  }, [escPressed]);
-
-  const handleClose = () => {
-    if (formik.dirty) {
-      setConfirmOpen(true);
-      return;
-    }
-    closePopup();
-  };
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={'Внимание'}
-      text="Изменения будут утеряны. Продолжить?"
-      confirmClick={closePopup}
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen]);
-
-  const handleSubmit = () => {
-    handleConfirmCancelClick();
-    closePopup();
-    if (isAddPopup) {
-      addFaq && addFaq(formik.values);
-      return;
-    }
-    editFaq && editFaq(formik.values);
-  };
-
-  const onSubmitClick = async () => {
-    formik.validateForm();
-    const errors = await formik.validateForm(formik.values);
-    if (Object.keys(errors).length !== 0) return;
-    handleSubmit();
-  };
-
   const handleValueChange = async (name: string, value: string) => {
     await formik.setFieldValue(name, value);
     if ((formik.errors as any)[name]) {
@@ -121,120 +74,78 @@ export default function Popup({ close, isOpened, isAddPopup, faq, addFaq, editFa
   };
 
   return (
-    <>
-      {memoConfirmDialog}
-      <div
-        className={isOpened ? style.background : `${style.background} ${style.unactiveBackground}`}
-        onClick={handleClose}
-      />
-      <div className={style.newQuestionBody}>
-        <div
-          className={
-            isOpened
-              ? style.NewQuestionContainer
-              : `${style.NewQuestionContainer} ${style.inactiveNewQuestionContainer}`
-          }
+    <EditDialog
+      open={open}
+      onClose={handleClose}
+      confirmation={formik.dirty}
+      title={isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'}
+      form="FAQForm"
+    >
+      <FormikProvider value={formik}>
+        <Form
+          style={{ minWidth: 0 }}
+          onSubmit={formik.handleSubmit}
+          className={style.USR$QUESTIONForm}
+          id={'FAQForm'}
         >
-          <FormikProvider value={formik}>
-            <Form
-              onSubmit={formik.handleSubmit}
-              className={style.USR$QUESTIONForm}
-              id={'FAQForm'}
-            >
-              <Card className={style.card}>
-                <CardHeader
-                  title={<Typography variant="h6">{
-                    isAddPopup ? 'Добавить новый вопрос с ответом' : 'Изменить вопрос с ответом'
-                  }</Typography>}
+          <div className={style.inputContainer}>
+            <TextField
+              rows={4}
+              className={style.textArea}
+              id="outlined-textarea"
+              placeholder="Вопрос"
+              multiline
+              value={formik.values.USR$QUESTION}
+              onChange={(e) => handleValueChange('USR$QUESTION', e.target.value)}
+            />
+            {
+              formik.errors.USR$QUESTION && <div className={style.errorMessage}>{formik.errors.USR$QUESTION}</div>
+            }
+          </div>
+          <TabContext value={tabIndex}>
+            <Box>
+              <TabList variant="scrollable" onChange={handleTabsChange}>
+                <Tab label="Изменить" value="1" />
+                <Tab label="Просмотреть" value="2" />
+              </TabList>
+            </Box>
+            <TabPanel value="1" className={style.tab}>
+              <div className={style.inputContainer}>
+                <TextField
+                  rows={12}
+                  className={style.textArea}
+                  id="outlined-textarea"
+                  placeholder="Ответ"
+                  multiline
+                  value={formik.values.USR$ANSWER}
+                  onChange={(e) => handleValueChange('USR$ANSWER', e.target.value)}
                 />
-                <Divider/>
-                <CardContent style={{ flex: 1 }} >
-                  <div className={style.inputContainer}>
-                    <TextField
-                      rows={4}
-                      className={style.textArea}
-                      id="outlined-textarea"
-                      placeholder="Вопрос"
-                      multiline
-                      value={formik.values.USR$QUESTION}
-                      onChange={(e) => handleValueChange('USR$QUESTION', e.target.value)}
-                    />
-                    {
-                      formik.errors.USR$QUESTION
-                  && <div className={style.errorMessage}>{formik.errors.USR$QUESTION}</div>
-                    }
-                  </div>
-                  <TabContext value={tabIndex}>
-                    <Box>
-                      <TabList onChange={handleTabsChange}>
-                        <Tab label="Изменить" value="1" />
-                        <Tab label="Просмотреть" value="2" />
-                      </TabList>
-                    </Box>
-                    <TabPanel value="1" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <TextField
-                          rows={12}
-                          className={style.textArea}
-                          id="outlined-textarea"
-                          placeholder="Ответ"
-                          multiline
-                          value={formik.values.USR$ANSWER}
-                          onChange={(e) => handleValueChange('USR$ANSWER', e.target.value)}
-                        />
+                {
+                  formik.errors.USR$ANSWER && <div className={style.errorMessage}>{formik.errors.USR$ANSWER}</div>
+                }
+              </div>
+            </TabPanel>
+            <TabPanel value="2" className={style.tab}>
+              <div className={style.inputContainer}>
+                <div className={style.previewBackground}>
+                  <PerfectScrollbar className={style.preview}>
+                    <div className={style.previewContent}>
+                      <ReactMarkdown className={style.markdown}>
                         {
-                          formik.errors.USR$ANSWER
-                        && <div className={style.errorMessage}>{formik.errors.USR$ANSWER}</div>
+                          formik.values.USR$ANSWER
                         }
-                      </div>
-                    </TabPanel>
-                    <TabPanel value="2" className={style.tab}>
-                      <div className={style.inputContainer}>
-                        <div className={style.previewBackground}>
-                          <PerfectScrollbar className={style.preview}>
-                            <div className={style.previewContent}>
-                              <ReactMarkdown className={style.markdown}>
-                                {
-                                  formik.values.USR$ANSWER
-                                }
-                              </ReactMarkdown>
-                            </div>
-                          </PerfectScrollbar>
-                        </div>
-                        {
-                          formik.errors.USR$ANSWER
-                        && <div className={style.errorMessage}>{formik.errors.USR$ANSWER}</div>
-                        }
-                      </div>
-                    </TabPanel>
-                  </TabContext>
-                </CardContent>
-                <Divider/>
-                <CardActions className={style.buttonsContainer}>
-                  <Box flex={1} />
-                  <div>
-                    <Button
-                      type="button"
-                      variant="outlined"
-                      onClick={handleClose}
-                      className={style.button}
-                    >Отменить</Button>
-                    <Button
-                      type="submit"
-                      form={'FAQForm'}
-                      variant="contained"
-                      onClick={onSubmitClick}
-                      className={`${style.saveButton} ${style.button}`}
-                    >
-                      Сохранить
-                    </Button>
-                  </div>
-                </CardActions>
-              </Card>
-            </Form>
-          </FormikProvider>
-        </div>
-      </div>
-    </>
+                      </ReactMarkdown>
+                    </div>
+                  </PerfectScrollbar>
+                </div>
+                {
+                  formik.errors.USR$ANSWER && <div className={style.errorMessage}>{formik.errors.USR$ANSWER}</div>
+                }
+              </div>
+            </TabPanel>
+          </TabContext>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }

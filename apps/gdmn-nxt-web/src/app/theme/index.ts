@@ -69,7 +69,7 @@ export const theme = (customization: ICustomization) => {
     mainContent: {
       backgroundColor: themeOptionDefault.backgroundColor,
       width: '100%',
-      minHeight: 'calc(100vh - 10px)',
+      minHeight: 'calc(100vh - 40px)',
       flexGrow: 1,
       padding: '20px',
       marginTop: '10px',
@@ -94,6 +94,14 @@ export const theme = (customization: ICustomization) => {
   };
 
   const theme = createTheme({ ...themeOptions, typography: { ...themeTypography(themeOptions) } }, locales.ruRU);
+
+  theme.mainContent = {
+    [theme.breakpoints.up('md')]: {
+      minHeight: 'calc(100vh - 10px)',
+    },
+    ...theme.mainContent
+  };
+
   theme.components = { ...locales.ruRU.components, ...componentStyleOverrides(theme) };
   theme.shadows[1] = theme.shadows[1] = customization.colorMode === ColorMode.Dark
     ? '0px 4px 20px rgba(0,0,0,0.5)'

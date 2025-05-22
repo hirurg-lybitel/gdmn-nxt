@@ -2,7 +2,7 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { Box, CardContent, CardHeader, Divider, Stack, Typography } from '@mui/material';
+import { Box, CardContent, CardHeader, Divider, Stack, Typography, useMediaQuery } from '@mui/material';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import { useGetContractsListQuery } from '../../../features/contracts-list/contractsListApi';
 import { useCallback, useMemo, useState } from 'react';
@@ -19,6 +19,7 @@ import DetailContent from './detail-content';
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import { ContractsFilter } from '@gdmn-nxt/components/contracts/contracts-filter';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 export interface ContractsProps {}
 
@@ -56,7 +57,9 @@ export function Contracts(props: ContractsProps) {
   const userPermissions = usePermissions();
   const systemSettings = useSystemSettings();
 
-  const cols = columns[systemSettings?.CONTRACTTYPE ?? ContractType.GS];
+  const mobile = useMediaQuery('(pointer: coarse)');
+
+  const cols = columns[mobile ? 'mobile' : 'default'][systemSettings?.CONTRACTTYPE ?? ContractType.GS];
 
   const pageOnChange = useCallback((pageNo: number) =>
     setPagination(prev => ({
@@ -124,49 +127,23 @@ export function Contracts(props: ContractsProps) {
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
-      <CardHeader
-        title={<Typography variant="pageHeader">Договоры</Typography>}
-        action={
-          <Stack direction="row" spacing={1}>
-            <Box paddingX={'4px'} />
-            <SearchBar
-              disabled={contactsIsLoading}
-              onCancelSearch={cancelSearch}
-              onRequestSearch={requestSearch}
-              fullWidth
-              cancelOnEscape
-              value={
-                filterData?.name
-                  ? filterData.name[0]
-                  : undefined
-              }
-            />
-            <Box display="inline-flex" alignSelf="center">
-              {/* <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}> */}
-              <CustomAddButton
-                // disabled={contractsIsFetching}
-                disabled
-                label="Создать договор"
-                // onClick={() => setUpsertContact({ addContact: true })}
-              />
-              {/* </PermissionsGate> */}
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomLoadingButton
-                hint="Обновить данные"
-                loading={contractsIsFetching}
-                onClick={refreshClick}
-              />
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomFilterButton
-                onClick={filterHandlers.filterClick}
-                disabled={contractsIsFetching}
-                hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
-              />
-            </Box>
-          </Stack>
-        }
+      <CustomCardHeader
+        search
+        filter
+        refetch
+        title={'Договоры'}
+        isLoading={contactsIsLoading || filtersIsLoading}
+        isFetching={contactsIsLoading || filtersIsFetching}
+        onCancelSearch={cancelSearch}
+        onRequestSearch={requestSearch}
+        searchValue={filterData?.name?.[0]}
+        onRefetch={refreshClick}
+        onFilterClick={filterHandlers.filterClick}
+        hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
+        // addButton={userPermissions?.contacts?.POST}
+        // onAddClick={() => setUpsertContact({ addContact: true })}
+        // addButtonTooltip="Создать договор"
+
       />
       <Divider />
       <CardContent style={{ padding: 0 }}>

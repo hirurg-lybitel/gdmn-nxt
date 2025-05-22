@@ -5,14 +5,16 @@ import Notification from './NotificationSection/notification/notification';
 import Profile from './profile/profile';
 import ToggleTheme from './toggle-theme/toggle-theme';
 import CloseIcon from '@mui/icons-material/Close';
+import { IMenuItem } from '../../../menu-items';
 
 interface IHeaderProps {
   onDrawerToggle: () => void;
-  mobile?: boolean
+  mobile?: boolean,
+  menuItemClick: (item: IMenuItem, level: number) => void
 };
 
 export const Header = (props: IHeaderProps) => {
-  const { onDrawerToggle, mobile = false } = props;
+  const { onDrawerToggle, mobile = false, menuItemClick } = props;
 
   return (
     <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: mobile ? 'space-between' : '', gap: mobile ? '' : '16px' }}>
@@ -32,8 +34,8 @@ export const Header = (props: IHeaderProps) => {
       </ButtonBase> */}
       {/* <Box sx={{ flexGrow: 1 }} /> */}
 
-      <Profile />
-      <Notification />
+      <Profile menuItemClick={menuItemClick} />
+      <Notification menuItemClick={menuItemClick} />
       <ToggleTheme />
       {mobile && <IconButton size="large" onClick={onDrawerToggle}>
         <CloseIcon color="secondary"/>

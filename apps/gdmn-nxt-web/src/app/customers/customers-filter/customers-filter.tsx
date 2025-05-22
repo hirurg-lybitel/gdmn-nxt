@@ -24,6 +24,7 @@ import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-se
 import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
 import { BusinessProcessesSelect } from '@gdmn-nxt/components/selectors/businessProcesses-select/businessProcesses-select';
+import FilterDialog from '@gdmn-nxt/components/filter-dialog/filter-dialog';
 
 const useStyles = makeStyles((theme: Theme) => ({
   switchButton: {
@@ -61,16 +62,6 @@ export function CustomersFilter(props: CustomersFilterProps) {
   const classes = useStyles();
 
   const theme = useTheme();
-  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
-
-  const { data: departments, isFetching: departmentsIsFetching } = useGetDepartmentsQuery();
-  const { data: customerContracts, isFetching: customerContractsIsFetching } = useGetCustomerContractsQuery();
-  // const { data: labels, isFetching: labelsIsFetching } = useGetGroupsQuery();
-  const { data: businessProcesses = [], isFetching: businessProcessesFetching } = useGetBusinessProcessesQuery();
-  const { data: labels, isFetching: labelsIsFetching } = useGetLabelsQuery();
-  const { data: workTypes, isFetching: workTypesIsFetching } = useGetWorkTypesQuery(
-    { contractJob: filteringData?.CONTRACTS?.map((el: any) => el.ID) },
-    { refetchOnMountOrArgChange: true });
 
   const handleOnChange = (entity: string, value: any) => {
     const newObject = Object.assign({}, filteringData);
@@ -82,7 +73,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
     };
 
     /** Если были выбраны виды работ без указания заказов, то очищаем их при первичном выборе заказов */
-    if (entity === 'CONTRACTS' && !newObject['CONTRACTS']) {
+    if (entity === 'CONTRACTS' && !newObject?.['CONTRACTS']) {
       delete newObject['WORKTYPES'];
     };
 
@@ -102,163 +93,119 @@ export function CustomersFilter(props: CustomersFilterProps) {
     onFilteringDataChange(Object.assign(newFilteringData, { METHODS: newMethods }));
   };
 
-  function Filter() {
-    return (
-      <CustomizedCard
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          width: width,
-        }}
-      >
-        <CardContent style={{ flex: 1 }}>
-          <Stack spacing={2}>
-            <Box>
-              <DepartmentsSelect
-                multiple
-                limitTags={2}
-                disableCloseOnSelect
-                value={filteringData.DEPARTMENTS}
-                onChange={(value) => handleOnChange('DEPARTMENTS', value)}
-              />
-              <Stack
-                direction="row"
-                alignItems="center"
-                paddingLeft={2}
-              >
-                <Tooltip arrow title="Содержит все выбранные отделы">
-                  <Typography variant="caption">И</Typography>
-                </Tooltip>
-                <Switch
-                  className={classes.switchButton}
-                  color="default"
-                  name="DEPARTMENTS"
-                  onChange={handleMethodOnChange}
-                  checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['DEPARTMENTS'] === 'OR' : false}
-                />
-                <Tooltip arrow title="Содержит один из выбранных отделов">
-                  <Typography variant="caption">Или</Typography>
-                </Tooltip>
-              </Stack>
-            </Box>
-            <Box>
-              <ContractsSelect
-                multiple
-                limitTags={2}
-                value={filteringData.CONTRACTS}
-                onChange={(value) => handleOnChange('CONTRACTS', value)}
-                disableCloseOnSelect
-              />
-              <Stack
-                direction="row"
-                alignItems="center"
-                paddingLeft={2}
-              >
-                <Tooltip arrow title="Содержит все выбранные заказы">
-                  <Typography variant="caption">И</Typography>
-                </Tooltip>
-                <Switch
-                  className={classes.switchButton}
-                  color="default"
-                  name="CONTRACTS"
-                  onChange={handleMethodOnChange}
-                  checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false}
-                />
-                <Tooltip arrow title="Содержит один из выбранных заказов">
-                  <Typography variant="caption">Или</Typography>
-                </Tooltip>
-              </Stack>
-            </Box>
-            <Box>
-              <WorktypesSelect
-                multiple
-                limitTags={2}
-                disableCloseOnSelect
-                onChange={(value) => handleOnChange('WORKTYPES', value)}
-                value={filteringData['WORKTYPES']}
-              />
-              <Stack
-                direction="row"
-                alignItems="center"
-                paddingLeft={2}
-              >
-                <Tooltip arrow title="Содержит все выбранные виды работ">
-                  <Typography variant="caption">И</Typography>
-                </Tooltip>
-                <Switch
-                  className={classes.switchButton}
-                  color="default"
-                  name="WORKTYPES"
-                  onChange={handleMethodOnChange}
-                  checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['WORKTYPES'] === 'OR' : false}
-                />
-                <Tooltip arrow title="Содержит один из выбранных видов работ">
-                  <Typography variant="caption">Или</Typography>
-                </Tooltip>
-              </Stack>
-            </Box>
-            <LabelsSelect
-              onChange={(value) => handleOnChange('LABELS', value)}
-              labels={filteringData?.LABELS as ILabel[] ?? []}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="end">
-                    <TagIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <BusinessProcessesSelect
-              value={filteringData?.BUSINESSPROCESSES}
-              onChange={value => handleOnChange('BUSINESSPROCESSES', value)}
-              multiple
-              limitTags={2}
-              disableCloseOnSelect
-            />
-          </Stack>
-        </CardContent>
-        <CardActions style={{ padding: theme.spacing(2) }}>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={() => {
-              onFilterClear();
-              onClose && onClose();
-            }}
-          >
-            Очистить
-          </Button>
-        </CardActions>
-      </CustomizedCard>
-    );
-  };
-
   return (
-    <Box flex={1} display="flex">
-      <CustomizedDialog
-        open={open}
-        onClose={onClose}
-        width={width}
-      >
-        <Filter />
-      </CustomizedDialog>
-    </Box>
+    <FilterDialog
+      open={open}
+      onClear={onFilterClear}
+      onClose={onClose}
+      width={width}
+    >
+      <Stack spacing={2}>
+        <Box>
+          <DepartmentsSelect
+            multiple
+            limitTags={2}
+            disableCloseOnSelect
+            value={filteringData?.DEPARTMENTS}
+            onChange={(value) => handleOnChange('DEPARTMENTS', value)}
+          />
+          <Stack
+            direction="row"
+            alignItems="center"
+            paddingLeft={2}
+          >
+            <Tooltip arrow title="Содержит все выбранные отделы">
+              <Typography variant="caption">И</Typography>
+            </Tooltip>
+            <Switch
+              className={classes.switchButton}
+              color="default"
+              name="DEPARTMENTS"
+              onChange={handleMethodOnChange}
+              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)?.['DEPARTMENTS'] === 'OR' : false}
+            />
+            <Tooltip arrow title="Содержит один из выбранных отделов">
+              <Typography variant="caption">Или</Typography>
+            </Tooltip>
+          </Stack>
+        </Box>
+        <Box>
+          <ContractsSelect
+            multiple
+            limitTags={2}
+            value={filteringData?.CONTRACTS}
+            onChange={(value) => handleOnChange('CONTRACTS', value)}
+            disableCloseOnSelect
+          />
+          <Stack
+            direction="row"
+            alignItems="center"
+            paddingLeft={2}
+          >
+            <Tooltip arrow title="Содержит все выбранные заказы">
+              <Typography variant="caption">И</Typography>
+            </Tooltip>
+            <Switch
+              className={classes.switchButton}
+              color="default"
+              name="CONTRACTS"
+              onChange={handleMethodOnChange}
+              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)['CONTRACTS'] === 'OR' : false}
+            />
+            <Tooltip arrow title="Содержит один из выбранных заказов">
+              <Typography variant="caption">Или</Typography>
+            </Tooltip>
+          </Stack>
+        </Box>
+        <Box>
+          <WorktypesSelect
+            multiple
+            limitTags={2}
+            disableCloseOnSelect
+            onChange={(value) => handleOnChange('WORKTYPES', value)}
+            value={filteringData?.['WORKTYPES']}
+          />
+          <Stack
+            direction="row"
+            alignItems="center"
+            paddingLeft={2}
+          >
+            <Tooltip arrow title="Содержит все выбранные виды работ">
+              <Typography variant="caption">И</Typography>
+            </Tooltip>
+            <Switch
+              className={classes.switchButton}
+              color="default"
+              name="WORKTYPES"
+              onChange={handleMethodOnChange}
+              checked={filteringData && filteringData['METHODS'] ? (filteringData['METHODS'] as any)?.['WORKTYPES'] === 'OR' : false}
+            />
+            <Tooltip arrow title="Содержит один из выбранных видов работ">
+              <Typography variant="caption">Или</Typography>
+            </Tooltip>
+          </Stack>
+        </Box>
+        <LabelsSelect
+          onChange={(value) => handleOnChange('LABELS', value)}
+          labels={filteringData?.LABELS as ILabel[] ?? []}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="end">
+                <TagIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <BusinessProcessesSelect
+          value={filteringData?.BUSINESSPROCESSES}
+          onChange={value => handleOnChange('BUSINESSPROCESSES', value)}
+          multiple
+          limitTags={2}
+          disableCloseOnSelect
+        />
+      </Stack>
+    </FilterDialog>
   );
-
-  // return (
-  //   <Box flex={1} display="flex">
-  //     {matchDownLg
-  //       ? <CustomizedDialog
-  //         open={open}
-  //         onClose={onClose}
-  //         width={width}
-  //       >
-  //         <Filter />
-  //       </CustomizedDialog>
-  //       : <Filter />}
-  //   </Box>
-  // );
 }
 
 export default CustomersFilter;

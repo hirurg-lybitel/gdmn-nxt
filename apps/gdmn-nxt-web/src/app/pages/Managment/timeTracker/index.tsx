@@ -45,6 +45,7 @@ import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-can
 import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
 import { Form, FormikProvider, useFormik } from 'formik';
 import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 const durationMask = [
   /[0-9]/,
@@ -169,70 +170,25 @@ export function TimeTracker() {
   const theme = useTheme();
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const Header = useMemo(() => {
-    const serchBar = (
-      <SearchBar
-        fullWidth={matchDownSm}
-        disabled={isLoading}
-        onCancelSearch={cancelSearch}
-        onRequestSearch={requestSearch}
-        cancelOnEscape
-        placeholder="Поиск"
-        value={
-          filterData && filterData.name
-            ? filterData.name[0]
-            : undefined
-        }
-      />
-    );
-    return (
-      <CustomizedCard
-        direction="row"
-        className={styles.headerCard}
-        style={{
-          flexDirection: 'column',
-          overflow: matchDownSm ? 'visible' : 'hidden',
-          minHeight: matchDownSm ? 'auto' : '54px'
-        }}
-      >
-        <div style={{ width: '100%', display: 'flex', alignItems: 'center', minHeight: '34px' }}>
-          <Typography variant="pageHeader">Учёт времени</Typography>
-          <Box flex={1} />
-          <Box pr={1} display={{ xs: 'none', sm: 'block' }}>
-            {serchBar}
-          </Box>
-          <CustomLoadingButton
-            hint="Обновить данные"
-            loading={isFetching}
-            onClick={() => {
-              refetch();
-              refetchTimeTrackingInProgress();
-            }}
-          />
-          <Box display="inline-flex" alignSelf="center">
-            <CustomFilterButton
-              onClick={filterHandlers.filterClick}
-              disabled={isFetching}
-              hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
-            />
-          </Box>
-        </div>
-
-        <Box style={{ width: '100% ', marginTop: '10px' }} display={{ xs: 'block', sm: 'none' }}>
-          {serchBar}
-        </Box>
-      </CustomizedCard>
-    );
-  }, [
-    matchDownSm,
-    isLoading,
-    cancelSearch,
-    requestSearch,
-    filterData,
-    isFetching,
-    filterHandlers.filterClick,
-    refetch,
-    refetchTimeTrackingInProgress]);
+  const Header = useMemo(() => (
+    <CustomCardHeader
+      search
+      filter
+      refetch
+      title={'Учёт времени'}
+      isLoading={isLoading}
+      isFetching={isFetching}
+      onCancelSearch={cancelSearch}
+      onRequestSearch={requestSearch}
+      searchValue={filterData.name?.[0]}
+      onRefetch={() => {
+        refetch();
+        refetchTimeTrackingInProgress();
+      }}
+      onFilterClick={filterHandlers.filterClick}
+      hasFilters={Object.keys(filterData || {}).filter(f => f !== 'period').length > 0}
+    />
+  ), [cancelSearch, filterData, filterHandlers.filterClick, isFetching, isLoading, refetch, refetchTimeTrackingInProgress, requestSearch]);
 
   const handleSubmit = (value: ITimeTrack, mode: 'add' | 'update') => {
     if (mode === 'update') {
@@ -374,16 +330,14 @@ export function TimeTracker() {
                       </AccordionSummary>
                       <AccordionDetails style={{ padding: '0 16px' }}>
                         {items.map((item, index) => (
-                          <>
-                            <TimeTrackerItem
-                              key={item.ID}
-                              item={item}
-                              isFetching={isFetching}
-                              filterData={filterData}
-                              setInitial={setInitial}
-                              lastItem={items.length - 1 === index}
-                            />
-                          </>
+                          <TimeTrackerItem
+                            key={item.ID}
+                            item={item}
+                            isFetching={isFetching}
+                            filterData={filterData}
+                            setInitial={setInitial}
+                            lastItem={items.length - 1 === index}
+                          />
                         ))}
                       </AccordionDetails>
                     </Accordion>

@@ -22,6 +22,7 @@ import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmatio
 import ContactName from '@gdmn-nxt/components/Styled/contact-name/contact-name';
 import { ContactSelect } from '../../selectors/contact-select';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 export interface AddContactProps {
   open: boolean;
@@ -330,137 +331,116 @@ export function AddContact({
     </>, [formik.errors.MESSENGERS, formik.touched.MESSENGERS, formik.values.MESSENGERS]);
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={onClose}
+      form="contactForm"
+      title={'Добавление контакта'}
       confirmation={formik.dirty}
     >
-      <DialogTitle>
-        Добавление контакта
-      </DialogTitle>
-      <DialogContent dividers>
-        <FormikProvider value={formik}>
-          <Form id="contactForm" onSubmit={formik.handleSubmit}>
-            <Stack spacing={2}>
-              <ContactName
-                value={formik.values.nameInfo}
-                onChange={handleNameInfoChange}
-                label="ФИО"
-                autoFocus
-                startAdornment={
-                  <InputAdornment position="start">
-                    <PersonIcon />
-                  </InputAdornment>}
-                helperText={formik.touched.nameInfo ? Object.values(formik.errors.nameInfo ?? {})[0] : ''}
-                error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
-              />
-              {emailOptions}
-              {phoneOptions}
-              {messengerOptions}
-              <ContactSelect
-                label="Ответственный"
-                placeholder="Выберите ответственного"
-                value={formik.values.RESPONDENT ?? null}
-                onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
-                error={getIn(formik.touched, 'RESPONDENT') && Boolean(getIn(formik.errors, 'RESPONDENT'))}
-                helperText={getIn(formik.touched, 'RESPONDENT') && getIn(formik.errors, 'RESPONDENT')}
-                slots={{
-                  startIcon: <ManageAccountsIcon />
-                }}
-              />
-              <LabelsSelect
-                labels={formik.values.LABELS}
-                onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="end">
-                      <TagIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <CustomerSelect
-                value={formik.values.COMPANY}
-                onChange={handleCustomerChange}
-                // required
-                error={getIn(formik.touched, 'COMPANY') && Boolean(getIn(formik.errors, 'COMPANY'))}
-                helperText={getIn(formik.touched, 'COMPANY') && getIn(formik.errors, 'COMPANY')}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="end">
-                      <PeopleAltIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                label="Должность"
-                type="text"
-                name="RANK"
-                onChange={formik.handleChange}
-                value={formik.values.RANK}
-              />
-              <TextField
-                label="Адрес"
-                type="text"
-                name="ADDRESS"
-                onChange={formik.handleChange}
-                value={formik.values.ADDRESS}
-              />
-              <TextField
-                label="Доверенность"
-                type="text"
-                name="USR$LETTER_OF_AUTHORITY"
-                onChange={formik.handleChange}
-                value={formik.values.USR$LETTER_OF_AUTHORITY}
-              />
-              <DepartmentsSelect
-                value={departments?.find(el => el.ID === formik.values.USR$BG_OTDEL?.ID) || null}
-                onChange={(value) => {
-                  const department = value as IContactWithID;
-                  formik.setFieldValue(
-                    'USR$BG_OTDEL',
-                    value ? { ID: department.ID, NAME: department.NAME } : undefined
-                  );
-                }}
-                helperText={formik.errors.USR$BG_OTDEL}
-              />
-              <TextField
-                label="Комментарий"
-                type="text"
-                name="NOTE"
-                multiline
-                minRows={1}
-                maxRows={4}
-                onChange={formik.handleChange}
-                value={formik.values.NOTE}
-              />
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={styles.button}
-          variant="outlined"
-          onClick={onClose}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
+      <FormikProvider value={formik}>
+        <Form
+          id="contactForm"
+          onSubmit={formik.handleSubmit}
         >
-          Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={styles.button}
-          type="submit"
-          form="contactForm"
-          variant="contained"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+          <Stack spacing={2}>
+            <ContactName
+              value={formik.values.nameInfo}
+              onChange={handleNameInfoChange}
+              label="ФИО"
+              autoFocus
+              startAdornment={
+                <InputAdornment position="start">
+                  <PersonIcon />
+                </InputAdornment>}
+              helperText={formik.touched.nameInfo ? Object.values(formik.errors.nameInfo ?? {})[0] : ''}
+              error={formik.touched.nameInfo && Boolean(formik.errors.nameInfo)}
+            />
+            {emailOptions}
+            {phoneOptions}
+            {messengerOptions}
+            <ContactSelect
+              label="Ответственный"
+              placeholder="Выберите ответственного"
+              value={formik.values.RESPONDENT ?? null}
+              onChange={(value) => formik.setFieldValue('RESPONDENT', value || undefined)}
+              error={getIn(formik.touched, 'RESPONDENT') && Boolean(getIn(formik.errors, 'RESPONDENT'))}
+              helperText={getIn(formik.touched, 'RESPONDENT') && getIn(formik.errors, 'RESPONDENT')}
+              slots={{
+                startIcon: <ManageAccountsIcon />
+              }}
+            />
+            <LabelsSelect
+              labels={formik.values.LABELS}
+              onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="end">
+                    <TagIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <CustomerSelect
+              value={formik.values.COMPANY}
+              onChange={handleCustomerChange}
+              // required
+              error={getIn(formik.touched, 'COMPANY') && Boolean(getIn(formik.errors, 'COMPANY'))}
+              helperText={getIn(formik.touched, 'COMPANY') && getIn(formik.errors, 'COMPANY')}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="end">
+                    <PeopleAltIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              label="Должность"
+              type="text"
+              name="RANK"
+              onChange={formik.handleChange}
+              value={formik.values.RANK}
+            />
+            <TextField
+              label="Адрес"
+              type="text"
+              name="ADDRESS"
+              onChange={formik.handleChange}
+              value={formik.values.ADDRESS}
+            />
+            <TextField
+              label="Доверенность"
+              type="text"
+              name="USR$LETTER_OF_AUTHORITY"
+              onChange={formik.handleChange}
+              value={formik.values.USR$LETTER_OF_AUTHORITY}
+            />
+            <DepartmentsSelect
+              value={departments?.find(el => el.ID === formik.values.USR$BG_OTDEL?.ID) || null}
+              onChange={(value) => {
+                const department = value as IContactWithID;
+                formik.setFieldValue(
+                  'USR$BG_OTDEL',
+                  value ? { ID: department.ID, NAME: department.NAME } : undefined
+                );
+              }}
+              helperText={formik.errors.USR$BG_OTDEL}
+            />
+            <TextField
+              label="Комментарий"
+              type="text"
+              name="NOTE"
+              multiline
+              minRows={1}
+              maxRows={4}
+              onChange={formik.handleChange}
+              value={formik.values.NOTE}
+            />
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

@@ -26,6 +26,7 @@ import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-b
 import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -76,35 +77,9 @@ export default function FAQ() {
     setIsOpenedEditPopup(false);
   };
 
-  const handleDelete = useCallback(() => {
-    if (faq) {
-      handleConfirmCancelClick();
-      deleteFaqHandler(faq.ID);
-    }
-  }, [faq]);
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
   const handleDeleteClick = (deletedFaq: fullFaq) => () => {
-    setFaq(deletedFaq);
-    setConfirmOpen(true);
+    deleteFaqHandler(deletedFaq.ID);
   };
-
-  const handleConfirmCancelClick = useCallback(() => {
-    setConfirmOpen(false);
-  }, []);
-
-  const memoConfirmDialog = useMemo(() =>
-    <ConfirmDialog
-      open={confirmOpen}
-      title={'Удаление вопроса с ответом'}
-      text="Вы уверены, что хотите продолжить?"
-      confirmClick={
-        handleDelete
-      }
-      cancelClick={handleConfirmCancelClick}
-    />
-  , [confirmOpen, addFaqHandler, handleDelete, editFaqHandler, handleConfirmCancelClick]);
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -127,47 +102,40 @@ export default function FAQ() {
 
   const classes = useStyles();
 
+  const buttons = userPermissions?.faq.PUT || userPermissions?.faq.DELETE;
+
   return (
     <>
       {!componentIsFetching &&
         <>
-          {memoConfirmDialog}
           <Popup
             close={handleCloseEditPopup}
-            isOpened={isOpenedEditPopup}
+            open={isOpenedEditPopup}
             isAddPopup={false}
             faq={faq}
             editFaq={editFaqHandler}
           />
           <Popup
             close={handleCloseAddPopup}
-            isOpened={isOpenedAddPopup}
+            open={isOpenedAddPopup}
             isAddPopup={true}
             addFaq={addFaqHandler}
           />
         </>
       }
       <CustomizedCard sx={{ width: '100%' }}>
-        <CardHeader
-          title={<Typography variant="pageHeader">База знаний</Typography>}
-          action={
-            <Stack direction={'row'}>
-              <Box flex={1} />
-              <PermissionsGate actionAllowed={userPermissions?.faq.POST}>
-                <CustomAddButton
-                  disabled={addFaqObj.isLoading}
-                  onClick={handleOpenAddPopup}
-                  label="Добавить запись"
-                />
-              </PermissionsGate>
-            </Stack>
-          }
+        <CustomCardHeader
+          title={'База знаний'}
+          addButton={userPermissions?.faq.POST}
+          isLoading={isLoading}
+          isFetching={componentIsFetching || addFaqObj.isLoading}
+          onAddClick={handleOpenAddPopup}
+          addButtonHint="Добавить запись"
         />
         <Divider />
         <CardContent sx={{ paddingRight: '0' }}>
           <CustomizedScrollBox style={{ paddingRight: '20px' }}>
             {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
-
               <div key={item.ID}>
                 {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
                 <div className={style.faqList}>
@@ -180,55 +148,73 @@ export default function FAQ() {
                       />
                     </div>
                     :
-                    <>
-                      <Accordion
-                        expanded={expanded === `panel${item.ID}`}
-                        onChange={handleChange(`panel${item.ID}`)}
-                        className={classes.accordion}
+                    <Accordion
+                      expanded={expanded === `panel${item.ID}`}
+                      onChange={handleChange(`panel${item.ID}`)}
+                      className={classes.accordion}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        sx={{
+                          '& .MuiAccordionSummary-content': {
+                            marginTop: buttons ? { xs: '25px', sm: '12px' } : {},
+                          },
+                          '& .MuiAccordionSummary-expandIconWrapper': {
+                            marginTop: buttons ? { xs: '12.5px', sm: '0px' } : {},
+                          }
+                        }}
                       >
-                        <AccordionSummary
-                          expandIcon={<ExpandMoreIcon />}
+                        <Stack
+                          direction={{ xs: 'column', sm: 'row' }}
+                          flex={1}
+                          alignItems={{ xs: 'flex-start', sm: 'center' }}
                         >
-                          <Stack
-                            direction={'row'}
-                            flex={1}
-                            alignItems={'center'}
-                          >
-                            <Typography variant="h6">
-                              <ReactMarkdown>
-                                {item.USR$QUESTION}
-                              </ReactMarkdown>
-                            </Typography>
-                            {!componentIsFetching &&
-                              <>
-                                <Box flex={1} />
-                                <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
-                                  <ItemButtonEdit
-                                    button
-                                    disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                                    onClick={handleOpenEditPopup(item)}
-                                  />
-                                </PermissionsGate>
-                                <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
-                                  <ItemButtonDelete
-                                    button
-                                    disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                                    onClick={handleDeleteClick(item)}
-                                  />
-                                </PermissionsGate>
-                              </>
-                            }
-                          </Stack>
-                        </AccordionSummary>
-                        <AccordionDetails className={style.details}>
-                          <Typography variant="body1" component="div">
-                            <ReactMarkdown >
-                              {item.USR$ANSWER}
+                          <Typography variant="h6" sx={{ fontSize: { xs: '15px', sm: '1.25rem' } }}>
+                            <ReactMarkdown>
+                              {item.USR$QUESTION}
                             </ReactMarkdown>
                           </Typography>
-                        </AccordionDetails>
-                      </Accordion>
-                    </>
+                          <Box flex={1} />
+                          {!componentIsFetching &&
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                gap: '5px',
+                                marginRight: '5px',
+                                marginLeft: { xs: 0, sm: '10px' },
+                                position: { xs: 'absolute', sm: 'initial' },
+                                right: '6px',
+                                top: '5px'
+                              }}
+                            >
+                              <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
+                                <ItemButtonEdit
+                                  button
+                                  className={style.button}
+                                  disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                                  onClick={handleOpenEditPopup(item)}
+                                />
+                              </PermissionsGate>
+                              <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
+                                <ItemButtonDelete
+                                  button
+                                  className={style.button}
+                                  disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
+                                  onClick={handleDeleteClick(item)}
+                                />
+                              </PermissionsGate>
+                            </Box>
+                          }
+                        </Stack>
+                      </AccordionSummary>
+                      <AccordionDetails className={style.details}>
+                        <Typography variant="body1" component="div">
+                          <ReactMarkdown >
+                            {item.USR$ANSWER}
+                          </ReactMarkdown>
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
                   }
                 </div>
               </div>

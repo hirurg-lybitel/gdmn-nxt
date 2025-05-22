@@ -93,6 +93,19 @@ export default function StyledGrid(props: IStyledGridProps) {
     },
     '& .MuiDataGrid-detailPanel': {
       padding: 0
+    },
+    '& .MuiTablePagination-input': {
+      display: 'inline-flex !important'
+    },
+    '& .MuiTablePagination-root': {
+      overflow: 'hidden',
+      height: '100%'
+    },
+    '& .MuiTablePagination-toolbar': {
+      height: '100%'
+    },
+    '& .MuiTablePagination-select': {
+      paddingBottom: 0
     }
   });
 

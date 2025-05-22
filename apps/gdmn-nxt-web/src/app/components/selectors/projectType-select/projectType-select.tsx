@@ -1,5 +1,5 @@
 import { IProjectType, Permissions } from '@gsbelarus/util-api-types';
-import { Autocomplete, Button, Checkbox, createFilterOptions, FilterOptionsState, ListItem, TextField, TextFieldVariants } from '@mui/material';
+import { Autocomplete, Button, Checkbox, createFilterOptions, FilterOptionsState, ListItem, TextField, TextFieldVariants, useMediaQuery } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -216,7 +216,10 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
     e.stopPropagation();
     onChange && onChange(projectType);
   };
+
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
       <div>
@@ -234,7 +237,7 @@ const ProjectTypeItem = ({ multiple, option, selected, withEdit, onChange }: IPr
         <div
           className="action"
           style={{
-            visibility: 'hidden',
+            visibility: mobile ? 'visible' : 'hidden',
           }}
         >
           <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.PUT}>

@@ -159,13 +159,16 @@ export function CustomerContacts({
           />
         </Box>
       </Stack>
-      <ContactCards
-        contacts={persons?.records}
-        contactsCount={persons?.count ?? 0}
-        onEditClick={handleContactEdit}
-        paginationData={paginationData}
-        paginationClick={(data) => setPaginationData(data)}
-      />
+      <div style={{ marginRight: '-20px', height: '100%' }}>
+        <ContactCards
+          contacts={persons?.records}
+          contactsCount={persons?.count ?? 0}
+          onEditClick={handleContactEdit}
+          paginationData={paginationData}
+          paginationClick={(data) => setPaginationData(data)}
+        />
+      </div>
+
       {memoAddContact}
       {memoEditContact}
     </Stack>

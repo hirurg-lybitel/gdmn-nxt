@@ -116,7 +116,7 @@ export function ReconciliationStatement({ custId, dateBegin, dateEnd, setBuilded
 
 
   return (
-    <Box>
+    <Box> 
       {
         data?.queries.customerDebt ?
           <div className={styles.container}>

@@ -15,6 +15,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import { ExpectedReceiptsDevFilter } from './expected-receipts-dev-filter/expected-receipts-dev-filter';
 import ExpectedReceiptsDevReport from './expected-receipts-dev-report/expected-receipts-dev-report';
 import { useGetExpectedReceiptsDevQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomDateRangePicker from '@gdmn-nxt/components/CustomDateRangePicker/CustomDateRangePicker';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -123,20 +125,19 @@ export function ExpectedReceiptsDev(props: ExpectedReceiptsDevProps) {
       className={styles.expectedreceipts}
     >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Разработка (Ожидаемые поступления)</Typography>} />
+        <CustomCardHeader title={'Разработка (Ожидаемые поступления)'} />
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <DateRangePicker
+          <CustomDateRangePicker
+            slots={{ field: SingleInputDateRangeField }}
             label="Период"
             value={onDate}
             onChange={handleChange}
-            calendars={1}
-            slots={{ field: SingleInputDateRangeField }}
             slotProps={{
               shortcuts: {
                 items: shortcutsItems,
-              },
-              textField: { variant: 'outlined' } }}
+              }
+            }}
           />
           <ExpectedReceiptsDevFilter
             filterData={filterData}
@@ -156,18 +157,17 @@ export function ExpectedReceiptsDev(props: ExpectedReceiptsDevProps) {
               onClick={handelClear}
               variant="outlined"
             >
-                  Очистить
+              Очистить
             </Button>
             <Button
               variant="contained"
-              disabled={!onDate?.[0] || !onDate?.[1]}
+              disabled={!onDate?.[0] || !onDate?.[1] || filtersIsLoading}
               onClick={handleGenerate}
             >
-                  Сформировать
+              Сформировать
             </Button>
           </Stack>
         </CardActions>
-
       </CustomizedCard>
       {show ? <ExpectedReceiptsDevReport data={data} isFetching={isFetching} /> : null}
     </Stack>

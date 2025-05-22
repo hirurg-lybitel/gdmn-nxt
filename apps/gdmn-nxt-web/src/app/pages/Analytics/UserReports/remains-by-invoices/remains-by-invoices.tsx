@@ -1,9 +1,10 @@
 import { Box, Button, CardActions, CardContent, CardHeader, Divider, Stack, TextField, Typography } from '@mui/material';
-import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './remains-by-invoices.module.less';
 import { useState } from 'react';
 import RemainsByInvoicesReport from '../remains-by-invoices-report/remains-by-invoices-report';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
 export interface RemainsByInvoicesProps {}
@@ -41,12 +42,17 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
   };
 
   return (
-    <Stack direction="column" flex={1} spacing={2}>
+    <Stack
+      direction="column"
+      flex={1}
+      spacing={2}
+      minWidth={0}
+    >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Остатки по расчётным счетам</Typography>} />
+        <CustomCardHeader title={'Остатки по расчётным счетам'} />
         <Divider />
         <CardContent>
-          <DesktopDatePicker
+          <DatePicker
             label="На дату"
             value={onDate}
             onChange={handleChange}
@@ -55,7 +61,11 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
         </CardContent>
         <Divider />
         <CardActions style={{ padding: '16px' }}>
-          <Stack direction="row" spacing={2} flex={1}>
+          <Stack
+            direction="row"
+            spacing={2}
+            flex={1}
+          >
             <Box flex={1} />
             <Button onClick={handelClear} variant="outlined">
                   Очистить
@@ -73,7 +83,9 @@ export function RemainsByInvoices(props: RemainsByInvoicesProps) {
       </CustomizedCard>
       {generate
         ? <CustomizedCard
-          style={{ padding: '16px' }}
+          style={{ padding: '16px',
+            overflow: 'auto'
+          }}
         >
           <RemainsByInvoicesReport onDate={onDate || new Date()} />
         </CustomizedCard>

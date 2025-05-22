@@ -4,7 +4,7 @@ import styles from './updates-edit.module.less';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, Stack, Tab, TextField } from '@mui/material';
+import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
@@ -13,6 +13,7 @@ import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 export interface UpdatesEditProps {
   open: boolean;
@@ -86,124 +87,101 @@ export function UpdatesEdit(props: UpdatesEditProps) {
     setTabIndex(newindex);
   }, []);
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={handleClose}
       confirmation={formik.dirty}
-      width={500}
+      title={update ? `Редактирование: ${update.VERSION}` : 'Добавление новой версии'}
+      deleteButton={update && userPermission?.updates.DELETE}
+      onDeleteClick={handleDeleteClick}
+      form="updates"
     >
-      <DialogTitle>
-        {update ? `Редактирование: ${update.VERSION}` : 'Добавление новой версии'}
-      </DialogTitle>
-      <DialogContent className={styles.dialogContent} dividers >
-        <FormikProvider value={formik}>
-          <Form
-            id="updates"
-            onSubmit={formik.handleSubmit}
-            className={styles.formContent}
-          >
-            <Stack spacing={2} flex={1}>
-              <TextField
-                label="Номер версии"
-                type="text"
-                fullWidth
-                required
-                autoFocus
-                onFocus={handleFocus}
-                name="VERSION"
-                onChange={formik.handleChange}
-                value={formik.values.VERSION}
-                error={getIn(formik.touched, 'VERSION') && Boolean(getIn(formik.errors, 'VERSION'))}
-                helperText={getIn(formik.touched, 'VERSION') && getIn(formik.errors, 'VERSION')}
-              />
-              <TabContext value={tabIndex}>
-                <Box>
-                  <TabList onChange={handleTabsChange}>
-                    <Tab label="Изменить" value="1" />
-                    <Tab label="Просмотреть" value="2" />
-                  </TabList>
-                </Box>
-                <TabPanel
-                  value="1"
-                  className={styles.tabPanel}
-                >
-                  <TextField
-                    className={styles.inputTextField}
-                    label="Описание"
-                    type="text"
-                    fullWidth
-                    required
-                    multiline
-                    rows={1}
-                    name="CHANGES"
-                    onChange={formik.handleChange}
-                    value={formik.values.CHANGES}
-                    error={getIn(formik.touched, 'CHANGES') && Boolean(getIn(formik.errors, 'CHANGES'))}
-                    helperText={getIn(formik.touched, 'CHANGES') && getIn(formik.errors, 'CHANGES')}
-                  />
+      <FormikProvider value={formik}>
+        <Form
+          style={{ minWidth: 0 }}
+          id="updates"
+          onSubmit={formik.handleSubmit}
+          className={styles.formContent}
+        >
+          <Stack spacing={2} flex={1}>
+            <TextField
+              label="Номер версии"
+              type="text"
+              fullWidth
+              required
+              autoFocus
+              onFocus={handleFocus}
+              name="VERSION"
+              onChange={formik.handleChange}
+              value={formik.values.VERSION}
+              error={getIn(formik.touched, 'VERSION') && Boolean(getIn(formik.errors, 'VERSION'))}
+              helperText={getIn(formik.touched, 'VERSION') && getIn(formik.errors, 'VERSION')}
+            />
+            <TabContext value={tabIndex}>
+              <Box>
+                <TabList onChange={handleTabsChange}>
+                  <Tab label="Изменить" value="1" />
+                  <Tab label="Просмотреть" value="2" />
+                </TabList>
+              </Box>
+              <TabPanel
+                value="1"
+                className={styles.tabPanel}
+              >
+                <TextField
+                  className={styles.inputTextField}
+                  label="Описание"
+                  type="text"
+                  fullWidth
+                  required
+                  multiline
+                  rows={1}
+                  name="CHANGES"
+                  onChange={formik.handleChange}
+                  value={formik.values.CHANGES}
+                  error={getIn(formik.touched, 'CHANGES') && Boolean(getIn(formik.errors, 'CHANGES'))}
+                  helperText={getIn(formik.touched, 'CHANGES') && getIn(formik.errors, 'CHANGES')}
+                />
 
-                </TabPanel>
-                <TabPanel
-                  value="2"
-                  className={styles.tabPanel}
-                >
-                  <div className={styles.preview}>
-                    <CustomizedScrollBox>
-                      <ReactMarkdown components={{ p: 'div' }}>
-                        {formik.values.CHANGES}
-                      </ReactMarkdown>
-                    </CustomizedScrollBox>
+              </TabPanel>
+              <TabPanel
+                value="2"
+                className={styles.tabPanel}
+              >
+                <div className={styles.preview}>
+                  <CustomizedScrollBox>
+                    <ReactMarkdown components={{ p: 'div' }}>
+                      {formik.values.CHANGES}
+                    </ReactMarkdown>
+                  </CustomizedScrollBox>
 
-                  </div>
-                </TabPanel>
+                </div>
+              </TabPanel>
+              <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
                 <a
                   href="https://www.markdownguide.org/basic-syntax/"
                   target="_blank"
                   rel="noreferrer"
+                  style={{ textDecoration: 'none' }}
                 >
                   <Chip
                     icon={<InfoIcon />}
-                    label="Поддерживаются стили Markdown "
+                    label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
                     variant="outlined"
-                    className={styles.link}
+                    className={styles.info}
+                    style={{ border: 'none', cursor: 'pointer' }}
                   />
                 </a>
-              </TabContext>
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        {
-          update &&
-          <PermissionsGate actionAllowed={userPermission?.updates.DELETE}>
-            <ItemButtonDelete
-              button
-              onClick={handleDeleteClick}
-            />
-          </PermissionsGate>
-        }
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={styles.button}
-          variant="outlined"
-          onClick={handleCancel}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
-        >
-          Отменить
-        </ButtonWithConfirmation>
-        <Button
-          type="submit"
-          form="updates"
-          variant="contained"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+              </Tooltip>
+            </TabContext>
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

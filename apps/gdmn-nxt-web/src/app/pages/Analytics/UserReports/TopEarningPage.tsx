@@ -13,6 +13,7 @@ import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes
 import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 interface IInitState {
   cutomerId: number | null;
@@ -72,7 +73,7 @@ export default function TopEarningPage() {
         spacing={2}
       >
         <CustomizedCard>
-          <CardHeader title={<Typography variant="pageHeader">ТОП по выручке</Typography>} />
+          <CustomCardHeader title={'ТОП по выручке'} />
           <Divider />
           <CardContent>
             <Grid
@@ -100,7 +101,7 @@ export default function TopEarningPage() {
                 container
                 xs={12}
                 spacing={2}
-                direction={{ sm: 'column', md: 'row' }}
+                direction={{ xs: 'column', md: 'row' }}
               >
                 <Grid item xs={4}>
                   <DepartmentsSelect

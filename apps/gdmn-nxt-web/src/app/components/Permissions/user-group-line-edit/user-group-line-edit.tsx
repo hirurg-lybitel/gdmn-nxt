@@ -10,6 +10,7 @@ import { useGetUserGroupLineQuery } from '../../../features/permissions';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import UserSelect from '@gdmn-nxt/components/selectors/user-select';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 const useStyles = makeStyles(() => ({
   dialog: {
@@ -78,83 +79,53 @@ export function UserGroupLineEdit(props: UserGroupLineEditProps) {
     if (!open) formik.resetForm();
   }, [open]);
 
-  const filterOptions = createFilterOptions({
-    matchFrom: 'any',
-    stringify: (option: any) => option.NAME + option.CONTACT.NAME
-  });
-
-  const handleClose = useCallback(() => {
-    onCancel();
-  }, [onCancel]);
-
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
-      onClose={handleClose}
+      onClose={onCancel}
+      form="mainForm"
+      title={userGroupLine.USER ? `Редактирование: ${userGroupLine.USER.NAME}` : 'Добавление пользователя'}
+      confirmation={formik.dirty}
     >
-      <DialogTitle>
-        {userGroupLine.USER ? `Редактирование: ${userGroupLine.USER.NAME}` : 'Добавление пользователя'}
-      </DialogTitle>
-      <DialogContent dividers>
-        <FormikProvider value={formik}>
-          <Form id="mainForm" onSubmit={formik.handleSubmit}>
-            <Stack direction="column" spacing={2}>
-              <div style={{ display: 'flex' }}>
-                <div style={{ width: '100%' }}>
-                  <UserSelect
-                    multiple
-                    filter={user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0}
-                    disableCloseOnSelect
-                    value={formik.values.USERS || null}
-                    onChange={(event, value) => {
-                      formik.setFieldValue(
-                        'USERS', value
-                      );
-                    }}
-                    focused
-                    error={Boolean(formik.errors.USERS)}
-                    helperText={formik.errors.USERS as ReactNode}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formik.values.REQUIRED_2FA}
-                        name={'REQUIRED_2FA'}
-                      />
-                    }
-                    onChange={(event, value) => {
-                      formik.setFieldValue(
-                        'REQUIRED_2FA', value
-                      );
-                    }}
-                    label="Обязательная двухфакторная аутентификация"
-                  />
-                </div>
+      <FormikProvider value={formik}>
+        <Form id="mainForm" onSubmit={formik.handleSubmit}>
+          <Stack direction="column" spacing={2}>
+            <div style={{ display: 'flex' }}>
+              <div style={{ width: '100%' }}>
+                <UserSelect
+                  multiple
+                  filter={user => existsUsers.findIndex(eu => eu.USER?.ID === user.ID) < 0}
+                  disableCloseOnSelect
+                  value={formik.values.USERS || null}
+                  onChange={(event, value) => {
+                    formik.setFieldValue(
+                      'USERS', value
+                    );
+                  }}
+                  focused
+                  error={Boolean(formik.errors.USERS)}
+                  helperText={formik.errors.USERS as ReactNode}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formik.values.REQUIRED_2FA}
+                      name={'REQUIRED_2FA'}
+                    />
+                  }
+                  onChange={(event, value) => {
+                    formik.setFieldValue(
+                      'REQUIRED_2FA', value
+                    );
+                  }}
+                  label="Обязательная двухфакторная аутентификация"
+                />
               </div>
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        <Box flex={1}/>
-        <Button
-          className={classes.button}
-          onClick={onCancel}
-          variant="outlined"
-          color="primary"
-        >
-          Отменить
-        </Button>
-        <Button
-          className={classes.button}
-          variant="contained"
-          form="mainForm"
-          type="submit"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+            </div>
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

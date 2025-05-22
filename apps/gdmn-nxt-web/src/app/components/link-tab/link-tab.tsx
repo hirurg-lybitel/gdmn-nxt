@@ -1,7 +1,7 @@
 import { Tab, TabProps } from '@mui/material';
 import styles from './link-tab.module.less';
-import { Link } from 'react-router-dom';
-import { ForwardedRef, forwardRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ForwardedRef, forwardRef, MouseEventHandler, useMemo } from 'react';
 
 export interface LinkTabProps extends TabProps {
   href?: string;
@@ -12,24 +12,15 @@ export function LinkTab({
   href = '',
   label,
   ...props
-}: LinkTabProps) {
-  const MyLink = <Link to={href ?? ''} />;
-
-  const detailsComponent = {
-    // eslint-disable-next-line react/display-name
-    component: forwardRef((props, ref: ForwardedRef<any>) => (
-      <Link
-        ref={ref}
-        {...props}
-        to={href}
-        target="_self"
-      />
-    ))
-  };
+}: Readonly<LinkTabProps>) {
+  const navigate = useNavigate();
 
   return (
     <Tab
-      {...detailsComponent}
+      onClick={(e) => {
+        navigate(href);
+        props.onClick?.(e);
+      }}
       aria-current={props.selected && 'page'}
       label={label}
       {...props}

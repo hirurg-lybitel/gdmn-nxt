@@ -21,6 +21,7 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import KanbanEditCard from '@gdmn-nxt/components/Kanban/kanban-edit-card/kanban-edit-card';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 export interface IChanges {
   id: number;
@@ -160,15 +161,23 @@ export function Deals(props: DealsProps) {
 
   const Header = useMemo(() => {
     return (
-      <CustomizedCard
-        direction="row"
-        className={styles.headerCard}
-      >
-        <Stack
-          direction="row"
-          spacing={2}
-          flex={1}
-        >
+      <CustomCardHeader
+        search
+        filter
+        refetch
+        searchPlaceholder="Поиск сделки"
+        isLoading={isLoading}
+        isFetching={columnsIsFetching}
+        onCancelSearch={filterHandlers.cancelSearch}
+        onRequestSearch={filterHandlers.requestSearch}
+        searchValue={filterData?.name?.[0]}
+        onRefetch={refreshBoard}
+        onFilterClick={filterHandlers.filterClick}
+        hasFilters={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0}
+        addButton={userPermissions?.contacts?.POST}
+        onAddClick={addDealClick}
+        addButtonHint="Создать сделку"
+        action={
           <ToggleButtonGroup
             color="primary"
             value={tabNo}
@@ -190,10 +199,14 @@ export function Deals(props: DealsProps) {
               </Tooltip>
             </ToggleButton>
           </ToggleButtonGroup>
+
+        }
+        wrapAction={
           <Autocomplete
-            style={{
-              width: '210px',
-              minWidth: '210px'
+            sx={{
+              width: { xs: '100%', sm: '160px', md: '210px' },
+              minWidth: { sm: '160px', md: '210px' },
+              margin: { xs: '0', sm: '0px 16px' }
             }}
             options={cardDateFilter}
             disableClearable
@@ -219,66 +232,11 @@ export function Deals(props: DealsProps) {
               />
             )}
           />
-          <SearchBar
-            // disabled={columnsIsFetching}
-            onCancelSearch={filterHandlers.cancelSearch}
-            onRequestSearch={filterHandlers.requestSearch}
-            cancelOnEscape
-            fullWidth
-            placeholder="Поиск сделки"
-            iconPosition="start"
-            value={
-              filterData && filterData.name
-                ? filterData.name[0]
-                : undefined
-            }
-          />
-          <Stack direction="row" alignItems="center">
-            <PermissionsGate actionAllowed={userPermissions?.deals?.POST}>
-              <IconButton
-                disabled={columnsIsFetching}
-                onClick={addDealClick}
-                color="primary"
-                size="small"
-              >
-                <Tooltip title="Добавить новую сделку" arrow>
-                  <AddCircleIcon />
-                </Tooltip>
-              </IconButton>
-            </PermissionsGate>
-            <CustomLoadingButton
-              hint="Обновить данные"
-              loading={columnsIsFetching}
-              onClick={refreshBoard}
-            />
-            <IconButton
-              onClick={filterHandlers.filterClick}
-              disabled={columnsIsFetching || filtersIsLoading || filtersIsFetching}
-              size="small"
-            >
-              <Tooltip
-                title={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
-                  ? 'У вас есть активные фильтры'
-                  : 'Выбрать фильтры'
-                }
-                arrow
-              >
-                <Badge
-                  color="error"
-                  variant={Object.keys(filterData || {}).filter(f => f !== 'deadline' && f !== 'name').length > 0
-                    ? 'dot'
-                    : 'standard'}
-                >
-                  <FilterListIcon color="primary" />
-                </Badge>
-              </Tooltip>
-            </IconButton>
-          </Stack>
-        </Stack>
-      </CustomizedCard>
+        }
+      />
     );
   }
-  , [tabNo, filterData, columnsIsFetching]);
+  , [isLoading, columnsIsFetching, filterHandlers.cancelSearch, filterHandlers.requestSearch, filterHandlers.filterClick, filterHandlers.filterDeadlineChange, filterData, refreshBoard, userPermissions?.contacts?.POST, tabNo, cardDateFilter]);
 
   const KanbanBoardMemo = useMemo(() => <KanbanBoard columns={columns} isLoading={componentIsFetching} />, [columns, componentIsFetching]);
 

@@ -15,6 +15,8 @@ import { sortFields } from './constants';
 import { useGetRevenueQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
 import RevenueReport from './revenue-report/revenue-report';
 import { RevenueFilter } from './revenue-filter/revenue-filter';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomDateRangePicker from '@gdmn-nxt/components/CustomDateRangePicker/CustomDateRangePicker';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -122,20 +124,19 @@ export function Revenue(props: RevenueProps) {
       width={'100%'}
     >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Выручка</Typography>} />
+        <CustomCardHeader title={'Выручка'} />
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <DateRangePicker
+          <CustomDateRangePicker
+            slots={{ field: SingleInputDateRangeField }}
             label="Период"
             value={onDate}
             onChange={handleChange}
-            calendars={1}
-            slots={{ field: SingleInputDateRangeField }}
             slotProps={{
               shortcuts: {
                 items: shortcutsItems,
-              },
-              textField: { variant: 'outlined' } }}
+              }
+            }}
           />
           <RevenueFilter
             filterData={filterData}

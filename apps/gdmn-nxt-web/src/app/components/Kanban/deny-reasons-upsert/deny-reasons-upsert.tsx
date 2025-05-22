@@ -7,6 +7,7 @@ import * as yup from 'yup';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 export interface DenyReasonsUpsertProps {
   open: boolean;
@@ -47,10 +48,6 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
     if (!open) formik.resetForm();
   }, [open]);
 
-  const handleCancel = useCallback(() => {
-    onCancel();
-  }, [onCancel]);
-
   const handleClose = useCallback(() => {
     onCancel();
   }, [onCancel]);
@@ -65,63 +62,37 @@ export function DenyReasonsUpsert(props: DenyReasonsUpsertProps) {
   }, []);
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={handleClose}
       confirmation={formik.dirty}
-      width={500}
+      title={denyReason ? `Редактирование: ${denyReason.NAME}` : 'Добавление причины отказа'}
+      form="denyReason"
+
+      deleteButton={!!denyReason}
+      onDeleteClick={handleDeleteClick}
     >
-      <DialogTitle>
-        {denyReason ? `Редактирование: ${denyReason.NAME}` : 'Добавление причины отказа'}
-      </DialogTitle>
-      <DialogContent dividers>
-        <FormikProvider value={formik}>
-          <Form id="denyReason" onSubmit={formik.handleSubmit}>
-            <TextField
-              label="Наименование"
-              type="text"
-              multiline
-              minRows={1}
-              fullWidth
-              required
-              autoFocus
-              onFocus={handleFocus}
-              name="NAME"
-              onChange={formik.handleChange}
-              value={formik.values.NAME}
-              error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
-              helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
-            />
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions className={styles.DialogActions}>
-        {
-          denyReason &&
-          <ItemButtonDelete button onClick={handleDeleteClick} />
-        }
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={styles.Button}
-          variant="outlined"
-          color="primary"
-          onClick={handleCancel}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
-        >
-          Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={styles.Button}
-          type="submit"
-          form="denyReason"
-          variant="contained"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+      <FormikProvider value={formik}>
+        <Form id="denyReason" onSubmit={formik.handleSubmit}>
+          <TextField
+            label="Наименование"
+            type="text"
+            multiline
+            minRows={1}
+            fullWidth
+            required
+            autoFocus
+            onFocus={handleFocus}
+            name="NAME"
+            onChange={formik.handleChange}
+            value={formik.values.NAME}
+            error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
+            helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
+          />
+        </Form>
+
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

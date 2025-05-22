@@ -28,8 +28,8 @@ export function ContactList({
   paginationData,
   paginationClick,
   onSortChange
-}: ContactListProps) {
-  const [pageOptions, setPageOptions] = useState<number[]>([]);
+}: Readonly<ContactListProps>) {
+  const [pageOptions, setPageOptions] = useState<number[]>([20, 40, 100, 200]);
 
   useEffect(() => {
     const rowPerPage = 20;
@@ -156,36 +156,34 @@ export function ContactList({
   ];
 
   return (
-    <>
-      <StyledGrid
-        rows={contacts}
-        columns={columns}
-        onRowDoubleClick={({ row }) => onEditClick(row)}
-        autoHeightForFields={['LABELS']}
-        loading={isLoading}
-        rowCount={contactsCount}
-        hideHeaderSeparator
-        disableMultipleRowSelection
-        hideFooterSelectedRowCount
-        disableColumnResize
-        disableColumnReorder
-        disableColumnFilter
-        disableColumnMenu
-        pagination
-        paginationMode="server"
-        onPaginationModelChange={(data: {page: number, pageSize: number}) => {
-          paginationClick({
-            ...paginationData,
-            pageSize: data.pageSize,
-            pageNo: data.page
-          });
-        }}
-        paginationModel={{ page: paginationData.pageNo, pageSize: paginationData?.pageSize }}
-        pageSizeOptions={pageOptions}
-        sortingMode="server"
-        onSortModelChange={handleSortModelChange}
-      />
-    </>
+    <StyledGrid
+      rows={contacts}
+      columns={columns}
+      onRowDoubleClick={({ row }) => onEditClick(row)}
+      autoHeightForFields={['LABELS']}
+      loading={isLoading}
+      rowCount={contactsCount}
+      hideHeaderSeparator
+      disableMultipleRowSelection
+      hideFooterSelectedRowCount
+      disableColumnResize
+      disableColumnReorder
+      disableColumnFilter
+      disableColumnMenu
+      pagination
+      paginationMode="server"
+      onPaginationModelChange={(data: {page: number, pageSize: number}) => {
+        paginationClick({
+          ...paginationData,
+          pageSize: data.pageSize,
+          pageNo: data.page
+        });
+      }}
+      paginationModel={{ page: paginationData.pageNo, pageSize: paginationData?.pageSize }}
+      pageSizeOptions={pageOptions}
+      sortingMode="server"
+      onSortModelChange={handleSortModelChange}
+    />
   );
 }
 

@@ -47,11 +47,11 @@ export default function SystemTab() {
           height={'100%'}
           spacing={2}
         >
-          <Stack direction="row" spacing={4}>
+          <Stack direction={{ xs: 'column', lg: 'row' }} spacing={4}>
             <Stack spacing={1} flex={1}>
               <Typography variant="subtitle1">Общие</Typography>
               <Stack spacing={2}>
-                <FormControl size="small" style={{ width: 200 }}>
+                <FormControl size="small" sx={{ width: { xs: '100%', sm: 200 } }}>
                   <InputLabel id="select-label">Тип договоров</InputLabel>
                   <Select
                     labelId="select-label"
@@ -70,6 +70,7 @@ export default function SystemTab() {
                   </Select>
                 </FormControl>
                 <CustomerSelect
+                  sx={{ width: { sm: '50%', lg: '100%' } }}
                   name="OURCOMPANY"
                   label="Рабочая оранизация"
                   disableEdition
@@ -84,8 +85,11 @@ export default function SystemTab() {
             </Stack>
             <Stack spacing={1} flex={1}>
               <Typography variant="subtitle1">SMTP сервер</Typography>
-              <Stack direction="row" spacing={2}>
-                <Stack flex={0.7} spacing={2}>
+              <Stack direction="column" spacing={2}>
+                <Stack
+                  spacing={2}
+                  direction={{ xs: 'column', sm: 'row' }}
+                >
                   <TextField
                     label="Хост"
                     fullWidth
@@ -94,15 +98,7 @@ export default function SystemTab() {
                     onChange={formik.handleChange}
                   />
                   <TextField
-                    label="Пользователь"
-                    fullWidth
-                    name="smtpUser"
-                    value={formik.values.smtpUser ?? ''}
-                    onChange={formik.handleChange}
-                  />
-                </Stack>
-                <Stack flex={0.3} spacing={2}>
-                  <TextField
+                    sx={{ width: { xs: '100%', sm: '40%' } }}
                     type="number"
                     label="Порт"
                     fullWidth
@@ -110,7 +106,20 @@ export default function SystemTab() {
                     value={formik.values.smtpPort ?? ''}
                     onChange={formik.handleChange}
                   />
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction={{ xs: 'column', sm: 'row' }}
+                >
                   <TextField
+                    label="Пользователь"
+                    fullWidth
+                    name="smtpUser"
+                    value={formik.values.smtpUser ?? ''}
+                    onChange={formik.handleChange}
+                  />
+                  <TextField
+                    sx={{ width: { xs: '100%', sm: '40%' } }}
                     type="password"
                     label="Пароль"
                     fullWidth

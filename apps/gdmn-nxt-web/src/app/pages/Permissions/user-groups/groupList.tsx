@@ -1,5 +1,5 @@
 import { IUserGroup } from '@gsbelarus/util-api-types';
-import { IconButton, List, ListItem, ListItemText, Theme, Typography } from '@mui/material';
+import { IconButton, List, ListItem, ListItemText, Theme, Typography, useMediaQuery } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Dispatch, SetStateAction } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -8,26 +8,29 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     borderRadius: 0,
     '&:hover': {
-      backgroundColor: theme.color.grey[300],
-      color: 'initial',
-      borderRadius: '4px',
+      color: theme.palette.text.primary,
+      '& .caption': {
+        color: theme.palette.text.primary,
+      }
     },
-    '&:hover .actions': {
-      display: 'inline',
+    '& .actions': {
       position: 'absolute',
       right: 0,
       top: 0
+    },
+    '&:hover .actions': {
+      display: 'inline'
     }
   },
   listItemSelected: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.secondary.main,
+    backgroundColor: theme.palette.primary.main + '!important',
+    color: theme.palette.secondary.main + '!important',
     borderRadius: '4px',
     '& .caption': {
-      color: theme.palette.secondary.main,
+      color: theme.palette.secondary.main + '!important',
     },
-    '&:hover  .caption': {
-      color: 'initial',
+    '& .action': {
+      color: theme.palette.primary.contrastText
     }
   }
 }));
@@ -47,6 +50,8 @@ export const GroupList = (props: IGroupList) => {
   const onClick = (group: IUserGroup) => (e: any) => {
     setSelectedUserGroup && setSelectedUserGroup(group);
   };
+
+  const mobile = useMediaQuery('(pointer: coarse)');
 
   return <List>
     {groups.map(group =>
@@ -68,10 +73,14 @@ export const GroupList = (props: IGroupList) => {
           <Typography variant="caption" className="caption">{group.DESCRIPTION}</Typography>
           <div
             className="actions"
-            hidden
+            hidden={!mobile}
           >
             <IconButton size="small" onClick={onEdit(group)}>
-              <EditIcon fontSize="small" color="primary" />
+              <EditIcon
+                className="action"
+                fontSize="small"
+                color={(mobile && group.ID === selectedUserGroup?.ID) ? 'action' : 'primary'}
+              />
             </IconButton>
           </div>
         </ListItemText>
