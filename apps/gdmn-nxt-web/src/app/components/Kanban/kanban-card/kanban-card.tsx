@@ -1,7 +1,7 @@
 import './kanban-card.module.less';
 import { useCallback, useMemo, useState } from 'react';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
-import { Box, IconButton, Stack, Typography, useTheme, Tooltip, Icon } from '@mui/material';
+import { Box, IconButton, Stack, Typography, useTheme, Tooltip, Icon, useMediaQuery } from '@mui/material';
 import KanbanEditCard from '../kanban-edit-card/kanban-edit-card';
 import { DraggableStateSnapshot } from '@hello-pangea/dnd';
 import { ColorMode, IKanbanCard, IKanbanColumn, IKanbanTask, Permissions } from '@gsbelarus/util-api-types';
@@ -161,6 +161,23 @@ export function KanbanCard(props: KanbanCardProps) {
     setEditCard(true);
   }, [card]);
 
+  const [lastTap, setLastTap] = useState(0);
+
+  const onCardClick = useCallback(() => {
+    const currentTime = Date.now();
+    const tapGap = currentTime - lastTap;
+
+    if (tapGap < 500) {
+      doubleClick();
+      setLastTap(currentTime - 500);
+      return;
+    }
+
+    setLastTap(currentTime);
+  }, [doubleClick, lastTap]);
+
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   const dayCalc = (days: number): string => {
     const positiveDays = Math.abs(days);
     const lastNumber = positiveDays % 10;
@@ -233,6 +250,7 @@ export function KanbanCard(props: KanbanCardProps) {
           width: '100%',
           textOverflow: 'ellipsis',
           padding: 5,
+          touchAction: 'manipulation',
           backgroundColor: 'var(--color-card-bg)',
           ...(card?.STATUS &&
             'isRead' in (card?.STATUS ?? {}) &&
@@ -270,12 +288,12 @@ export function KanbanCard(props: KanbanCardProps) {
           )
         }}
         sx={{
-          '&:hover .actions': {
+          '&:hover .actions': mobile ? {} : {
             display: 'inline',
             position: 'absolute',
             right: 0,
           },
-          '&:hover .number': {
+          '&:hover .number': mobile ? {} : {
             opacity: 0, visibility: 'hidden'
           },
           '&:hover': {
@@ -287,7 +305,9 @@ export function KanbanCard(props: KanbanCardProps) {
           direction="column"
           spacing={0.5}
           color={colorModeIsLight ? '#636b74' : '#bababa'}
+          style={{ touchAction: 'manipulation' }}
           onDoubleClick={doubleClick}
+          onClick={mobile ? onCardClick : undefined}
         >
           <Stack
             direction="row"
@@ -303,18 +323,12 @@ export function KanbanCard(props: KanbanCardProps) {
             >
               {card.DEAL?.USR$NAME}
             </Typography>
-            <Typography
-              className="number"
-              variant="caption"
-            >
-              {'#' + card.DEAL?.USR$NUMBER}
-            </Typography>
             {isFirstColumn
               ?
               <PermissionsGate actionAllowed={userPermissions?.deals.COPY}>
                 <div
                   className="actions"
-                  hidden
+                  hidden={!mobile}
                 >
                   <IconButton
                     size="small"
@@ -327,6 +341,12 @@ export function KanbanCard(props: KanbanCardProps) {
               </PermissionsGate>
               : null
             }
+            <Typography
+              className="number"
+              variant="caption"
+            >
+              {'#' + card.DEAL?.USR$NUMBER}
+            </Typography>
           </Stack>
           <Stack direction="row" spacing={1}>
             <Typography variant="body2" noWrap>{card.DEAL?.CONTACT?.NAME}</Typography>
@@ -380,7 +400,7 @@ export function KanbanCard(props: KanbanCardProps) {
         </Stack>
       </CustomizedCard>
     );
-  }, [card, snapshot.isDragging, addIsFetching, theme]);
+  }, [card, snapshot.isDragging, addIsFetching, theme, onCardClick, mobile]);
 
   return (
     <>

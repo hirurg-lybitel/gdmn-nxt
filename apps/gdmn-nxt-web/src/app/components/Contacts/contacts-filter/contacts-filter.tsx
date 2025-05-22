@@ -6,6 +6,7 @@ import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import { IContactPerson, ICustomer, IFilteringData, ILabel } from '@gsbelarus/util-api-types';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { ContactSelect } from '../../selectors/contact-select';
+import FilterDialog from '@gdmn-nxt/components/filter-dialog/filter-dialog';
 
 export interface ContactsFilterProps {
   open: boolean;
@@ -47,69 +48,60 @@ export function ContactsFilter({
   };
 
   return (
-    <CustomizedDialog
+    <FilterDialog
       open={open}
       onClose={onClose}
+      onClear={filterClear}
       width={400}
     >
-      <CardContent style={{ flex: 1 }}>
-        <Stack spacing={2}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={filteringData?.isFavorite ?? false}
-                onChange={(e) => handleOnChange('isFavorite', e.target.checked)}
-              />
-            }
-            label="Только избранные"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={!!filteringData?.isOur}
-                onChange={(e) => handleOnChange('isOur', e.target.checked)}
-              />
-            }
-            label="Только наши"
-          />
-          <CustomerSelect
-            label="Компании"
-            placeholder="Выберите компанию"
-            multiple
-            value={filteringData?.COMPANY as ICustomer[] ?? []}
-            onChange={(value) => handleOnChange('COMPANY', value)}
-          />
-          <ContactSelect
-            label="Ответственный"
-            placeholder="Выберите ответственного"
-            limitTags={2}
-            multiple
-            value={filteringData?.RESPONDENTS as IContactPerson[] ?? []}
-            onChange={(value) => handleOnChange('RESPONDENTS', value)}
-          />
-          <LabelsSelect
-            onChange={(value) => handleOnChange('LABELS', value)}
-            labels={filteringData?.LABELS as ILabel[] ?? []}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="end">
-                  <TagIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Stack>
-      </CardContent>
-      <CardActions style={{ padding: '16px' }}>
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={filterClear}
-        >
-            Очистить
-        </Button>
-      </CardActions>
-    </CustomizedDialog>
+      <Stack spacing={2}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filteringData?.isFavorite ?? false}
+              onChange={(e) => handleOnChange('isFavorite', e.target.checked)}
+            />
+          }
+          label="Только избранные"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={!!filteringData?.isOur}
+              onChange={(e) => handleOnChange('isOur', e.target.checked)}
+            />
+          }
+          label="Только наши"
+        />
+        <CustomerSelect
+          label="Компании"
+          placeholder="Выберите компанию"
+          multiple
+          value={filteringData?.COMPANY as ICustomer[] ?? []}
+          onChange={(value) => handleOnChange('COMPANY', value)}
+        />
+        <ContactSelect
+          label="Ответственный"
+          placeholder="Выберите ответственного"
+          limitTags={2}
+          multiple
+          value={filteringData?.RESPONDENTS as IContactPerson[] ?? []}
+          onChange={(value) => handleOnChange('RESPONDENTS', value)}
+        />
+        <LabelsSelect
+          onChange={(value) => handleOnChange('LABELS', value)}
+          labels={filteringData?.LABELS as ILabel[] ?? []}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="end">
+                <TagIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Stack>
+
+    </FilterDialog>
   );
 }
 

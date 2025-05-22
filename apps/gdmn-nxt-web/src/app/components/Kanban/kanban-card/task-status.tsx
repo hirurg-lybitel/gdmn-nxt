@@ -1,5 +1,5 @@
 import { ColorMode, IKanbanTask } from '@gsbelarus/util-api-types';
-import { Box, Checkbox, CircularProgress, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Checkbox, CircularProgress, IconButton, Stack, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import { ChangeEvent, MouseEvent, WheelEvent, useCallback, useMemo, useRef, useState } from 'react';
 import StyledGrid from '../../Styled/styled-grid/styled-grid';
@@ -114,11 +114,28 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
     currentTask.current = task;
   };
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   const onRowDoubleClick = useCallback(({ row }: GridRowParams<IKanbanTask>, e: any) => {
     e.stopPropagation();
     setTask(row);
     setEditTaskForm(true);
   }, []);
+
+  const [lastTap, setLastTap] = useState(0);
+
+  const onRowClick = useCallback((row: GridRowParams<IKanbanTask>, e: any) => {
+    const currentTime = Date.now();
+    const tapGap = currentTime - lastTap;
+
+    if (tapGap < 500) {
+      onRowDoubleClick(row, e);
+      setLastTap(currentTime - 500);
+      return;
+    }
+
+    setLastTap(currentTime);
+  }, [onRowDoubleClick, lastTap]);
 
   const handleTaskEditSubmit = useCallback((task: IKanbanTask, deleting: boolean) => {
     deleting
@@ -167,9 +184,11 @@ const ExpandedList = ({ open, tasks }: ExpandedListProps) => {
           '& .MuiTypography-root': {
             lineHeight: 1,
           },
-          color: 'inherit'
+          color: 'inherit',
+          touchAction: 'manipulation'
         }}
         onRowDoubleClick={onRowDoubleClick}
+        onRowClick={mobile ? onRowClick : undefined}
         rows={tasks}
         columns={columns}
         rowHeight={rowHeight}

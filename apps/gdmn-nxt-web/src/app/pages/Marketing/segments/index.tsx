@@ -15,6 +15,7 @@ import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useAddSegmentMutation, useDeleteSegmentMutation, useGetAllSegmentsQuery, useUpdateSegmentMutation } from '../../../features/Marketing/segments/segmentsApi';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import SegmentCustomers from '../components/segment-customers';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 export default function CustomersSegments() {
   const [paginationData, setPaginationData] = useState<IPaginationData>({
@@ -98,8 +99,8 @@ export default function CustomersSegments() {
   };
 
   const columns: GridColDef<ISegment>[] = [
-    { field: 'NAME', headerName: 'Наименование', flex: 1, },
-    { field: 'QUANTITY', headerName: 'Получатели', flex: 1, sortable: false, type: 'number',
+    { field: 'NAME', headerName: 'Наименование', flex: 1, minWidth: 180 },
+    { field: 'QUANTITY', headerName: 'Получатели', flex: 1, minWidth: 140, sortable: false, type: 'number',
       renderCell: ({ value, row }) => (
         !value ?
           <div style={{ width: 31 }}>{0}</div> :
@@ -164,39 +165,19 @@ export default function CustomersSegments() {
     <CustomizedCard style={{ flex: 1 }}>
       {memoSegmentEdit}
       {memoSegmentAdd}
-      <CardHeader
-        title={<Typography variant="pageHeader">Сегменты</Typography>}
-        action={
-          <Stack direction="row" spacing={1}>
-            <Box paddingX={'4px'} />
-            <SearchBar
-              disabled={segmentsIsLoading || filtersIsLoading}
-              onCancelSearch={cancelSearch}
-              onRequestSearch={requestSearch}
-              fullWidth
-              cancelOnEscape
-              value={
-                filterData?.name
-                  ? filterData.name[0]
-                  : undefined
-              }
-            />
-            <Box display="inline-flex" alignSelf="center">
-              <CustomAddButton
-                disabled={(segmentsIsFetching || segmentsIsLoading)}
-                label="Создать сегмент"
-                onClick={() => setUpsertSegment({ addSegment: true })}
-              />
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomLoadingButton
-                hint="Обновить данные"
-                loading={isLoading}
-                onClick={() => sermentsRefresh()}
-              />
-            </Box>
-          </Stack>
-        }
+      <CustomCardHeader
+        search
+        refetch
+        title={'Сегменты'}
+        isLoading={segmentsIsLoading || filtersIsLoading}
+        isFetching={segmentsIsFetching || filtersIsFetching}
+        onCancelSearch={cancelSearch}
+        onRequestSearch={requestSearch}
+        searchValue={filterData?.name?.[0]}
+        onRefetch={sermentsRefresh}
+        addButton
+        onAddClick={() => setUpsertSegment({ addSegment: true })}
+        addButtonHint="Создать сегмент"
       />
       <Divider />
       <CardContent style={{ padding: 0 }}>

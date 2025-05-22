@@ -1,6 +1,6 @@
 import style from './email-template.module.less';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Box, Divider, IconButton, Tab, Tooltip, useTheme } from '@mui/material';
+import { Box, Divider, IconButton, Tab, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import CustomizedScrollBox from '../Styled/customized-scroll-box/customized-scroll-box';
 import EmailTemplateEdit from './email-template-edit/email-template-edit';
@@ -264,6 +264,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   const [editedIndex, setEditedIndex] = useState<number | null>(null);
 
   const handleDragEnd = useCallback((result: DropResult) => {
+    handleChangePrimaryDrag('');
     setDraggedId(-1);
     // setAllowChangePrimary(true);
     if (!result.destination) return;
@@ -295,7 +296,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       }
       handleChange({ ...template, components: copyTemplate });
     }
-  }, [components, editedIndex, getBiggestId, handleChange, template]);
+  }, [editedIndex, getBiggestId, handleChange, template]);
 
 
   const openEditForm = (index: number) => {
@@ -379,11 +380,24 @@ const EmailTemplate = (props: EmailTemplateProps) => {
   };
 
   const workspaceWidth = 375;
+  const workspaceHeight = 250;
 
   const workspaceTextColor = useCallback(() => {
     const rgb = hexToRGB(template.background.value);
     return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) < 165 ? 'white' : 'black';
   }, [template.background.value]);
+
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+
+  const mobile = useMediaQuery('(pointer: coarse)');
+
+  const onDragStart = (id: number) => () => {
+    setDraggedId(id);
+    handleChangeAllowChangePrimary(false)();
+  };
+
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDown380 = useMediaQuery('(max-width:400px)');
 
   return (
     <div
@@ -396,13 +410,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <TabContext value={tabIndex} >
           <div style={{ width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }} >
+            <div style={{ display: 'flex', alignItems: 'center', overflow: 'auto' }} >
               <TabList
                 onChange={handleTabsChange}
-                centered
                 sx={{
                   position: 'relative'
                 }}
+                variant="scrollable"
               >
                 <Tab
                   label="Редактирование"
@@ -412,7 +426,6 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   label="Просмотр"
                   value="2"
                 />
-
               </TabList>
               <Box flex={1}/>
               {editedIndex !== null && tabIndex !== '2' && (
@@ -420,9 +433,9 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                   <IconButton onClick={closeEditForm} size="small"><CloseIcon /></IconButton>
                 </div>
               )}
-              <div style={{ paddingRight: '5px' }}>
+              <div style={{ paddingRight: '5px', display: 'flex', marginLeft: '10px' }}>
                 {tabIndex === '2' && <>
-                  <Tooltip title={'Компьютер'}>
+                  {!matchDownSm && <Tooltip title={'Компьютер'}>
                     <IconButton
                       style={{ marginRight: '5px' }}
                       color={previewMode === '700px' ? 'primary' : 'default'}
@@ -432,37 +445,53 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     >
                       <ComputerIcon/>
                     </IconButton>
-                  </Tooltip>
-                  <Tooltip title={'Планшет'}>
-                    <IconButton
-                      style={{ marginRight: '5px' }}
-                      color={previewMode === '500px' ? 'primary' : 'default'}
-                      onClick={() => {
-                        setPreviewmode('500px');
-                      }}
-                    >
-                      <TabletIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={'Телефон'}>
-                    <IconButton
-                      color={previewMode === '300px' ? 'primary' : 'default'}
-                      onClick={() => {
-                        setPreviewmode('300px');
-                      }}
-                    >
-                      <PhoneAndroidIcon/>
-                    </IconButton>
-                  </Tooltip>
+                  </Tooltip>}
+                  {!matchDown380 && <>
+                    <Tooltip title={'Планшет'}>
+                      <IconButton
+                        style={{ marginRight: '5px' }}
+                        color={previewMode === '500px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('500px');
+                        }}
+                      >
+                        <TabletIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={'Телефон'}>
+                      <IconButton
+                        color={previewMode === '300px' ? 'primary' : 'default'}
+                        onClick={() => {
+                          setPreviewmode('300px');
+                        }}
+                      >
+                        <PhoneAndroidIcon/>
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                  }
                 </>}
               </div>
             </div>
             <Divider style={{ margin: 0 }} />
           </div>
           <div style={{ display: 'flex', height: 'calc(100% - 41.5px)', width: '100%', position: 'relative' }}>
-            <div style={{ width: '100%', height: '100%' }}>
-              <TabPanel value="1" style={{ height: '100%', width: `calc(100% - ${workspaceWidth}px)`, padding: '0' }} >
-                <CustomizedScrollBox className={style.templateScrollBox} options={{ suppressScrollX: true }}>
+            <div style={{ width: '100%', height: '100%', paddingTop: matchDownMd ? '20px' : undefined, }}>
+              <TabPanel
+                value="1"
+                style={{
+                  height: `calc(100% - ${matchDownMd ? (workspaceHeight + 20) : 0}px)`,
+                  width: `calc(100% - ${matchDownMd ? 0 : workspaceWidth}px)`,
+                  padding: '20px',
+                  paddingTop: matchDownMd ? '0' : undefined,
+                  overflow: 'auto',
+                  position: 'relative'
+                }}
+              >
+                <div
+                  className={style.templateScrollBox}
+                  style={{ top: matchDownMd ? '0' : undefined }}
+                >
                   <div style={{ width: '100% ', transition: '0.5s' }}>
                     <Droppable droppableId="template" >
                       {(droppableProvider) => (
@@ -484,7 +513,8 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                 const dragProps = drag ? { ...draggableProvider.draggableProps } : {};
                                 return (
                                   <div
-                                    onMouseDown={handleOpenEditForm(index)}
+                                    onMouseDown={mobile ? undefined : handleOpenEditForm(index)}
+                                    onTouchStart={mobile ? handleOpenEditForm(index) : undefined}
                                     ref={draggableProvider.innerRef}
                                     {...dragProps}
                                     {...draggableProvider.dragHandleProps}
@@ -511,10 +541,13 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     </Droppable>
 
                   </div>
-                </CustomizedScrollBox>
+                </div>
               </TabPanel>
               <TabPanel value="2" style={{ height: '100%', width: '100%', padding: '0' }} >
-                <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', overflow: 'hidden', padding: '20px' }}>
+                <div
+                  style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center',
+                    overflow: 'hidden', padding: '20px', paddingTop: matchDownMd ? '0px' : '20px' }}
+                >
                   <div
                     style={{
                       maxWidth: previewMode,
@@ -522,7 +555,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                       background: template.background.value,
                     }}
                   >
-                    <CustomizedScrollBox options={{ suppressScrollX: true }}>
+                    <CustomizedScrollBox externalScrollLock options={{ suppressScrollX: true }}>
                       {ReactHtmlParser(value)}
                     </CustomizedScrollBox>
                   </div>
@@ -532,19 +565,22 @@ const EmailTemplate = (props: EmailTemplateProps) => {
             <div
               style={{
                 position: 'absolute',
-                right: tabIndex === '2' ? '-100%' : 0,
-                top: 0,
-                bottom: 0,
-                width: workspaceWidth,
+                right: tabIndex === '2' && !matchDownMd ? '-100%' : 0,
+                width: matchDownMd ? '100%' : workspaceWidth,
+                height: matchDownMd ? workspaceHeight : '100%',
+                bottom: tabIndex === '2' && matchDownMd ? '-100%' : 0,
                 minWidth: '300px',
                 transition: '0.5s',
-                zIndex: 2
+                zIndex: 2,
+                paddingBottom: matchDownMd ? '2px' : 0
               }}
             >
               <div
                 style={{
                   height: '100%',
-                  borderLeft: `1px solid ${theme.mainContent.borderColor}`,
+                  borderLeft: matchDownMd ? 'none' : `1px solid ${theme.mainContent.borderColor}`,
+                  borderTop: matchDownMd ? `1px solid ${theme.mainContent.borderColor}` : 'none',
+                  borderBottom: matchDownMd ? `1px solid ${theme.mainContent.borderColor}` : 'none',
                   background: theme.palette.background.paper,
                 }}
               >
@@ -571,7 +607,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                     />
                   </Box>
                   : (
-                    <CustomizedScrollBox options={{ suppressScrollX: true }}>
+                    <CustomizedScrollBox externalScrollLock options={{ suppressScrollX: true }}>
                       <Droppable droppableId="compotents" >
                         {(droppableProvider) => (
                           <div
@@ -594,14 +630,15 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                   key={component.id}
                                 >
                                   {(draggableProvider, snapshot) => {
-                                    const dragProps = (draggedId === component.id) || primaryDrag === `${component.id}` ? { ...draggableProvider.draggableProps } : {};
                                     return (
                                       <div
-                                        onMouseDown={() => {
-                                          setDraggedId(component.id);
-                                          handleChangeAllowChangePrimary(false)();
-                                        }}
-                                        onMouseUp={handleChangeAllowChangePrimary(true)}
+                                        onMouseDown={mobile ? undefined : onDragStart(component.id)}
+                                        onTouchStart={mobile ? () => {
+                                          onDragStart(component.id);
+                                          handleChangePrimaryDrag(`${component.id}`)();
+                                        } : undefined}
+                                        onMouseUp={mobile ? undefined : handleChangeAllowChangePrimary(true)}
+                                        onTouchEnd={mobile ? handleChangeAllowChangePrimary(true) : undefined}
                                         onMouseEnter={handleChangePrimaryDrag(`${component.id}`)}
                                         style={{
                                           width: '110px',
@@ -613,7 +650,7 @@ const EmailTemplate = (props: EmailTemplateProps) => {
                                       >
                                         <div
                                           ref={draggableProvider.innerRef}
-                                          {...dragProps}
+                                          {...draggableProvider.draggableProps}
                                           {...draggableProvider.dragHandleProps}
                                           style={getStyle(draggableProvider.draggableProps.style, snapshot, (draggedId === component.id) || primaryDrag === `${component.id}`)}
                                         >

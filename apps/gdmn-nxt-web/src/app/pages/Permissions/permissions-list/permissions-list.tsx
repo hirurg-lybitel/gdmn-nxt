@@ -1,17 +1,18 @@
 import { IPermissionsAction, IUserGroup } from '@gsbelarus/util-api-types';
-import { Box, Button, CardContent, CardHeader, Checkbox, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, CardContent, CardHeader, Checkbox, IconButton, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DataGridProProps, GRID_TREE_DATA_GROUPING_FIELD, GridColDef, GridGroupNode, GridRenderCellParams, GridRowId } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import StyledGrid from '../../../components/Styled/styled-grid/styled-grid';
 import { useGetActionsQuery, useGetMatrixQuery, useGetUserGroupsQuery, useUpdateMatrixMutation } from '../../../features/permissions';
 import styles from './permissions-list.module.less';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { CustomGridTreeDataGroupingCell } from './custom-grid-tree-data-grouping-cell';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { logoutUser } from '../../../features/user/userSlice';
 import { AppDispatch } from '@gdmn-nxt/store';
 import { useDispatch } from 'react-redux';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
 export interface PermissionsListProps {}
@@ -101,8 +102,10 @@ export function PermissionsList(props: PermissionsListProps) {
   const logout = () => {
     dispatch(logoutUser());
   };
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const memoGrid = useMemo(() => (
+  const memoGridCallback = useCallback((mobile: boolean) => (
     <StyledGrid
       treeData
       getTreeDataPath={getTreeDataPath}
@@ -114,7 +117,7 @@ export function PermissionsList(props: PermissionsListProps) {
       hideFooter
       disableColumnReorder
       disableColumnMenu
-      initialState={initialStateDataGrid}
+      initialState={mobile ? undefined : initialStateDataGrid}
       sortModel={[
         { field: GRID_TREE_DATA_GROUPING_FIELD, sort: 'asc' }
       ]}
@@ -131,7 +134,7 @@ export function PermissionsList(props: PermissionsListProps) {
       }}
       className={styles.permissionsList}
     >
-      <CardHeader title={<Typography variant="pageHeader">Права групп пользователей</Typography>} />
+      <CustomCardHeader title={'Права групп пользователей'} />
       <CardContent
         style={{
           flex: 1,
@@ -158,7 +161,7 @@ export function PermissionsList(props: PermissionsListProps) {
               </>
             )}
           </Box>
-          {memoGrid}
+          {memoGridCallback(matchDownSm)}
         </Stack>
       </CardContent>
     </CustomizedCard>

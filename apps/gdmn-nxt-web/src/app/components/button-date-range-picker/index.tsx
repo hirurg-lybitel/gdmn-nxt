@@ -1,14 +1,14 @@
 import { DateRange, DateRangePicker, DateRangePickerProps, DateRangeValidationError, PickerChangeHandlerContext, PickersShortcutsItem, SingleInputDateRangeFieldProps } from '@mui/x-date-pickers-pro';
 import { forwardRef, Ref, RefAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from '@gdmn-nxt/dayjs';
-import { Box, Button, Dialog, Popper, useForkRef, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Dialog, DialogProps, Popper, useForkRef, useMediaQuery, useTheme } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 interface DateRangeButtonFieldProps extends SingleInputDateRangeFieldProps<Date> {
   onClick: () => void;
 }
 
-const shortcutsLabels = [
+export const defaultShortcutsLabels = [
   'Эта неделя',
   'Прошлая неделя',
   'Последние 7 дней',
@@ -19,18 +19,18 @@ const shortcutsLabels = [
   'Прошлый год',
   'Сбросить'
 ] as const;
-type ShortcutsLabel = typeof shortcutsLabels[number]
+export type DefaultShortcutsLabel = typeof defaultShortcutsLabels[number]
 
-const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
+export const defaultShortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
-    label: shortcutsLabels[0],
+    label: defaultShortcutsLabels[0],
     getValue: () => {
       const today = dayjs();
       return [today.startOf('week').toDate(), today.endOf('week').toDate()];
     },
   },
   {
-    label: shortcutsLabels[1],
+    label: defaultShortcutsLabels[1],
     getValue: () => {
       const today = dayjs();
       const prevWeek = today.subtract(7, 'day');
@@ -38,21 +38,21 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
     },
   },
   {
-    label: shortcutsLabels[2],
+    label: defaultShortcutsLabels[2],
     getValue: () => {
       const today = dayjs();
       return [today.subtract(7, 'day').toDate(), today.toDate()];
     },
   },
   {
-    label: shortcutsLabels[3],
+    label: defaultShortcutsLabels[3],
     getValue: () => {
       const today = dayjs();
       return [today.startOf('month').toDate(), today.endOf('month').toDate()];
     },
   },
   {
-    label: shortcutsLabels[4],
+    label: defaultShortcutsLabels[4],
     getValue: () => {
       const today = dayjs();
       return [today.add(-1, 'M').startOf('month')
@@ -69,14 +69,14 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   //   },
   // },
   {
-    label: shortcutsLabels[6],
+    label: defaultShortcutsLabels[6],
     getValue: () => {
       const today = dayjs();
       return [today.startOf('year').toDate(), today.endOf('year').toDate()];
     }
   },
   {
-    label: shortcutsLabels[7],
+    label: defaultShortcutsLabels[7],
     getValue: () => {
       const today = dayjs();
       return [today.add(-1, 'year').startOf('year')
@@ -84,7 +84,7 @@ const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
         .toDate()];
     }
   },
-  { label: shortcutsLabels[shortcutsLabels.length - 1], getValue: () => [null, null] },
+  { label: defaultShortcutsLabels[defaultShortcutsLabels.length - 1], getValue: () => [null, null] },
 ];
 
 type DateRangeButtonFieldComponent = ((
@@ -144,9 +144,73 @@ const DateRangeButtonField = forwardRef(
 DateRangeButtonField.displayName = 'DateRangeButtonField';
 DateRangeButtonField.fieldType = 'single-input';
 
+interface ICustomDateRangePickerDialogProps extends DialogProps {
+  shortcuts: PickersShortcutsItem<DateRange<Date>>[],
+  onChangeDate?: (value: DateRange<Date>, context: PickerChangeHandlerContext<DateRangeValidationError>) => void
+}
+
+export const CustomDateRangePickerDialog = (props: ICustomDateRangePickerDialogProps) => {
+  const {
+    shortcuts,
+    onChangeDate,
+    ...rest
+  } = props;
+
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
+    <Dialog {...rest}>
+      <Box
+        sx={{
+          '& .MuiPickersLayout-shortcuts': {
+            display: 'none'
+          },
+          '& .MuiDialogContent-root': {
+            padding: matchDownSm ? 0 : undefined
+          },
+          '& .MuiPickersLayout-root': {
+            display: 'flex',
+            flexDirection: 'column'
+          }
+        }}
+      >
+        <div style={{ padding: '20px 24px 0 20px', display: 'flex', flexWrap: 'wrap', gap: '10px', maxWidth: '400px' }}>
+          {shortcuts.map((shortcut, index) => {
+            const handleShortCutClick = () => {
+              onChangeDate && onChangeDate(
+                shortcut.getValue({ isValid: () => true }),
+                { shortcut: { label: shortcut.label }, validationError: [null, null] }
+              );
+              props?.onClose && props.onClose({}, 'backdropClick');
+            };
+            return (
+              <Button
+                key={index}
+                variant="contained"
+                onClick={handleShortCutClick}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.16)',
+                  textTransform: 'none',
+                  borderRadius: '16px',
+                  fontWeight: '400',
+                  color: theme.palette.mode === 'dark' ? theme.textColor : theme.palette.text.primary
+                }}
+              >
+                {shortcut.label}
+              </Button>
+            );
+          })}
+        </div>
+        {props.children}
+      </Box>
+    </Dialog>
+  );
+};
+
 const ButtonDateRangePicker = forwardRef(
   (
-    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: ShortcutsLabel[] },
+    props: Omit<DateRangePickerProps<Date>, 'open' | 'onOpen' | 'onClose'> & { options?: DefaultShortcutsLabel[] },
     ref: Ref<HTMLDivElement>
   ) => {
     const { onChange } = props;
@@ -157,66 +221,24 @@ const ButtonDateRangePicker = forwardRef(
     const onOpen = useCallback(() => setOpen(true), []);
 
     const shortcuts = useMemo(() => props.options ?
-      shortcutsItems.filter(({ label }) => props.options?.includes(label as ShortcutsLabel))
-      : shortcutsItems, [props.options]);
-
-    const theme = useTheme();
-    const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+      defaultShortcutsItems.filter(({ label }) => props.options?.includes(label as DefaultShortcutsLabel))
+      : defaultShortcutsItems, [props.options]);
 
     return (
       <DateRangePicker
+        {...props}
         slots={{
           field: DateRangeButtonField,
           ...props.slots,
-          dialog: useCallback((dialogProps: any) => {
+          dialog: useCallback((dialogProps: DialogProps) => {
             return (
-              <Dialog {...dialogProps}>
-                <Box
-                  sx={{
-                    '& .MuiPickersLayout-shortcuts': {
-                      display: 'none'
-                    },
-                    '& .MuiDialogContent-root': {
-                      padding: matchDownSm ? 0 : undefined
-                    },
-                    '& .MuiPickersLayout-root': {
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }
-                  }}
-                >
-                  <div style={{ padding: '20px 24px 0 20px', display: 'flex', flexWrap: 'wrap', gap: '10px', maxWidth: '400px' }}>
-                    {shortcuts.map((shortcut, index) => {
-                      const handleShortCutClick = () => {
-                        onChange && onChange(
-                          shortcut.getValue({ isValid: () => true }),
-                          { shortcut: { label: shortcut.label }, validationError: [null, null] }
-                        );
-                        dialogProps.onClose();
-                      };
-                      return (
-                        <Button
-                          key={index}
-                          variant="contained"
-                          onClick={handleShortCutClick}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.16)',
-                            textTransform: 'none',
-                            borderRadius: '16px',
-                            fontWeight: '400',
-                            color: theme.palette.mode === 'dark' ? theme.textColor : theme.palette.text.primary
-                          }}
-                        >
-                          {shortcut.label}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  {dialogProps.children}
-                </Box>
-              </Dialog>
+              <CustomDateRangePickerDialog
+                {...dialogProps}
+                shortcuts={shortcuts}
+                onChangeDate={onChange}
+              />
             );
-          }, [matchDownSm, JSON.stringify(onChange), JSON.stringify(shortcuts), theme.palette.mode, theme.palette.text.primary, theme.textColor])
+          }, [JSON.stringify(onChange), JSON.stringify(shortcuts)])
         }}
         slotProps={{
           field: { onClick: buttonOnClick } as any,
@@ -226,7 +248,6 @@ const ButtonDateRangePicker = forwardRef(
         }}
         ref={ref}
         calendars={1}
-        {...props}
         open={open}
         onClose={onClose}
         onOpen={onOpen}

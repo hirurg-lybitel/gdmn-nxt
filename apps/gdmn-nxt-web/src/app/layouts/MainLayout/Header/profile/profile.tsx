@@ -30,6 +30,7 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
+import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   popper: {
@@ -62,10 +63,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   }
 }));
 
-export interface ProfileProps {}
+export interface ProfileProps {
+  menuItemClick: (item: IMenuItem, level: number) => void
+}
 
 export function Profile(props: ProfileProps) {
   const classes = useStyles();
+  const { menuItemClick } = props;
 
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
@@ -87,12 +91,16 @@ export function Profile(props: ProfileProps) {
   };
 
   const handleAccountClick = () => {
-    navigate('system/settings/account');
+    const url = 'system/settings/account';
+    menuItemClick({ url, id: '', type: 'item' }, 0);
+    navigate(url);
     handleClose();
   };
 
   const handleSettingsClick = () => {
-    navigate('system/settings/security');
+    const url = 'system/settings/security';
+    menuItemClick({ url, id: '', type: 'item' }, 0);
+    navigate(url);
     handleClose();
   };
 

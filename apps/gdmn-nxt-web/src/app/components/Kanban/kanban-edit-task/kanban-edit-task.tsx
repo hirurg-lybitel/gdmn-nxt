@@ -6,8 +6,7 @@ import { IContactWithID, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-ty
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-import { TimePicker } from '@mui/x-date-pickers-pro';
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { DatePicker, TimePicker } from '@mui/x-date-pickers-pro';
 import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import { useAddTaskMutation, useDeleteTaskMutation, useGetKanbanDealsQuery, useUpdateCardMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
 import filterOptions from '@gdmn-nxt/helpers/filter-options';
@@ -21,6 +20,7 @@ import { EmployeesSelect } from '@gdmn-nxt/components/selectors/employees-select
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 const useStyles = makeStyles((theme) => ({
   dialogContent: {
@@ -124,10 +124,6 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
     onCancelClick();
   }, [formik, onCancelClick]);
 
-  const handleClose = useCallback(() => {
-    handleCancelClick();
-  }, [handleCancelClick]);
-
   function combineDateAndTime(date?: Date, time?: Date) {
     if (!date || !time) return;
 
@@ -208,126 +204,126 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
   const [ListboxComponent] = useAutocompleteVirtualization();
 
   return (
-    <CustomizedDialog
-      open={open}
-      onClose={handleClose}
-      confirmation={formik.dirty}
-      width={500}
-    >
-      <DialogTitle>
-        {Number(task?.ID) > 0 ? `Редактирование задачи №${task?.USR$NUMBER ?? 'Н/Д'}: ${task?.USR$NAME ?? ''}` : 'Добавление задачи'}
-      </DialogTitle>
-      <DialogContent
-        dividers
-        className={classes.dialogContent}
+    <>
+      {memoEditCard}
+      <EditDialog
+        open={open}
+        onClose={handleCancelClick}
+        form={'taskForm'}
+        title={Number(task?.ID) > 0 ? `Редактирование задачи №${task?.USR$NUMBER ?? 'Н/Д'}: ${task?.USR$NAME ?? ''}` : 'Добавление задачи'}
+        confirmation={formik.dirty}
+        onDeleteClick={handleDeleteClick}
+        deleteButton={formik.values.ID > 0 && userPermissions?.tasks?.DELETE}
       >
-        <PerfectScrollbar>
-          <Stack direction="column" p="16px 24px">
-            <FormikProvider value={formik}>
-              <Form id="taskForm" onSubmit={formik.handleSubmit}>
-                <Stack direction="column" spacing={2}>
-                  <Autocomplete
-                    ListboxComponent={ListboxComponent}
-                    options={taskTypes || []}
-                    value={taskTypes?.find(el => el.ID === formik.values.TASKTYPE?.ID) || null}
-                    onChange={(e, value) => {
-                      formik.setFieldValue(
-                        'TASKTYPE',
-                        value ? { ID: value.ID, NAME: value.NAME } : undefined
-                      );
-                    }}
-                    getOptionLabel={option => option.NAME}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.ID}>
-                        {option.NAME}
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Тип задачи"
-                        placeholder="Выберите тип задачи"
-                        required
-                        error={getIn(formik.touched, 'TASKTYPE') && Boolean(getIn(formik.errors, 'TASKTYPE'))}
-                        helperText={getIn(formik.touched, 'TASKTYPE') && getIn(formik.errors, 'TASKTYPE')}
-                      />
-                    )}
-                    loading={taskTypesFetching}
-                    loadingText="Загрузка данных..."
-                  />
+        <FormikProvider value={formik}>
+          <Form
+            style={{ flex: 1 }}
+            id="taskForm"
+            onSubmit={formik.handleSubmit}
+          >
+            <Stack spacing={2}>
+              <Autocomplete
+                ListboxComponent={ListboxComponent}
+                options={taskTypes || []}
+                value={taskTypes?.find(el => el.ID === formik.values.TASKTYPE?.ID) || null}
+                onChange={(e, value) => {
+                  formik.setFieldValue(
+                    'TASKTYPE',
+                    value ? { ID: value.ID, NAME: value.NAME } : undefined
+                  );
+                }}
+                getOptionLabel={option => option.NAME}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.ID}>
+                    {option.NAME}
+                  </li>
+                )}
+                renderInput={(params) => (
                   <TextField
-                    label="Описание"
-                    type="text"
-                    name="USR$NAME"
-                    onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
-                    value={formik.values.USR$NAME}
-                    autoFocus
-                    minRows={1}
-                    error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
-                    helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
-                  />
-                  <EmployeesSelect
-                    value={formik.values.CREATOR ?? null}
-                    onChange={value => {
-                      const employee = value as IContactWithID;
-                      formik.setFieldValue(
-                        'CREATOR',
-                        value ? { ID: employee.ID, NAME: employee.NAME } : undefined
-                      );
-                    }}
-                    label="Постановщик"
-                    placeholder="Выберите постановщика"
-                    error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
-                    helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
+                    {...params}
+                    label="Тип задачи"
+                    placeholder="Выберите тип задачи"
                     required
+                    error={getIn(formik.touched, 'TASKTYPE') && Boolean(getIn(formik.errors, 'TASKTYPE'))}
+                    helperText={getIn(formik.touched, 'TASKTYPE') && getIn(formik.errors, 'TASKTYPE')}
                   />
-                  <EmployeesSelect
-                    value={formik.values.PERFORMER ?? null}
-                    onChange={(value) => {
-                      const employee = value as IContactWithID;
-                      formik.setFieldValue(
-                        'PERFORMER',
-                        value ? { ID: employee.ID, NAME: employee.NAME } : undefined
-                      );
-                    }}
-                    label="Исполнитель"
-                    placeholder="Выберите исполнителя"
-                  />
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    style={{ alignItems: 'center' }}
-                  >
-                    <Autocomplete
-                      ListboxComponent={ListboxComponent}
-                      options={cards}
-                      fullWidth
-                      filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))}
-                      getOptionLabel={option => option.DEAL?.USR$NAME ?? ''}
-                      value={cards?.find(el => el.ID === formik.values.USR$CARDKEY) || null}
-                      readOnly={(initValue.USR$CARDKEY || 0) > 0}
-                      onChange={(e, value) => formik.setFieldValue('USR$CARDKEY', value?.ID)}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.ID}>
-                          <Box>
-                            <div>{option.DEAL?.USR$NAME}</div>
-                            <Typography variant="caption">{option.DEAL?.CONTACT?.NAME}</Typography>
-                          </Box>
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Сделка"
-                          placeholder="Выберите сделку"
-                          disabled={(initValue.USR$CARDKEY || 0) > 0}
-                        />
-                      )}
-                      loading={dealsIsLoading}
-                      loadingText="Загрузка данных..."
+                )}
+                loading={taskTypesFetching}
+                loadingText="Загрузка данных..."
+              />
+              <TextField
+                label="Описание"
+                type="text"
+                name="USR$NAME"
+                onBlur={formik.handleBlur}
+                onChange={formik.handleChange}
+                value={formik.values.USR$NAME}
+                autoFocus
+                minRows={1}
+                error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
+              />
+              <EmployeesSelect
+                value={formik.values.CREATOR ?? null}
+                onChange={value => {
+                  const employee = value as IContactWithID;
+                  formik.setFieldValue(
+                    'CREATOR',
+                    value ? { ID: employee.ID, NAME: employee.NAME } : undefined
+                  );
+                }}
+                label="Постановщик"
+                placeholder="Выберите постановщика"
+                error={getIn(formik.touched, 'CREATOR') && Boolean(getIn(formik.errors, 'CREATOR'))}
+                helperText={getIn(formik.touched, 'CREATOR') && getIn(formik.errors, 'CREATOR')}
+                required
+              />
+              <EmployeesSelect
+                value={formik.values.PERFORMER ?? null}
+                onChange={(value) => {
+                  const employee = value as IContactWithID;
+                  formik.setFieldValue(
+                    'PERFORMER',
+                    value ? { ID: employee.ID, NAME: employee.NAME } : undefined
+                  );
+                }}
+                label="Исполнитель"
+                placeholder="Выберите исполнителя"
+              />
+              <Stack
+                direction="row"
+                spacing={1}
+                style={{ alignItems: 'center' }}
+              >
+                <Autocomplete
+                  ListboxComponent={ListboxComponent}
+                  options={cards}
+                  fullWidth
+                  filterOptions={(option, { inputValue }) => option.filter(o => o.DEAL?.USR$NAME?.toUpperCase().includes(inputValue.toUpperCase()) || o.DEAL?.CONTACT?.NAME?.toUpperCase().includes(inputValue.toUpperCase()))}
+                  getOptionLabel={option => option.DEAL?.USR$NAME ?? ''}
+                  value={cards?.find(el => el.ID === formik.values.USR$CARDKEY) || null}
+                  readOnly={(initValue.USR$CARDKEY || 0) > 0}
+                  onChange={(e, value) => formik.setFieldValue('USR$CARDKEY', value?.ID)}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option.ID}>
+                      <Box>
+                        <div>{option.DEAL?.USR$NAME}</div>
+                        <Typography variant="caption">{option.DEAL?.CONTACT?.NAME}</Typography>
+                      </Box>
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Сделка"
+                      placeholder="Выберите сделку"
+                      disabled={(initValue.USR$CARDKEY || 0) > 0}
                     />
-                    {canOpenDeal &&
+                  )}
+                  loading={dealsIsLoading}
+                  loadingText="Загрузка данных..."
+                />
+                {canOpenDeal &&
                     <div>
                       <IconButton
                         disabled={!(formik.values.USR$CARDKEY > 0)}
@@ -337,38 +333,38 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
                         <VisibilityIcon visibility={'none'}/>
                       </IconButton>
                     </div>
-                    }
-                  </Stack>
-                  <Divider textAlign="left">Срок выполнения</Divider>
-                  <Stack direction="row" spacing={2}>
-                    <DesktopDatePicker
-                      label="Дата"
-                      value={formik.values.USR$DEADLINE || null}
-                      // onChange={formik.handleChange}
-                      onChange={(value) => {
-                        formik.setFieldValue('USR$DEADLINE', value);
-                      }}
-                      slotProps={{ textField: { variant: 'outlined' } }}
-                    />
-                    <TimePicker
-                      label="Время"
-                      ampm={false}
-                      value={formik.values.USR$DEADLINE || null}
-                      disabled={formik.values.USR$DEADLINE ? false : true}
-                      onChange={(value) => {
-                        formik.setFieldValue(
-                          'USR$DEADLINE',
-                          combineDateAndTime(formik.values.USR$DEADLINE ? new Date(formik.values.USR$DEADLINE) : new Date(), value || undefined)
-                        );
-                      }}
-                      slotProps={{ textField: { variant: 'outlined' } }}
-                    />
-                  </Stack>
-                  {!!formik.values.USR$DATECLOSE &&
+                }
+              </Stack>
+              <Divider textAlign="left">Срок выполнения</Divider>
+              <Stack direction="row" spacing={2}>
+                <DatePicker
+                  label="Дата"
+                  value={formik.values.USR$DEADLINE || null}
+                  // onChange={formik.handleChange}
+                  onChange={(value) => {
+                    formik.setFieldValue('USR$DEADLINE', value);
+                  }}
+                  slotProps={{ textField: { variant: 'outlined' } }}
+                />
+                <TimePicker
+                  label="Время"
+                  ampm={false}
+                  value={formik.values.USR$DEADLINE || null}
+                  disabled={formik.values.USR$DEADLINE ? false : true}
+                  onChange={(value) => {
+                    formik.setFieldValue(
+                      'USR$DEADLINE',
+                      combineDateAndTime(formik.values.USR$DEADLINE ? new Date(formik.values.USR$DEADLINE) : new Date(), value || undefined)
+                    );
+                  }}
+                  slotProps={{ textField: { variant: 'outlined' } }}
+                />
+              </Stack>
+              {!!formik.values.USR$DATECLOSE &&
                   <>
                     <Divider textAlign="left">Дата выполнения</Divider>
                     <Stack direction="row" spacing={2}>
-                      <DesktopDatePicker
+                      <DatePicker
                         label="Дата"
                         readOnly
                         value={formik.values.USR$DATECLOSE || null}
@@ -386,35 +382,39 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
                       />
                     </Stack>
                   </>}
-                  <Divider />
-                  <Stack direction="row" spacing={2}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          name="USR$INPROGRESS"
-                          checked={!!formik.values.USR$INPROGRESS}
-                          onChange={formik.handleChange}
-                        />
-                      }
-                      label="В работе"
+              <Divider />
+              <Stack
+                direction="row"
+                gap={'16px'}
+                flexWrap={'wrap'}
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="USR$INPROGRESS"
+                      checked={!!formik.values.USR$INPROGRESS}
+                      onChange={formik.handleChange}
                     />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          name="USR$CLOSED"
-                          checked={!!formik.values.USR$CLOSED}
-                          // onChange={formik.handleChange}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            formik.setFieldValue('USR$CLOSED', checked);
-                            if (checked) formik.setFieldValue('USR$INPROGRESS', false);
-                          }}
-                        />
-                      }
-                      label="Выполнена"
+                  }
+                  label="В работе"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="USR$CLOSED"
+                      checked={!!formik.values.USR$CLOSED}
+                      // onChange={formik.handleChange}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        formik.setFieldValue('USR$CLOSED', checked);
+                        if (checked) formik.setFieldValue('USR$INPROGRESS', false);
+                      }}
                     />
-                  </Stack>
-                  {formik.values.USR$CLOSED &&
+                  }
+                  label="Выполнена"
+                />
+              </Stack>
+              {formik.values.USR$CLOSED &&
                     <TextField
                       label="Комментарий"
                       ref={refComment}
@@ -425,41 +425,12 @@ export function KanbanEditTask(props: Readonly<KanbanEditTaskProps>) {
                       onChange={formik.handleChange}
                       value={formik.values.DESCRIPTION}
                     />
-                  }
-                </Stack>
-              </Form>
-            </FormikProvider>
-          </Stack>
-        </PerfectScrollbar>
-      </DialogContent>
-      <DialogActions className={classes.dialogAction}>
-        {formik.values.ID > 0 &&
-          <PermissionsGate actionAllowed={userPermissions?.tasks?.DELETE}>
-            <ItemButtonDelete button onClick={handleDeleteClick} />
-          </PermissionsGate>
-        }
-        <Box flex={1} />
-        <ButtonWithConfirmation
-          className={classes.button}
-          variant="outlined"
-          onClick={handleCancelClick}
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
-        >
-          Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={classes.button}
-          variant="contained"
-          form="taskForm"
-          type="submit"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-      {memoEditCard}
-    </CustomizedDialog>
+              }
+            </Stack>
+          </Form>
+        </FormikProvider>
+      </EditDialog>
+    </>
   );
 }
 

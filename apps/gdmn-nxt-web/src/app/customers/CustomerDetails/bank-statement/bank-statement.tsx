@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Stack, useMediaQuery } from '@mui/material';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
 import { useGetBankStatementQuery } from '../../../features/bank-statement/bankStatementApi';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -18,7 +18,9 @@ export function BankStatement({
 
   const systemSettings = useSystemSettings();
 
-  const cols = columns[systemSettings?.CONTRACTTYPE ?? ContractType.GS];
+  const mobile = useMediaQuery('(pointer: coarse)');
+
+  const cols = columns[mobile ? 'mobile' : 'default'][systemSettings?.CONTRACTTYPE ?? ContractType.GS];
 
   return (
     <Stack

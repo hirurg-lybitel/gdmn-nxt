@@ -13,11 +13,12 @@ import {
   AccordionProps,
   styled,
   AccordionSummaryProps,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import dayjs from '@gdmn-nxt/dayjs';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { SyntheticEvent, useRef, useState } from 'react';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MessageIcon from '@mui/icons-material/Message';
 import EmailIcon from '@mui/icons-material/Email';
@@ -25,7 +26,6 @@ import PlaceIcon from '@mui/icons-material/Place';
 import PhoneInTalkIcon from '@mui/icons-material/PhoneInTalk';
 import ChatIcon from '@mui/icons-material/Chat';
 import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
-import FeedIcon from '@mui/icons-material/Feed';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
@@ -61,14 +61,17 @@ const AccordionSummary = styled((props: AccordionSummaryProps) => (
     marginLeft: theme.spacing(1),
   },
   '.StyledDeleteButton': {
-    display: 'none',
     position: 'absolute',
-    right: '16px'
-
+    top: 0,
+    right: '16px',
+    alignSelf: 'anchor-center',
+    display: 'none',
   },
   ':hover .StyledDeleteButton': {
     display: 'inline-flex'
-
+  },
+  ':hover .ExtraInfo': {
+    display: 'none'
   }
 }));
 
@@ -80,7 +83,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 interface FeedbackItemProps {
   feedback: ICustomerFeedback,
   isLast?: boolean,
-  onSave: (newFeedback: ICustomerFeedback) => void
+  onSave: (newFeedback: ICustomerFeedback) => void;
   onDelete: () => void;
 }
 
@@ -130,13 +133,19 @@ export const FeedbackItem = ({
     e.stopPropagation();
   };
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <TimelineItem>
-      <TimelineOppositeContent>
+      <TimelineOppositeContent sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column', minWidth: '112px' }}>
         <Typography variant="body2" color="textSecondary">
           {dayjs(creationDate).format('MMM D, YYYY')}
         </Typography>
-        <Typography variant="body2" color="textSecondary">
+        <Typography
+          variant="body2"
+          color="textSecondary"
+        >
           {dayjs(creationDate).format('H:mm')}
         </Typography>
       </TimelineOppositeContent>
@@ -161,38 +170,49 @@ export const FeedbackItem = ({
         </TimelineDot>
         <TimelineConnector hidden={isLast} />
       </TimelineSeparator>
-      <TimelineContent sx={{ pt: 0 }}>
+      <TimelineContent sx={{ pt: 0, pb: 2 }}>
         <CustomizedCard sx={{ boxShadow: 3 }}>
           <Accordion expanded={expanded} onChange={handleChange}>
             <AccordionSummary>
-              <Typography fontWeight={600}>
-                {(() => {
-                  switch (type) {
-                    case CustomerFeedbackType.email:
-                      return `E-mail рассылка '${mailing?.NAME}'`;
-                    case CustomerFeedbackType.visit:
-                      return 'Посещение';
-                    case CustomerFeedbackType.call:
-                      return 'Звонок';
-                    case CustomerFeedbackType.chat:
-                      return 'Эл. письмо';
-                    case CustomerFeedbackType.request:
-                      return 'Заявка с сайта';
-                    default:
-                      return 'Иное';
-                  }
-                })()}
-              </Typography>
-              <div>
-                <Typography variant="caption" style={{ marginLeft: '16px' }}>
-                  {feedback?.creator?.CONTACT?.NAME}
-                </Typography>
-              </div>
-              <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
-                <div onClick={handleStopPropagation}>
-                  <ItemButtonDelete button onClick={onDelete} />
-                </div>
-              </PermissionsGate>
+              <Stack direction="row" flex={1}>
+                <Stack>
+                  <Typography fontWeight={600} sx={{ display: 'flex', alignItems: 'center' }}>
+                    {(() => {
+                      switch (type) {
+                        case CustomerFeedbackType.email:
+                          return `E-mail рассылка '${mailing?.NAME}'`;
+                        case CustomerFeedbackType.visit:
+                          return 'Посещение';
+                        case CustomerFeedbackType.call:
+                          return 'Звонок';
+                        case CustomerFeedbackType.chat:
+                          return 'Эл. письмо';
+                        case CustomerFeedbackType.request:
+                          return 'Заявка с сайта';
+                        default:
+                          return 'Иное';
+                      }
+                    })()}
+                  </Typography>
+                  {matchDownSm && <Typography variant="caption">{feedback?.creator?.CONTACT?.NAME}</Typography>}
+                </Stack>
+                <Box flex={1} />
+                {matchDownSm ? (
+                  <Stack textAlign="right">
+                    <Typography variant="caption">{dayjs(creationDate).format('MMM D, YYYY')}</Typography>
+                    <Typography variant="caption">{dayjs(creationDate).format('H:mm')}</Typography>
+                  </Stack>
+                ) : (
+                  <Typography className="ExtraInfo" variant="caption">{feedback?.creator?.CONTACT?.NAME}</Typography>
+                )}
+                {!matchDownSm && (
+                  <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
+                    <div onClick={handleStopPropagation}>
+                      <ItemButtonDelete button onClick={onDelete} />
+                    </div>
+                  </PermissionsGate>
+                )}
+              </Stack>
             </AccordionSummary>
             <AccordionDetails>
               <FormikProvider value={formik}>
@@ -200,7 +220,7 @@ export const FeedbackItem = ({
                   <Stack spacing={2}>
                     <Stack
                       flex={1}
-                      direction={'row'}
+                      direction={matchDownSm ? 'column' : 'row'}
                       spacing={2}
                     >
                       <TextField
@@ -227,6 +247,13 @@ export const FeedbackItem = ({
                       />
                     </Stack>
                     <Stack direction="row">
+                      {matchDownSm && (
+                        <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
+                          <div onClick={handleStopPropagation}>
+                            <ItemButtonDelete button onClick={onDelete} />
+                          </div>
+                        </PermissionsGate>
+                      )}
                       <Box flex={1} />
                       <Button
                         variant="contained"
@@ -242,7 +269,7 @@ export const FeedbackItem = ({
             </AccordionDetails>
           </Accordion>
         </CustomizedCard>
-      </TimelineContent>
-    </TimelineItem>
+      </TimelineContent >
+    </TimelineItem >
   );
 };

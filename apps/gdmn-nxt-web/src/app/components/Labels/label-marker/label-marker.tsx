@@ -109,7 +109,8 @@ export function LabelMarker(props: LabelMarkerProps) {
         fontSize: '0.8125rem',
         fontWeight: 600,
         textTransform: 'none',
-        color: colors.text
+        color: colors.text,
+        minWidth: 0
       }}
     >
       {(icon || USR$ICON) &&
@@ -117,7 +118,7 @@ export function LabelMarker(props: LabelMarkerProps) {
           <IconByName name={icon ?? USR$ICON} style={{ width: 14, height: 14 }} />
         </div>
       }
-      <span style={{ margin: '0 5px', marginTop: '-1px', textTransform: 'capitalize', ...noWrapStyles }}>
+      <span style={{ margin: '0 5px', marginTop: '-1px', minWidth: 0, textTransform: 'capitalize', ...noWrapStyles }}>
         {name || 'Пример'}
       </span>
     </div>

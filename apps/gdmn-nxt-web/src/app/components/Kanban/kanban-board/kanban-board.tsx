@@ -1,5 +1,5 @@
 import styles from './kanban-board.module.less';
-import { Box, Button, Stack } from '@mui/material';
+import { Box, Button, Stack, useMediaQuery } from '@mui/material';
 import { useCallback, useEffect, useRef, useState, useLayoutEffect } from 'react';
 import KanbanCard from '../kanban-card/kanban-card';
 import KanbanColumn from '../kanban-column/kanban-column';
@@ -280,11 +280,13 @@ export function KanbanBoard(props: KanbanBoardProps) {
 
   const skeletonCount: IKanbanColumn[] = skeletonItems(5);
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <PerfectScrollbar
       style={{
         display: 'flex',
-        paddingBottom: '10px',
+        paddingBottom: '17px',
         pointerEvents: isLoading ? 'none' : 'auto'
       }}
     >
@@ -310,13 +312,14 @@ export function KanbanBoard(props: KanbanBoardProps) {
                     key={column.ID}
                     draggableId={column.ID.toString()}
                     index={index}
+                    isDragDisabled={mobile}
                   >
                     {(provided, snapshot) => {
                       const dragProvided: DraggableProvided = provided;
                       const dragSnapshot = snapshot;
                       return (
                         <Box
-                          ref={provided.innerRef}
+                          ref= {provided.innerRef}
                           {...provided.draggableProps}
                           display="flex"
                           flex={1}
@@ -357,29 +360,32 @@ export function KanbanBoard(props: KanbanBoardProps) {
                                           key={card.ID + column.ID * 10}
                                           draggableId={(card.ID + column?.ID * 10)?.toString()}
                                           index={index}
+                                          isDragDisabled={mobile}
                                         >
-                                          {(provided, snapshot) => (
-                                            <Box
-                                              className={styles.boardItem}
-                                              ref={provided.innerRef}
-                                              {...provided.draggableProps}
-                                              {...provided.dragHandleProps}
-                                            >
-                                              <KanbanCard
-                                                snapshot={snapshot}
-                                                key={card.ID}
-                                                card={card}
-                                                columns={columns}
-                                                onAdd={cardHandlers.handleAddCard}
-                                                onEdit={cardHandlers.handleEditCard}
-                                                onDelete={cardHandlers.handleDeleteCard}
-                                                onAddTask={cardHandlers.handleAddTask}
-                                                onEditTask={cardHandlers.handleEditTask}
-                                                onDeleteTask={cardHandlers.handleDeleteTask}
-                                                addIsFetching={isLoadingAddCard || isLoadingEditCard}
-                                              />
-                                            </Box>
-                                          )}
+                                          {(provided, snapshot) => {
+                                            return (
+                                              <Box
+                                                className={styles.boardItem}
+                                                ref= {provided.innerRef}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                              >
+                                                <KanbanCard
+                                                  snapshot={snapshot}
+                                                  key={card.ID}
+                                                  card={card}
+                                                  columns={columns}
+                                                  onAdd={cardHandlers.handleAddCard}
+                                                  onEdit={cardHandlers.handleEditCard}
+                                                  onDelete={cardHandlers.handleDeleteCard}
+                                                  onAddTask={cardHandlers.handleAddTask}
+                                                  onEditTask={cardHandlers.handleEditTask}
+                                                  onDeleteTask={cardHandlers.handleDeleteTask}
+                                                  addIsFetching={isLoadingAddCard || isLoadingEditCard}
+                                                />
+                                              </Box>
+                                            );
+                                          }}
                                         </Draggable>
                                       );
                                     })}

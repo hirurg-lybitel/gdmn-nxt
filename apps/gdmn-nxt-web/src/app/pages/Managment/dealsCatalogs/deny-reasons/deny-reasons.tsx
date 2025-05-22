@@ -10,6 +10,7 @@ import { Box, Button, CardContent, CardHeader, Divider, IconButton, Stack, Typog
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
 import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
 import AddIcon from '@mui/icons-material/Add';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
 export interface DenyReasonsProps {}
@@ -86,7 +87,7 @@ export function DenyReasons(props: DenyReasonsProps) {
     <CustomizedCard
       className={styles.Card}
     >
-      <CardHeader title={<Typography variant="pageHeader">Причины отказа</Typography>} />
+      <CustomCardHeader title={'Причины отказа'} />
       <Divider />
       <CardToolbar>
         <Stack direction="row">

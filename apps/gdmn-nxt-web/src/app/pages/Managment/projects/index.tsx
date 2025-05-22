@@ -1,7 +1,7 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
-import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, CardContent, CardHeader, Divider, IconButton, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { IFilteringData, IPaginationData, ISortingData, ITimeTrackProject, ITimeTrackTask, Permissions } from '@gsbelarus/util-api-types';
 import { GRID_DETAIL_PANEL_TOGGLE_COL_DEF, GridColDef, GridRenderCellParams, GridRowParams, GridSortModel, useGridApiRef } from '@mui/x-data-grid-pro';
@@ -23,6 +23,7 @@ import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/pe
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import { MenuItemDisable } from '@gdmn-nxt/helpers/menu-burger/items/item-disable';
 import CardToolbar from '@gdmn-nxt/components/Styled/card-toolbar/card-toolbar';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 export interface IProjectsProps {}
 
@@ -74,6 +75,7 @@ export function Projects(props: IProjectsProps) {
   const {
     data,
     refetch,
+    isLoading: projectsIsLoading,
     isFetching: projectsIsFetching,
   } = useGetProjectsQuery(
     {
@@ -128,7 +130,7 @@ export function Projects(props: IProjectsProps) {
       setOpenFilters(false);
     }, [setOpenFilters]),
     filterClear: useCallback(() => {
-      saveFilters({ projectType: filterData?.projectType, status: defaultStatus });
+      saveFilters({ status: defaultStatus });
     }, [defaultStatus, filterData, saveFilters]),
   };
 
@@ -193,11 +195,12 @@ export function Projects(props: IProjectsProps) {
       field: 'name',
       headerName: 'Наименование',
       flex: 1,
+      minWidth: 300,
       renderCell: ({ value, row }) => {
         return <span style={{ color: row.isDone ? 'gray' : 'inherit' }}>{value}</span>;
       },
     },
-    { field: 'customer', headerName: 'Клиент', flex: 1,
+    { field: 'customer', headerName: 'Клиент', flex: 1, minWidth: 300,
       renderCell: ({ value, row }) => {
         return <span style={{ color: row.isDone ? 'gray' : 'inherit' }}>{value?.NAME || ''}</span>;
       }
@@ -276,63 +279,53 @@ export function Projects(props: IProjectsProps) {
     />
   ), [changeTaskFvorite, taskSubmit]);
 
+  const theme = useTheme();
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+  const FilterContainer = useCallback((children: ReactNode) => matchDownLg ? children : (
+    <>
+      <Divider/>
+      <CardToolbar>{children}</CardToolbar>
+    </>
+  ), [matchDownLg]);
+
+  const memoFIlter = useMemo(() => {
+    return FilterContainer(
+      <ProjectsFilter
+        dialog={matchDownLg}
+        open={openFilters}
+        onClose={filterHandlers.filterClose}
+        filteringData={filterData}
+        onFilteringDataChange={handleFilteringDataChange}
+        onClear={filterHandlers.filterClear}
+      />
+    );
+  }, [FilterContainer, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange, matchDownLg, openFilters]);
+
   return (
     <>
       {memoProjectEdit}
       <CustomizedCard style={{ flex: 1 }}>
-        <CardHeader
-          title={<Typography variant="pageHeader">Проекты</Typography>}
-          action={
-            <Stack direction="row" spacing={1}>
-              <Box flex={1} />
-              <Box>
-                <SearchBar
-                  disabled={filtersIsLoading}
-                  onCancelSearch={cancelSearch}
-                  onRequestSearch={requestSearch}
-                  cancelOnEscape
-                  value={
-                    filterData?.name
-                      ? filterData.name?.[0]
-                      : undefined
-                  }
-                />
-              </Box>
-              <Box display="inline-flex" alignSelf="center">
-                <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projects']?.POST}>
-                  <CustomAddButton
-                    onClick={handleAdd}
-                    disabled={projectsIsFetching || filtersIsLoading || filtersIsFetching}
-                    label="Создать проект"
-                  />
-                </PermissionsGate>
-              </Box>
-              <Box display="inline-flex" alignSelf="center">
-                <CustomLoadingButton
-                  hint="Обновить данные"
-                  loading={projectsIsFetching}
-                  onClick={refreshClick}
-                />
-              </Box>
-            </Stack>
+        <CustomCardHeader
+          search
+          refetch
+          filter={matchDownLg}
+          title={'Проекты'}
+          isLoading={projectsIsLoading || filtersIsLoading}
+          isFetching={projectsIsFetching || filtersIsFetching}
+          onCancelSearch={cancelSearch}
+          onRequestSearch={requestSearch}
+          searchValue={filterData?.name?.[0]}
+          onRefetch={refreshClick}
+          addButton={userPermissions?.['time-tracking/projects']?.POST}
+          onAddClick={handleAdd}
+          addButtonHint="Создать проект"
+          onFilterClick={filterHandlers.filterClick}
+          hasFilters={
+            Object.keys(filterData || {}).filter(f => f !== 'status' && f !== 'name').length > 0
+            || filterData?.status !== defaultStatus
           }
         />
-        <Divider />
-        <CardToolbar>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ width: '100%' }}
-          >
-            <ProjectsFilter
-              open={openFilters}
-              onClose={filterHandlers.filterClose}
-              filteringData={filterData}
-              onFilteringDataChange={handleFilteringDataChange}
-              onClear={filterHandlers.filterClear}
-            />
-          </Stack>
-        </CardToolbar>
+        {memoFIlter}
         <CardContent style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
           <Divider/>
           <div style={{ flex: '1' }}>

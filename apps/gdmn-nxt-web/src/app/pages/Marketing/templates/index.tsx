@@ -1,4 +1,4 @@
-import { Box, CardContent, CardHeader, Divider, Skeleton, Stack, TablePagination, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, CardContent, CardHeader, Divider, Skeleton, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import EmailTemplateListItem from '../../../components/email-template-list-item/email-template-list-item';
 import EmailTemplateListItemEdit from '../../../components/email-template-list-item-edit/email-template-list-item-edit';
@@ -15,6 +15,8 @@ import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomTablePagination from '@gdmn-nxt/components/CustomTablePagination/CustomTablePagination';
 interface EmailTemplateListProps {
 
 }
@@ -151,39 +153,19 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
   return (
     <>
       <CustomizedCard style={{ flex: 1 }}>
-        <CardHeader
-          title={<Typography variant="pageHeader">Шаблоны</Typography>}
-          action={
-            <Stack direction="row" spacing={1}>
-              <Box paddingX={'4px'} />
-              <SearchBar
-                disabled={isLoading || filtersIsLoading}
-                onRequestSearch={requestSearch}
-                onCancelSearch={cancelSearch}
-                fullWidth
-                cancelOnEscape
-                value={
-                  filterData?.name
-                    ? filterData.name[0]
-                    : undefined
-                }
-              />
-              <Box display="inline-flex" alignSelf="center">
-                <CustomAddButton
-                  disabled={disabled}
-                  label="Создать шаблон"
-                  onClick={handleAdd}
-                />
-              </Box>
-              <Box display="inline-flex" alignSelf="center">
-                <CustomLoadingButton
-                  loading={disabled}
-                  hint="Обновить данные"
-                  onClick={templatesRefresh}
-                />
-              </Box>
-            </Stack>
-          }
+        <CustomCardHeader
+          search
+          refetch
+          title={'Шаблоны'}
+          isLoading={isLoading || filtersIsLoading}
+          isFetching={isFetching || filtersIsFetching || updateIsLoading || addIsLoading || deleteIsLoading}
+          onCancelSearch={cancelSearch}
+          onRequestSearch={requestSearch}
+          searchValue={filterData?.name?.[0]}
+          onRefetch={templatesRefresh}
+          addButton
+          onAddClick={handleAdd}
+          addButtonHint="Создать шаблон"
         />
         <Divider />
         <CardContent style={{ padding: 0 }}>
@@ -224,7 +206,7 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
                 </CustomizedScrollBox>
                 <Divider />
                 <div className={styles.footer}>
-                  <TablePagination
+                  <CustomTablePagination
                     component="div"
                     labelRowsPerPage="Карточек на странице:"
                     count={templatesData.count}

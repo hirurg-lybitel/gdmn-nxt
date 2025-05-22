@@ -10,6 +10,7 @@ import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-del
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 
 export interface ProjectTypeEditProps {
@@ -57,71 +58,39 @@ export function ProjectTypeEdit(props: ProjectTypeEditProps) {
   };
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={handleOnClose}
       confirmation={formik.dirty}
-      minWidth={500}
+      title={projectType ? `Редактирование типа проекта: ${projectType.name}` : 'Создание типа проекта'}
+      deleteButton={formik.values.ID !== -1 && userPermissions?.['time-tracking/projectTypes']?.DELETE}
+      deleteButtoHint={'Удаление типа проекта'}
+      onDeleteClick={handleDelete}
+      form="projectTypeEditForm"
     >
-      <DialogTitle>
-        {projectType ? `Редактирование типа проекта: ${projectType.name}` : 'Создание типа проекта'}
-      </DialogTitle>
-      <DialogContent dividers>
-        <FormikProvider value={formik}>
-          <Form
-            style={{ height: '100%' }}
-            id="mainForm"
-            onSubmit={formik.handleSubmit}
-          >
-            <Stack spacing={2}>
-              <TextField
-                style={{ width: '100%' }}
-                label="Наименование"
-                type="text"
-                required
-                autoFocus
-                name="name"
-                onChange={formik.handleChange}
-                value={formik.values.name}
-                error={getIn(formik.touched, 'name') && Boolean(getIn(formik.errors, 'name'))}
-                helperText={getIn(formik.touched, 'name') && getIn(formik.errors, 'name')}
-              />
-            </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        {formik.values.ID !== -1 &&
-          <PermissionsGate actionAllowed={userPermissions?.['time-tracking/projectTypes']?.DELETE}>
-            <ItemButtonDelete
-              title={'Удаление типа проекта'}
-              button
-              onClick={handleDelete}
+      <FormikProvider value={formik}>
+        <Form
+          style={{ height: '100%' }}
+          id="projectTypeEditForm"
+          onSubmit={formik.handleSubmit}
+        >
+          <Stack spacing={2}>
+            <TextField
+              style={{ width: '100%' }}
+              label="Наименование"
+              type="text"
+              required
+              autoFocus
+              name="name"
+              onChange={formik.handleChange}
+              value={formik.values.name}
+              error={getIn(formik.touched, 'name') && Boolean(getIn(formik.errors, 'name'))}
+              helperText={getIn(formik.touched, 'name') && getIn(formik.errors, 'name')}
             />
-          </PermissionsGate>
-        }
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={styles.button}
-          onClick={handleOnClose}
-          variant="outlined"
-          color="primary"
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
-        >
-            Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={styles.button}
-          variant="contained"
-          form="mainForm"
-          type="submit"
-        >
-            Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

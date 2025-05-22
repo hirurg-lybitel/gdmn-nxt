@@ -187,14 +187,20 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
   	  labels: {
   	    formatter: (value) => (
   	      isNaN(Number(value)) ? value : Number(value).toLocaleString()
-  	    )
+  	    ),
+        style: {
+          colors: theme.textColor
+        }
   	  }
   	},
   	yaxis: {
   	  labels: {
   	    formatter: (value) => (
   	      value.toLocaleString()
-  	    )
+  	    ),
+        style: {
+          colors: theme.textColor
+        }
   	  }
   	},
   	legend: {
@@ -465,8 +471,11 @@ export function BusinessDirectionCompare(props: BusinessDirectionCompareProps) {
         flex={0.99}
         minHeight={'300px'}
       >
-        <CustomizedCard style={{ flex: 1 }}>
+        <CustomizedCard
+          style={{ flex: 1, overflowX: 'auto' }}
+        >
           <Chart
+            style={{ minWidth: '500px' }}
             type="bar"
             height="100%"
             options={chartOptionsBar}

@@ -15,6 +15,7 @@ import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import UpdatesEdit from '../updates-edit/updates-edit';
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
 export interface UpdatesListProps {}
@@ -69,9 +70,7 @@ export function UpdatesList(props: UpdatesListProps) {
     <CustomizedCard
       className={styles.card}
     >
-      <CardHeader
-        title={<Typography variant="pageHeader">История обновлений</Typography>}
-      />
+      <CustomCardHeader title={'История обновлений'} />
       <Divider />
       <CardToolbar>
         <div className={styles.cardToolbarContent}>
@@ -84,13 +83,13 @@ export function UpdatesList(props: UpdatesListProps) {
               variant="contained"
               onClick={handleEditSource()}
             >
-            Добавить
+              Добавить
             </LoadingButton>
           </PermissionsGate>
         </div>
       </CardToolbar>
-      <CardContent>
-        <CustomizedScrollBox>
+      <CardContent style={{ marginRight: '-16px' }}>
+        <CustomizedScrollBox style={{ paddingRight: '16px' }}>
           {isLoading
             ? [...Array(5)].map((u, idx) => (
               <Fragment key={idx}>

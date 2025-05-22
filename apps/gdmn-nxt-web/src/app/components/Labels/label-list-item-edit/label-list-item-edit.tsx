@@ -10,6 +10,7 @@ import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import IconSelect from '@gdmn-nxt/components/selectors/icon-select/icon-select';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import ColorEdit from '@gdmn-nxt/components/Styled/colorEdit/colorEdit';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 const useStyles = makeStyles((theme: Theme) => ({
   dialog: {
@@ -88,10 +89,6 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
     if (!open) formik.resetForm();
   }, [open]);
 
-  const onCancel = () => {
-    onCancelClick();
-  };
-
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
   const changeIcon = (iconName: string) => {
@@ -99,86 +96,65 @@ export function LabelListItemEdit(props: LabelListItemEditProps) {
   };
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={handleOnClose}
+      form="mainForm"
+      title={label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
       confirmation={formik.dirty}
     >
-      <DialogTitle>
-        {label ? `Редактирование: ${label.USR$NAME}` : 'Добавление метки'}
-      </DialogTitle>
-      <DialogContent dividers>
-        <FormikProvider value={formik}>
-          <Form id="mainForm" onSubmit={formik.handleSubmit}>
-            <Stack direction="column" spacing={2}>
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-              >
-                <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
-                <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
-              </Stack>
-              <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-                <TextField
-                  style={{ width: '100%' }}
-                  label="Наименование"
-                  type="text"
-                  required
-                  autoFocus
-                  name="USR$NAME"
-                  onChange={formik.handleChange}
-                  value={formik.values.USR$NAME}
-                  error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
-                  helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
-                />
-              </div>
-              <ColorEdit
-                label="Цвет метки"
-                value={formik.values.USR$COLOR}
-                onChange={(color) => {
-                  formik.setFieldValue('USR$COLOR', color);
-                }}
-                errorMessage={formik.errors.USR$COLOR}
-              />
-              <TextField
-                label="Описание"
-                type="text"
-                name="USR$DESCRIPTION"
-                multiline
-                minRows={4}
-                onChange={formik.handleChange}
-                value={formik.values.USR$DESCRIPTION}
-                error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}
-                helperText={getIn(formik.touched, 'USR$DESCRIPTION') && getIn(formik.errors, 'USR$DESCRIPTION')}
-              />
+      <FormikProvider value={formik}>
+        <Form
+          style={{ minWidth: 0 }}
+          id="mainForm"
+          onSubmit={formik.handleSubmit}
+        >
+          <Stack direction="column" spacing={2}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+            >
+              <IconSelect icon={formik.values.USR$ICON} setIcon={changeIcon} />
+              <LabelMarker label={formik.values} icon={formik.values.USR$ICON} />
             </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        <Box flex={1}/>
-        <ButtonWithConfirmation
-          className={classes.button}
-          onClick={onCancel}
-          variant="outlined"
-          color="primary"
-          title="Внимание"
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
-        >
-            Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={classes.button}
-          variant="contained"
-          form="mainForm"
-          type="submit"
-        >
-            Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+              <TextField
+                style={{ width: '100%' }}
+                label="Наименование"
+                type="text"
+                required
+                autoFocus
+                name="USR$NAME"
+                onChange={formik.handleChange}
+                value={formik.values.USR$NAME}
+                error={getIn(formik.touched, 'USR$NAME') && Boolean(getIn(formik.errors, 'USR$NAME'))}
+                helperText={getIn(formik.touched, 'USR$NAME') && getIn(formik.errors, 'USR$NAME')}
+              />
+            </div>
+            <ColorEdit
+              label="Цвет метки"
+              value={formik.values.USR$COLOR}
+              onChange={(color) => {
+                formik.setFieldValue('USR$COLOR', color);
+              }}
+              errorMessage={formik.errors.USR$COLOR}
+            />
+            <TextField
+              label="Описание"
+              type="text"
+              name="USR$DESCRIPTION"
+              multiline
+              minRows={4}
+              onChange={formik.handleChange}
+              value={formik.values.USR$DESCRIPTION}
+              error={getIn(formik.touched, 'USR$DESCRIPTION') && Boolean(getIn(formik.errors, 'USR$DESCRIPTION'))}
+              helperText={getIn(formik.touched, 'USR$DESCRIPTION') && getIn(formik.errors, 'USR$DESCRIPTION')}
+            />
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

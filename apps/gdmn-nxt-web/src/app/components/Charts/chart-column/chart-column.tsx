@@ -16,6 +16,7 @@ import ChartSkeleton from './chart-skeleton';
 import { DepartmentsSelect } from '@gdmn-nxt/components/selectors/departments-select/departments-select';
 import { ContractsSelect } from '@gdmn-nxt/components/selectors/contracts-select/contracts-select';
 import { WorktypesSelect } from '@gdmn-nxt/components/worktypes-select/worktypes-select';
+import styles from './chart-column.module.less';
 
 interface IPeriodType {
   id: number;
@@ -67,16 +68,16 @@ const filterOptions = (limit = 50, fieldName = '') => createFilterOptions({
 });
 
 interface IAnalyticsDataParams {
-  dateBegin: number,
-  dateEnd: number,
-  departments?: IContactWithID[],
-  workTypes?: IWorkType[]
-  contracts?: ICustomerContract[]
+  dateBegin: number;
+  dateEnd: number;
+  departments?: IContactWithID[];
+  workTypes?: IWorkType[];
+  contracts?: ICustomerContract[];
 };
 
 
 /* eslint-disable-next-line */
-export interface ChartColumnProps {}
+export interface ChartColumnProps { }
 
 export function ChartColumn(props: ChartColumnProps) {
   const theme = useTheme();
@@ -133,7 +134,7 @@ export function ChartColumn(props: ChartColumnProps) {
       initialSeries[index] = 0;
     };
   } else {
-    initialSeries[0] = 0 ;
+    initialSeries[0] = 0;
     activeYears.forEach(year =>
       seriesMap[year] = { ...initialSeries }
     );
@@ -159,7 +160,7 @@ export function ChartColumn(props: ChartColumnProps) {
     }
   });
 
-  const series: {name?: string, data: number[]}[] = [];
+  const series: { name?: string, data: number[]; }[] = [];
 
   // for (const [key, value] of Object.entries(seriesMap)) {
   //   series.push({ name: key, data: Object.values(value) });
@@ -273,8 +274,7 @@ export function ChartColumn(props: ChartColumnProps) {
         },
         [theme.breakpoints.up('lg')]: {
           minHeight: 'calc(100vh - 130px)',
-        },
-        maxHeight: 'calc(100vh - 130px)',
+        }
       })}
     >
       <Stack
@@ -291,20 +291,21 @@ export function ChartColumn(props: ChartColumnProps) {
             <Stack direction="row" spacing={1}>
               <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography
-                  style={{ paddingLeft: '15.8px' }}
+                  style={{ paddingLeft: '15.8px', marginRight: '16px' }}
                   variant="h6"
                   onClick={() => {
                     analyticsDataRefetch();
                     departmentsRefetch();
                   }}
                 >
-                Продажи за период
+                  Продажи за период
                 </Typography>
 
                 <TextField
                   style={{
                     width: '100px',
-                    marginRight: '15.8px'
+                    marginRight: '15.8px',
+                    minWidth: '100px'
                   }}
                   select
                   value={periodType?.value}
@@ -326,10 +327,16 @@ export function ChartColumn(props: ChartColumnProps) {
               style={{
                 width: '100%',
                 paddingRight: '15.8px',
-                paddingLeft: '7.8px'
+                paddingLeft: '7.8px',
+                display: 'flex',
+                flexWrap: 'wrap'
               }}
             >
-              <Grid item xs={4}>
+              <Grid
+                className={styles.formItem}
+                item
+                xs={4}
+              >
                 <DepartmentsSelect
                   multiple
                   value={chartFilter.departments}
@@ -338,7 +345,11 @@ export function ChartColumn(props: ChartColumnProps) {
                   placeholder="Все отделы"
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid
+                className={styles.formItem}
+                item
+                xs={4}
+              >
                 <ContractsSelect
                   multiple
                   value={chartFilter.contracts || []}
@@ -347,7 +358,11 @@ export function ChartColumn(props: ChartColumnProps) {
                   placeholder="Все заказы"
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid
+                className={styles.formItem}
+                item
+                xs={4}
+              >
                 <WorktypesSelect
                   multiple
                   onChange={(value) => changeChartFilter('workTypes', (value ?? []) as IWorkType[])}
@@ -360,13 +375,24 @@ export function ChartColumn(props: ChartColumnProps) {
             <Box height="5px">
               <LinearIndeterminate open={analyticsDataIsFetching} />
             </Box>
-            <Box flex={1} style={{ color: 'black', paddingRight: '6px ' }}>
-              <Chart
-                options={chartOptions}
-                series={chartData.series}
-                height="100%"
-                type="bar"
-              />
+            <Box
+              flex={1}
+              sx={{
+                color: 'black',
+                paddingRight: '6px',
+                minHeight: '300px',
+                overflowX: 'auto',
+                overflowY: 'hidden'
+              }}
+            >
+              <div style={{ minWidth: '500px', height: '100%' }}>
+                <Chart
+                  options={chartOptions}
+                  series={chartData.series}
+                  height="100%"
+                  type="bar"
+                />
+              </div>
             </Box>
             <Autocomplete
               style={{ paddingLeft: '15.8px', paddingRight: '15.8px' }}

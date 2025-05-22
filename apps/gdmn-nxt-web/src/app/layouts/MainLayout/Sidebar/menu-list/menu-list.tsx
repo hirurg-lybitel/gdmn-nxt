@@ -131,6 +131,7 @@ export function MenuList({ onItemClick }: MenuListProps) {
       </div>
       <Box height="100%">
         <CustomizedScrollBox
+          externalScrollLock
           className={classes.scroll}
           withBlur
           backgroundColor={theme.menu?.backgroundColor}

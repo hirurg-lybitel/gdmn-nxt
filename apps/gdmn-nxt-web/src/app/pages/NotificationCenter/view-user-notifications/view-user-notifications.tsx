@@ -66,8 +66,8 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
   return (
     <CustomizedCard
       className={styles['item-card']}
+      sx={{ marginTop: '24px', minHeight: '350px' }}
       boxShadows
-
     >
       <Stack
         direction="column"
@@ -83,8 +83,12 @@ export function ViewUserNotifications(props: ViewUserNotificationsProps) {
             ? <Box style={{ alignSelf: 'center' }}>
               <CustomNoData />
             </Box>
-            : <CustomizedScrollBox>
-              <NotificationList messages={messages} />
+            : <CustomizedScrollBox
+              externalScrollLock
+              style={{ paddingRight: '-16px' }}
+              container={{ style: { marginRight: '-19px' } }}
+              >
+              <NotificationList messages={messages as any} />
             </CustomizedScrollBox>}
         </Box>
       </Stack>

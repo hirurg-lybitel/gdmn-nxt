@@ -410,7 +410,11 @@ const EmailTemplateEdit = (props: EmailTemplateEditProps) => {
     <>
       <CustomizedCard style={{ height: '100%', background: 'none' }}>
         <CardContent sx={{ paddingRight: 0, paddingLeft: '0', paddingTop: '20px' }}>
-          <CustomizedScrollBox options={{ suppressScrollX: true }} style={{ paddingLeft: '25px', paddingRight: '25px' }}>
+          <CustomizedScrollBox
+            externalScrollLock
+            options={{ suppressScrollX: true }}
+            style={{ paddingLeft: '25px', paddingRight: '25px' }}
+          >
             <div>
               {mainContent()}
             </div>

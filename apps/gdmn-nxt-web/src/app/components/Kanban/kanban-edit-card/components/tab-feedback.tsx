@@ -1,5 +1,5 @@
 import { Box, Stack, TextField, FormControl, InputLabel, Select, MenuItem, Autocomplete, Checkbox, FormControlLabel, Typography } from '@mui/material';
-import { DesktopDatePicker } from '@mui/x-date-pickers-pro';
+import { DatePicker } from '@mui/x-date-pickers-pro';
 import { FormikProps } from 'formik';
 import { IKanbanCard } from '@gsbelarus/util-api-types';
 import { useGetFeedbackCompetencesQuery, useGetFeedbackResultsQuery, useGetFeedbackSatisfactionRatesQuery, useGetFeedbackSatisfactionsQuery } from 'apps/gdmn-nxt-web/src/app/features/deal-feedback';
@@ -41,17 +41,19 @@ export function TabFeedback({ formik }: Readonly<TabFeedbackProps>) {
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        '& .MuiAutocomplete-root .MuiFormLabel-root': {
+          paddingRight: '29px'
+        }
       }}
     >
       <Stack
         flex={1}
         spacing={2}
-        paddingTop={1}
         maxWidth={600}
       >
         <Stack direction="row" spacing={2}>
-          <DesktopDatePicker
+          <DatePicker
             label="Дата опроса"
             name="DEAL.feedback.date"
             value={formik.values.DEAL?.feedback?.date ? new Date(formik.values.DEAL?.feedback?.date) : null}

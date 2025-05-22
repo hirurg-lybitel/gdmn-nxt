@@ -1,5 +1,5 @@
 import styles from './notification-list.module.less';
-import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography } from '@mui/material';
+import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography, useMediaQuery } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
 import { useCallback, useMemo } from 'react';
@@ -35,20 +35,23 @@ export function NotificationList(props: NotificationListProps) {
     handleDelete(message.id)(null);
   }, [onClick]);
 
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <List
       disablePadding
       sx={{
         '.close-action': {
-          display: 'none'
+          display: mobile ? undefined : 'none'
         },
         '.MuiListItem-container:hover .close-action': {
           display: 'inline',
         },
         '.MuiListItem-container:hover .datetime': {
-          display: 'none',
+          display: mobile ? undefined : 'none',
         },
-      }}>
+      }}
+    >
       {messages.length
         ? messages.map((message, index) =>
           <ListItem
@@ -69,7 +72,11 @@ export function NotificationList(props: NotificationListProps) {
               <MessageIcon />
             </ListItemIcon>
             <ListItemText>
-              <Stack direction="column" spacing={1}>
+              <Stack
+                direction="column"
+                spacing={1}
+                marginTop={{ xs: '24px', sm: 0 }}
+              >
                 <Typography variant="subtitle1">{message?.title}</Typography>
                 <Typography variant="body1" component="div">
                   <ReactMarkdown className={styles['markdown']}>
@@ -90,12 +97,7 @@ export function NotificationList(props: NotificationListProps) {
                 </Typography> */}
               </Stack>
             </ListItemText>
-            <ListItemSecondaryAction style={{ top: '25px' }}>
-              <div className="close-action">
-                <IconButton onClick={handleDelete(message.id)} >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </div>
+            <ListItemSecondaryAction style={{ top: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div className="datetime">
                 <Typography
                   variant="caption"
@@ -107,7 +109,11 @@ export function NotificationList(props: NotificationListProps) {
                   })}
                 </Typography>
               </div>
-
+              <div className="close-action">
+                <IconButton onClick={handleDelete(message.id)} >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </div>
             </ListItemSecondaryAction>
           </ListItem>
         )

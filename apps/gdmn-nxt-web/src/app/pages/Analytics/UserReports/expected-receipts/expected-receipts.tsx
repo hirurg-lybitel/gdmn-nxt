@@ -15,6 +15,8 @@ import { ExpectedReceiptsFilter } from './expected-receipts-filter/expected-rece
 import { sortFields } from './constants';
 import dayjs, { Dayjs } from 'dayjs';
 import { useGetExpectedReceiptsQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomDateRangePicker from '@gdmn-nxt/components/CustomDateRangePicker/CustomDateRangePicker';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -123,20 +125,19 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
       className={styles.expectedreceipts}
     >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Абоненское (Ожидаемые поступления)</Typography>} />
+        <CustomCardHeader title={'Абоненское (Ожидаемые поступления)'} />
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <DateRangePicker
+          <CustomDateRangePicker
+            slots={{ field: SingleInputDateRangeField }}
             label="Период"
             value={onDate}
             onChange={handleChange}
-            calendars={1}
-            slots={{ field: SingleInputDateRangeField }}
             slotProps={{
               shortcuts: {
                 items: shortcutsItems,
-              },
-              textField: { variant: 'outlined' } }}
+              }
+            }}
           />
           <ExpectedReceiptsFilter
             filterData={filterData}
@@ -156,18 +157,17 @@ export function ExpectedReceipts(props: ExpectedReceiptsProps) {
               onClick={handelClear}
               variant="outlined"
             >
-                  Очистить
+              Очистить
             </Button>
             <Button
               variant="contained"
-              disabled={!onDate?.[0] || !onDate?.[1]}
+              disabled={!onDate?.[0] || !onDate?.[1] || filtersIsLoading}
               onClick={handleGenerate}
             >
-                  Сформировать
+              Сформировать
             </Button>
           </Stack>
         </CardActions>
-
       </CustomizedCard>
       {show ? <ExpectedReceiptsReport data={data} isFetching={isFetching} /> : null}
     </Stack>

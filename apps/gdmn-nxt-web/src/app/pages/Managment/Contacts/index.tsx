@@ -23,6 +23,7 @@ import ContactsFilter from '@gdmn-nxt/components/Contacts/contacts-filter/contac
 import CircularIndeterminate from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 const highlightFields = (searchValue: string) => {
   const elements = document.querySelectorAll('[data-searchable=true]');
@@ -192,119 +193,76 @@ export default function Contacts() {
 
   return (
     <CustomizedCard style={{ flex: 1 }}>
-      <CardHeader
-        title={<Typography variant="pageHeader">Контакты</Typography>}
+      <CustomCardHeader
+        search
+        filter
+        refetch
+        title={'Контакты'}
+        isLoading={isLoading}
+        isFetching={personsIsFetching}
+        onCancelSearch={cancelSearch}
+        onRequestSearch={requestSearch}
+        searchValue={filterData?.name?.[0]}
+        onRefetch={personsRefetch}
+        onFilterClick={filterHandlers.filterClick}
+        hasFilters={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0}
+        addButton={userPermissions?.contacts?.POST}
+        addButtonHint="Создать контракт"
+        onAddClick={() => setUpsertContact({ addContact: true })}
         action={
-          <Stack direction="row" spacing={1}>
-            <Box paddingX={'4px'} />
-            <ToggleButtonGroup
-              color="primary"
-              value={viewMode}
-              exclusive
-              size="small"
-              onChange={(e, value) => {
-                if (!value) return;
-                handleViewModeChange(value);
-                setViewMode(value);
-              }}
-            >
-              <ToggleButton value={1} className={styles.toggleButton}>
-                <Tooltip title="Карточки" arrow >
-                  <ViewWeekIcon />
-                </Tooltip>
-              </ToggleButton>
-              <ToggleButton value={2} className={styles.toggleButton}>
-                <Tooltip title="Список" arrow>
-                  <ViewStreamIcon />
-                </Tooltip>
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <SearchBar
-              disabled={isLoading || filtersIsLoading}
-              onCancelSearch={cancelSearch}
-              onRequestSearch={requestSearch}
-              fullWidth
-              cancelOnEscape
-              value={
-                filterData?.name
-                  ? filterData.name[0]
-                  : undefined
-              }
-            />
-            <Box display="inline-flex" alignSelf="center">
-              <PermissionsGate actionAllowed={userPermissions?.contacts?.POST}>
-                <IconButton
-                  size="small"
-                  disabled={personsIsFetching}
-                  onClick={() => setUpsertContact({ addContact: true })}
-                >
-                  <Tooltip arrow title="Создать контакт">
-                    <AddCircleIcon color={personsIsFetching ? 'disabled' : 'primary'} />
-                  </Tooltip>
-                </IconButton>
-              </PermissionsGate>
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <CustomLoadingButton
-                hint="Обновить данные"
-                loading={personsIsFetching}
-                onClick={() => personsRefetch()}
-              />
-            </Box>
-            <Box display="inline-flex" alignSelf="center">
-              <IconButton
-                onClick={filterHandlers.filterClick}
-                disabled={personsIsFetching || filtersIsLoading || filtersIsFetching}
-                size ="small"
-              >
-                <Tooltip
-                  title={Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
-                    ? 'У вас есть активные фильтры'
-                    : 'Выбрать фильтры'
-                  }
-                  arrow
-                >
-                  <Badge
-                    color="error"
-                    variant={
-                      Object.keys(filterData || {}).filter(f => f !== 'name').length > 0
-                        ? 'dot'
-                        : 'standard'
-                    }
-                  >
-                    <FilterListIcon
-                      color={personsIsFetching ? 'disabled' : 'primary'}
-                    />
-                  </Badge>
-                </Tooltip>
-              </IconButton>
-            </Box>
-          </Stack>
+          <ToggleButtonGroup
+            color="primary"
+            value={viewMode}
+            exclusive
+            size="small"
+            onChange={(e, value) => {
+              if (!value) return;
+              handleViewModeChange(value);
+              setViewMode(value);
+            }}
+          >
+            <ToggleButton value={1} className={styles.toggleButton}>
+              <Tooltip title="Карточки" arrow >
+                <ViewWeekIcon />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value={2} className={styles.toggleButton}>
+              <Tooltip title="Список" arrow>
+                <ViewStreamIcon />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
         }
       />
       <Divider />
       <CardContent style={{ padding: 0 }}>
         {viewMode === 1
           ? isLoading
-            ? <Box height={'100%'} display="flex">
-              <CircularIndeterminate open={true} size={70} />
-            </Box>
-            : <ContactCards
-              contacts={persons?.records}
+            ? (
+              <Box height={'100%'} display="flex">
+                <CircularIndeterminate open={true} size={70} />
+              </Box>
+            )
+            : (
+              <ContactCards
+                contacts={persons?.records ?? []}
+                contactsCount={persons?.count ?? 0}
+                onEditClick={handleContactEdit}
+                paginationData={paginationData}
+                paginationClick={(data) => setPaginationData(data)}
+              />
+            )
+          : (
+            <ContactList
+              contacts={persons?.records ?? []}
               contactsCount={persons?.count ?? 0}
               onEditClick={handleContactEdit}
+              isLoading={isLoading}
               paginationData={paginationData}
               paginationClick={(data) => setPaginationData(data)}
+              onSortChange={handleSortChange}
             />
-          : <ContactList
-            contacts={persons?.records ?? []}
-            contactsCount={persons?.count ?? 0}
-            onEditClick={handleContactEdit}
-            isLoading={isLoading}
-            paginationData={paginationData}
-            paginationClick={(data) => setPaginationData(data)}
-            onSortChange={handleSortChange}
-          />}
+          )}
         {memoAddContact}
         {memoEditContact}
         {memoFilter}

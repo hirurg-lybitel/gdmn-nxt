@@ -10,6 +10,7 @@ import { RootState } from '@gdmn-nxt/store';
 import { Permissions } from '@gsbelarus/util-api-types';
 import { Navigate } from 'react-router-dom';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 interface TabPanelProps {
   children?: ReactNode;
@@ -60,12 +61,12 @@ export function NotificationCenter(props: NotificationCenterProps) {
     <CustomizedCard
       className={styles['main-card']}
     >
-      <CardHeader title={<Typography variant="pageHeader">Центр уведомлений</Typography>} />
+      <CustomCardHeader title={'Центр уведомлений'} />
       <Divider />
       <CardContent
         className={styles.content}
       >
-        <Box sx={{ flex: 1, flexDirection: 'column', display: 'flex' }}>
+        <Box sx={{ flex: 1, flexDirection: 'column', display: 'flex', minWidth: 0 }}>
           <Tabs
             value={tabIndex}
             onChange={handleTabsChange}
@@ -76,8 +77,9 @@ export function NotificationCenter(props: NotificationCenterProps) {
           <CustomTabPanel value={tabIndex} index={0}>
             <Stack
               spacing={3}
-              direction="row"
+              direction={{ md: 'column', lg: 'row' }}
               flex={1}
+              minWidth={0}
             >
               <SendMessage />
               <ViewUserNotifications />

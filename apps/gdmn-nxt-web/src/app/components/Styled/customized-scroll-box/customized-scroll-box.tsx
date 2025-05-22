@@ -1,6 +1,6 @@
 import styles from './customized-scroll-box.module.less';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import PerfectScrollbar, { ScrollBarProps } from 'react-perfect-scrollbar';
 import { CSSProperties } from '@mui/styles';
 
@@ -15,7 +15,8 @@ export interface CustomizedScrollBoxProps extends ScrollBarProps {
   container?: {
     style?: CSSProperties;
     className?: string;
-  }
+  },
+  externalScrollLock?: boolean,
 }
 
 const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
@@ -24,6 +25,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     withBlur = false,
     backgroundColor = 'rgba(0, 0, 0, 0)',
     container,
+    externalScrollLock = false,
     ...style
   } = props;
 
@@ -37,7 +39,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     const { scrollTop, scrollHeight, clientHeight } = container;
 
     const showTop = scrollTop > 0;
-    const showBottom = clientHeight + scrollTop < scrollHeight ;
+    const showBottom = clientHeight + scrollTop < scrollHeight;
 
     setShowScrollBlurs({ top: showTop, bottom: showBottom });
   };
@@ -49,7 +51,7 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
   const wheelEvent = useCallback((mobile: boolean) => mobile ? 'touchmove' : 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel', []);
 
-  const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
+  const keys: { [key: string]: number; } = { 'ArrowUp': 1, 'ArrowDown': 1 };
   const preventDefaultForScrollKeys = useCallback((e: KeyboardEvent) => {
     if (keys[e.key]) {
       preventDefault(e);
@@ -58,11 +60,13 @@ const CustomizedScrollBox = (props: CustomizedScrollBoxProps) => {
     return true;
   }, []);
 
-  const onScrollStart = (mobile: boolean) => () => {
+  const onScrollStart = (mobile: boolean) => (e: any) => {
+    if (!externalScrollLock) return;
     window.addEventListener(wheelEvent(mobile), preventDefault, { passive: false });
   };
 
   const onScrollEnd = (mobile: boolean) => () => {
+    if (!externalScrollLock) return;
     window.removeEventListener(wheelEvent(mobile), preventDefault, false);
   };
 

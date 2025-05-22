@@ -1,5 +1,5 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { Components, Theme } from '@mui/material';
+import { Components, Theme, Input } from '@mui/material';
 import * as locales from '@mui/material/locale';
 
 export default function componentStyleOverrides(theme: Theme): Components {
@@ -81,6 +81,13 @@ export default function componentStyleOverrides(theme: Theme): Components {
         noOptionsText: 'Нет данных'
       },
       styleOverrides: {
+        root: {
+          '&.Mui-focused': {
+            '& .MuiAutocomplete-input': {
+              minWidth: '30px'
+            }
+          },
+        },
         paper: {
           borderTopLeftRadius: 0,
           borderTopRightRadius: 0,

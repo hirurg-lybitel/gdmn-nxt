@@ -15,6 +15,8 @@ import { sortFields } from './constants';
 import { ExpensesFilter } from './expenses-filter/expenses-filter';
 import ExpensesReport from './expenses-report/expenses-report';
 import { useGetExpensesQuery } from 'apps/gdmn-nxt-web/src/app/features/reports/reportsApi';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomDateRangePicker from '@gdmn-nxt/components/CustomDateRangePicker/CustomDateRangePicker';
 
 const shortcutsItems: PickersShortcutsItem<DateRange<Date>>[] = [
   {
@@ -122,20 +124,19 @@ export function Expenses(props: ExpensesProps) {
       width={'100%'}
     >
       <CustomizedCard>
-        <CardHeader title={<Typography variant="pageHeader">Расходы</Typography>} />
+        <CustomCardHeader title={'Расходы'}/>
         <Divider />
         <CardContent style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <DateRangePicker
+          <CustomDateRangePicker
+            slots={{ field: SingleInputDateRangeField }}
             label="Период"
             value={onDate}
             onChange={handleChange}
-            calendars={1}
-            slots={{ field: SingleInputDateRangeField }}
             slotProps={{
               shortcuts: {
                 items: shortcutsItems,
-              },
-              textField: { variant: 'outlined' } }}
+              }
+            }}
           />
           <ExpensesFilter
             filterData={filterData}
@@ -155,18 +156,17 @@ export function Expenses(props: ExpensesProps) {
               onClick={handelClear}
               variant="outlined"
             >
-                  Очистить
+              Очистить
             </Button>
             <Button
               variant="contained"
-              disabled={!onDate?.[0] || !onDate?.[1]}
+              disabled={!onDate?.[0] || !onDate?.[1] || filtersIsLoading}
               onClick={handleGenerate}
             >
-                  Сформировать
+              Сформировать
             </Button>
           </Stack>
         </CardActions>
-
       </CustomizedCard>
       {show ? <ExpensesReport data={data} isFetching={isFetching} /> : null}
     </Stack>

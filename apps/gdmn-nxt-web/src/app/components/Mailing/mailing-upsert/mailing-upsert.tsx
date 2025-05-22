@@ -11,7 +11,7 @@ import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { DesktopDateTimePicker } from '@mui/x-date-pickers-pro';
+import { DateTimePicker } from '@mui/x-date-pickers-pro';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
@@ -22,6 +22,7 @@ import { LoadingButton } from '@mui/lab';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
+import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 
 const sendTypes = [
   {
@@ -313,139 +314,151 @@ export function MailingUpsert({
   }, [ListboxComponent, formik, segments, segmentsFetching]);
 
   return (
-    <CustomizedDialog
+    <EditDialog
       open={open}
       onClose={onCancel}
-      width="calc(100% - var(--menu-width))"
+      form="mailingForm"
+      confirmation={formik.dirty}
+      fullwidth
+      title={mailing?.ID && mailing?.ID > 0
+        ? `Редактирование: ${mailing.NAME}`
+        : 'Создание новой рассылки'}
+      deleteButton={formik.values.ID > 0 && userPermissions?.mailings.DELETE}
+      deleteConfirmText={`Вы действительно хотите удалить рассылку ${mailing?.NAME}?`}
+      onDeleteClick={onDelete}
     >
-      <DialogTitle>
-        {mailing?.ID && mailing?.ID > 0
-          ? `Редактирование: ${mailing.NAME}`
-          : 'Создание новой рассылки'}
-      </DialogTitle>
-      <DialogContent dividers style={{ display: 'grid' }}>
-        <FormikProvider value={formik}>
-          <Form id="mailingForm" onSubmit={formik.handleSubmit}>
+      <FormikProvider value={formik}>
+        <Form
+          style={{ minWidth: 0 }}
+          id="mailingForm"
+          onSubmit={formik.handleSubmit}
+        >
+          <Stack
+            height="100%"
+            spacing={2}
+          >
+            <TextField
+              name="NAME"
+              value={formik.values.NAME}
+              onChange={formik.handleChange}
+              label="Тема письма"
+              autoFocus
+              required
+              error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
+              helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <Tooltip
+                      style={{ cursor: 'help' }}
+                      arrow
+                      title={
+                        <div>
+                            Системные символы:
+                          <br />
+                          {'#NAME# - наименование клиента'}
+                        </div>}
+                    >
+                      <InfoIcon />
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+            />
             <Stack
-              height="100%"
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={{ xs: 0, md: 2 }}
+              sx={{ gap: { xs: '16px', md: 0 } }}
+            >
+              {segmentsSelect('includeSegments')}
+              {segmentsSelect('excludeSegments')}
+            </Stack>
+            <Box
+              sx={{
+                marginTop: '2px !important',
+                marginLeft: '14px !important'
+              }}
+            >
+              <Typography variant="caption">{`Итоговое количество получателей: ${customersCountLoading ? 'идёт расчёт...' : customersCount}`}</Typography>
+            </Box>
+            <Box
+              minHeight={600}
+              style={{ display: 'flex', flexDirection: 'column' }}
+              position="relative"
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={saveTemplate}
+                    onChange={saveTemplateChange}
+                  />
+                }
+                label="Добавить в сохранённые шаблоны"
+                sx={{
+                  position: { md: 'absolute' },
+                  left: { md: 260, lg: 280 },
+                  top: 2
+                }}
+              />
+              <EmailTemplate
+                value={formik.values.TEMPLATE ?? ''}
+                onChange={templateChange}
+              />
+            </Box>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems={'center'}
+            >
+              <TextField
+                label="Получатели тестовой отправки"
+                placeholder="Укажите адреса через запятую (test@gmail.com, test2@tut.by, ...)"
+                fullWidth
+                name="testingEmails"
+                value={formik.values.testingEmails?.join(',') ?? ''}
+                onChange={testingEmailsChange}
+              />
+              <Tooltip arrow title="Отправить текущий шаблон на указанные тестовые email адреса ">
+                <Box>
+                  <LoadingButton
+                    onClick={testLaunch}
+                    loading={testLaunchingLoading}
+                    loadingPosition="start"
+                    startIcon={<ForwardToInboxIcon />}
+                    variant="contained"
+                    size="small"
+                  >
+                      Отправить
+                  </LoadingButton>
+                </Box>
+              </Tooltip>
+            </Stack>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              width={{ xs: '100%', md: '70%', lg: '50%' }}
+              sx={{ gup: { xs: '16px', sm: 0 } }}
               spacing={2}
             >
               <TextField
-                name="NAME"
-                value={formik.values.NAME}
-                onChange={formik.handleChange}
-                label="Тема письма"
-                autoFocus
+                select
                 required
-                error={getIn(formik.touched, 'NAME') && Boolean(getIn(formik.errors, 'NAME'))}
-                helperText={getIn(formik.touched, 'NAME') && getIn(formik.errors, 'NAME')}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="start">
-                      <Tooltip
-                        style={{ cursor: 'help' }}
-                        arrow
-                        title={
-                          <div>
-                            Системные символы:
-                            <br />
-                            {'#NAME# - наименование клиента'}
-                          </div>}
-                      >
-                        <InfoIcon />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <Stack
-                direction="row"
-                spacing={2}
+                label="Отправить рассылку"
+                onChange={sendTypeChange}
+                value={selectedSendType?.name ?? ''}
+                fullWidth
               >
-                {segmentsSelect('includeSegments')}
-                {segmentsSelect('excludeSegments')}
-              </Stack>
-              <Box
-                sx={{
-                  marginTop: '2px !important',
-                  marginLeft: '14px !important'
-                }}
-              >
-                <Typography variant="caption">{`Итоговое количество получателей: ${customersCountLoading ? 'идёт расчёт...' : customersCount}`}</Typography>
-              </Box>
-              <Box minHeight={600} position="relative">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={saveTemplate}
-                      onChange={saveTemplateChange}
-                    />
-                  }
-                  label="Добавить в сохранённые шаблоны"
-                  style={{
-                    position: 'absolute',
-                    left: 280,
-                    top: 2
-                  }}
-                />
-                <EmailTemplate
-                  value={formik.values.TEMPLATE ?? ''}
-                  onChange={templateChange}
-                />
-              </Box>
-              <Stack
-                direction="row"
-                spacing={2}
-                alignItems={'center'}
-              >
-                <TextField
-                  label="Получатели тестовой отправки"
-                  placeholder="Укажите адреса через запятую (test@gmail.com, test2@tut.by, ...)"
-                  fullWidth
-                  name="testingEmails"
-                  value={formik.values.testingEmails?.join(',') ?? ''}
-                  onChange={testingEmailsChange}
-                />
-                <Tooltip arrow title="Отправить текущий шаблон на указанные тестовые email адреса ">
-                  <Box>
-                    <LoadingButton
-                      onClick={testLaunch}
-                      loading={testLaunchingLoading}
-                      loadingPosition="start"
-                      startIcon={<ForwardToInboxIcon />}
-                      variant="contained"
-                      size="small"
-                    >
-                      Отправить
-                    </LoadingButton>
-                  </Box>
-                </Tooltip>
-              </Stack>
-              <Stack
-                direction="row"
-                width="50%"
-                spacing={2}
-              >
-                <TextField
-                  select
-                  required
-                  label="Отправить рассылку"
-                  onChange={sendTypeChange}
-                  value={selectedSendType?.name ?? ''}
-                  fullWidth
-                >
-                  {sendTypes.map(el => (
-                    <MenuItem
-                      key={el.id}
-                      id={String(el.id)}
-                      value={el.name}
-                    >
-                      {el.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                {selectedSendType?.id === 3 &&
-                <DesktopDateTimePicker
+                {sendTypes.map(el => (
+                  <MenuItem
+                    key={el.id}
+                    id={String(el.id)}
+                    value={el.name}
+                  >
+                    {el.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              {selectedSendType?.id === 3 &&
+                <DateTimePicker
                   name="LAUNCHDATE"
                   label="Дата запуска"
                   value={formik.values.LAUNCHDATE ? new Date(formik.values.LAUNCHDATE) : null}
@@ -464,55 +477,21 @@ export function MailingUpsert({
                     },
                   }}
                 />
-                }
-              </Stack>
-              <Dropzone
-                // acceptedFiles={['image/*']}
-                maxFileSize={maxFileSize}
-                filesLimit={3}
-                showPreviews
-                initialFiles={initialAttachments}
-                onChange={attachmentsChange}
-                disabled={attachmentsFetching}
-              />
+              }
             </Stack>
-          </Form>
-        </FormikProvider>
-      </DialogContent>
-      <DialogActions>
-        {formik.values.ID > 0 &&
-          <PermissionsGate
-            key="delete"
-            actionAllowed={userPermissions?.mailings.DELETE}
-            show
-          >
-            <ItemButtonDelete
-              button
-              text={`Вы действительно хотите удалить рассылку ${mailing?.NAME}?`}
-              onClick={onDelete}
+            <Dropzone
+              // acceptedFiles={['image/*']}
+              maxFileSize={maxFileSize}
+              filesLimit={3}
+              showPreviews
+              initialFiles={initialAttachments}
+              onChange={attachmentsChange}
+              disabled={attachmentsFetching}
             />
-          </PermissionsGate>
-        }
-        <Box flex={1} />
-        <ButtonWithConfirmation
-          className={'DialogButton'}
-          variant="outlined"
-          onClick={onCancel}
-          text={'Изменения будут утеряны. Продолжить?'}
-          confirmation={formik.dirty}
-        >
-          Отменить
-        </ButtonWithConfirmation>
-        <Button
-          className={'DialogButton'}
-          type="submit"
-          form="mailingForm"
-          variant="contained"
-        >
-          Сохранить
-        </Button>
-      </DialogActions>
-    </CustomizedDialog>
+          </Stack>
+        </Form>
+      </FormikProvider>
+    </EditDialog>
   );
 }
 

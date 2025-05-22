@@ -97,7 +97,7 @@ export default function NotificationsTab() {
   return (
     <FormikProvider value={formik}>
       <Form id="notificationsTabForm" onSubmit={formik.handleSubmit}>
-        <Stack height={'100%'}>
+        <Stack height={'100%'} sx={{ gap: { xs: '10px', sm: 0 } }}>
           <Stack direction="row" alignItems="center">
             <FormControlLabel
               disabled={isLoading}
@@ -119,7 +119,10 @@ export default function NotificationsTab() {
               <InfoIcon color="action" />
             </Tooltip>
           </Stack>
-          <Stack direction="row" alignItems="center">
+          <Stack
+            direction="row"
+            alignItems="center"
+          >
             <FormControlLabel
               disabled={isLoading}
               label="Push-уведомления"
@@ -130,7 +133,7 @@ export default function NotificationsTab() {
               />}
             />
             <Tooltip
-              style={{ cursor: 'help' }}
+              style={{ cursor: 'help', marginRight: '16px' }}
               arrow
               title={<List disablePadding dense>
                 <ListItem disableGutters alignItems="flex-start">

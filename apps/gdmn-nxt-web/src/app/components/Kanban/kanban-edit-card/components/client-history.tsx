@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, CardContent, Icon, IconButton, InputAdornment, List, ListItem, Stack, SvgIcon, TextField, Tooltip, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, CardContent, Icon, IconButton, InputAdornment, List, ListItem, Stack, SvgIcon, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedScrollBox from '../../../Styled/customized-scroll-box/customized-scroll-box';
 import CustomizedCard from '../../../Styled/customized-card/customized-card';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -76,6 +76,9 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
     setMessage(prev => ({ ...prev, selectedType: value as IClientHistoryType }));
   };
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Stack
       height={'100%'}
@@ -98,7 +101,7 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                 defaultExpanded
                 TransitionProps={{ unmountOnExit: true }}
                 sx={{
-
+                  minWidth: '550px',
                   '&.Mui-expanded': {
                     margin: 0,
                   },
@@ -108,6 +111,7 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                   expandIcon={<ExpandMoreIcon />}
                   style={{
                     flexDirection: 'row-reverse',
+                    height: 'fit-content'
                   }}
                   sx={{
                     height: '50px',
@@ -181,12 +185,13 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
       <CustomizedCard borders boxShadows>
         <CardContent>
           <Stack spacing={2}>
-            <Stack direction={'row'} spacing={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <HistoryType
                 value={message.selectedType}
                 onChange={changeHistoryType}
                 style={{
-                  width: '150px'
+                  width: matchDownSm ? '100%' : '150px',
+                  maxWidth: '100%'
                 }}
                 textfieldVariant="standard"
                 label=""
@@ -196,7 +201,8 @@ export const ClientHistory = ({ card }: ClientHistoryProps) => {
                 value={message.creator}
                 onChange={changeCreator}
                 style={{
-                  width: '350px'
+                  width: matchDownSm ? '100%' : '350px',
+                  maxWidth: '100%'
                 }}
                 placeholder="От кого"
                 label=""

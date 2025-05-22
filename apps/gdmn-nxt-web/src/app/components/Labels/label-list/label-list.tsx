@@ -14,6 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 const ItemSkeleton = () => {
   return (
@@ -95,9 +96,7 @@ export function LabelList(props: LabelListProps) {
       <CustomizedCard
         style={{ height: '100%' }}
       >
-        <CardHeader
-          title={<Typography variant="pageHeader">Метки</Typography>}
-        />
+        <CustomCardHeader title={'Метки'} />
         <Divider />
         <CardToolbar>
           <div style={{ display: 'flex' }}>

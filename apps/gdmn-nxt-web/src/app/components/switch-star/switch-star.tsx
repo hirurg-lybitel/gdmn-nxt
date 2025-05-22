@@ -1,4 +1,4 @@
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, useMediaQuery } from '@mui/material';
 import styles from './switch-star.module.less';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
@@ -12,7 +12,9 @@ export interface SwitchStarProps {
 export function SwitchStar({
   selected,
   onClick
-}: SwitchStarProps) {
+}: Readonly<SwitchStarProps>) {
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   return (
     <Tooltip title={selected ? 'Удалить из избранных' : 'Добавить в избранные'}>
       <IconButton
@@ -20,8 +22,20 @@ export function SwitchStar({
         className={styles.chosenButton}
         onClick={onClick}
       >
-        <StarIcon className={`${styles.selectedStar} ${selected ? '' : styles.starInvisible}`} />
-        <StarBorderIcon className={`${styles.unselectedStar} ${!selected ? '' : styles.starInvisible}`} />
+        <StarIcon
+          className={`
+            ${styles.selectedStar}
+            ${mobile ? '' : styles.selectedStarHover}
+            ${selected ? '' : styles.starInvisible}
+          `}
+        />
+        <StarBorderIcon
+          className={`
+            ${styles.unselectedStar}
+            ${mobile ? '' : styles.unselectedStarHover}
+            ${!selected ? '' : styles.starInvisible}
+          `}
+        />
       </IconButton>
     </Tooltip>
   );

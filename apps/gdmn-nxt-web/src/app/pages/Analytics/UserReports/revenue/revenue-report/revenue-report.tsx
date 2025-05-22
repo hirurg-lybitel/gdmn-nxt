@@ -75,7 +75,7 @@ export function RevenueReport({ data, isFetching }: Readonly<RevenueReportProps>
                     style={index % 2 === 0 ? { background: 'var(--color-card-bg)' } : {}}
                     key={index}
                   >
-                    <th>{item.customer.NAME}</th>
+                    <th style={{ minWidth: '200px' }} >{item.customer.NAME}</th>
                     <th>{item.date}</th>
                     <th className={styles.numberTh}>{numberFormat(item.amount)}</th>
                     <th className={styles.numberTh}>{numberFormat(item.amountCurrency)}</th>

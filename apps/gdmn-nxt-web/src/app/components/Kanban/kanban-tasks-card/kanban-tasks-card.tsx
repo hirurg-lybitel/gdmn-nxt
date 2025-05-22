@@ -4,7 +4,7 @@ import { ColorMode, IKanbanCard, IKanbanTask } from '@gsbelarus/util-api-types';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
-import { Box, Icon, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Icon, Stack, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KanbanEditTask from '../kanban-edit-task/kanban-edit-task';
 import { useAddTaskMutation, useDeleteTaskMutation, useSetCardStatusMutation, useUpdateTaskMutation } from '../../../features/kanban/kanbanApi';
@@ -73,6 +73,23 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
     }
   }, [card]);
 
+  const [lastTap, setLastTap] = useState(0);
+
+  const onCardClick = useCallback(() => {
+    const currentTime = Date.now();
+    const tapGap = currentTime - lastTap;
+
+    if (tapGap < 500) {
+      doubleClick();
+      setLastTap(currentTime - 500);
+      return;
+    }
+
+    setLastTap(currentTime);
+  }, [doubleClick, lastTap]);
+
+  const mobile = useMediaQuery('(pointer: coarse)');
+
   const handleTaskEditCancelClick = useCallback(() => setOpenEditForm(false), []);
 
   const memoKanbanEditTask = useMemo(() =>
@@ -90,7 +107,9 @@ export function KanbanTasksCard(props: KanbanTasksCardProps) {
     <>
       <CustomizedCard
         onDoubleClick={doubleClick}
+        onClick={mobile ? onCardClick : undefined}
         style={{
+          touchAction: 'manipulation',
           backgroundColor: 'var(--color-card-bg)',
           padding: '12px',
           cursor: 'pointer',

@@ -1,6 +1,6 @@
 import StyledGrid, { ROW_HEIGHT } from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { IFilteringData, ITimeTrackProject, ITimeTrackTask, IWithID, Permissions } from '@gsbelarus/util-api-types';
-import { Box, IconButton, Paper, Stack, TextField, Tooltip } from '@mui/material';
+import { Box, IconButton, Paper, Stack, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { GridCellModes, GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, GridTreeNodeWithRender, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import { ChangeEvent, KeyboardEvent, MouseEvent, SyntheticEvent, useCallback, useMemo, useReducer, useState } from 'react';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
@@ -428,6 +428,7 @@ export function DetailPanelContent({
       field: 'name',
       headerName: 'Наименование',
       flex: 1,
+      minWidth: 300,
       resizable: false,
       editable: true,
       cellClassName: 'name-cell',
@@ -527,6 +528,16 @@ export function DetailPanelContent({
     />
   );
 
+  const addButton = useMemo(() => {
+    return (
+      <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
+        <Box alignContent="center">
+          <CustomAddButton label="Создать задачу" onClick={handleAddSource} />
+        </Box>
+      </PermissionsGate>
+    );
+  }, [handleAddSource, userPermissions]);
+
   return (
     <>
       {memoConfirmDialog}
@@ -544,7 +555,7 @@ export function DetailPanelContent({
         }}
       >
         <Stack
-          direction="row"
+          direction={'row'}
           spacing={2}
           sx={{ pb: 2 }}
         >
@@ -552,12 +563,8 @@ export function DetailPanelContent({
             light={light}
             filteringData={filterData}
             onFilteringDataChange={handleFilteringDataChange}
+            addButton={addButton}
           />
-          <PermissionsGate actionAllowed={userPermissions?.['time-tracking/tasks']?.POST}>
-            <Box alignContent="center">
-              <CustomAddButton label="Создать задачу" onClick={handleAddSource} />
-            </Box>
-          </PermissionsGate>
         </Stack>
         <CustomizedCard
           borders

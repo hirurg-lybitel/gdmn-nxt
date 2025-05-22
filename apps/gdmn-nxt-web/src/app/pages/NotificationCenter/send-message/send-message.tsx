@@ -1,6 +1,6 @@
 import styles from './send-message.module.less';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Chip, Divider, FormControlLabel, IconButton, Stack, Tab, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Chip, Divider, FormControlLabel, IconButton, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { ChangeEvent, Fragment, useCallback, useEffect, useState } from 'react';
 import SendIcon from '@mui/icons-material/Send';
 import InfoIcon from '@mui/icons-material/Info';
@@ -78,10 +78,14 @@ export function SendMessage(props: SendMessageProps) {
 
   const [ListboxComponent] = useAutocompleteVirtualization();
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <CustomizedCard
       boxShadows
       className={styles['item-card']}
+      sx={{ minHeight: 'fit-content' }}
     >
       <CardContent
         style={{
@@ -92,7 +96,7 @@ export function SendMessage(props: SendMessageProps) {
           spacing={2}
           height="100%"
         >
-          <Stack direction="row">
+          <Stack direction={{ xs: 'column-reverse', sm: 'row' }} sx={{ gap: { xs: '10px', sm: 0 } }}>
             <FormControlLabel
               label="Все пользователи"
               control={<Checkbox checked={allUser} onChange={(e, checked) => setAllUser(checked)} />}
@@ -140,9 +144,15 @@ export function SendMessage(props: SendMessageProps) {
               )}
             />
           </Stack>
-          <TabContext value={tabIndex}>
+          <TabContext
+            value={tabIndex}
+          >
             <Box>
-              <TabList onChange={handleTabsChange}>
+              <TabList
+                variant="scrollable"
+                scrollButtons={false}
+                onChange={handleTabsChange}
+              >
                 <Tab label="Сообщение" value="1" />
                 <Tab label="Предпросмотр" value="2" />
               </TabList>
@@ -172,19 +182,22 @@ export function SendMessage(props: SendMessageProps) {
         </Stack>
       </CardContent>
       <CardActions className={styles.actions}>
-        <a
-          href="https://www.markdownguide.org/basic-syntax/"
-          target="_blank"
-          rel="noreferrer"
-          style={{ textDecoration: 'none' }}
-        >
-          <Chip
-            icon={<InfoIcon />}
-            label="Поддерживаются стили Markdown "
-            variant="outlined"
-            style={{ border: 'none', cursor: 'pointer' }}
-          />
-        </a>
+        <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
+          <a
+            href="https://www.markdownguide.org/basic-syntax/"
+            target="_blank"
+            rel="noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            <Chip
+              icon={<InfoIcon />}
+              label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
+              variant="outlined"
+              className={styles.info}
+              style={{ border: 'none', cursor: 'pointer' }}
+            />
+          </a>
+        </Tooltip>
         <Box flex={1} />
         <Button
           variant="contained"

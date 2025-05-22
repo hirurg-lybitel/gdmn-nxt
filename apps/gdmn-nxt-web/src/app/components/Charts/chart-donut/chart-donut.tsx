@@ -17,6 +17,9 @@ export interface ChartDonutProps {
 const useStyles = makeStyles((theme: Theme) => ({
   donut: {
     maxHeight: '323px',
+    [theme.breakpoints.down('sm')]: {
+      maxHeight: '600px',
+    },
     '& .apexcharts-canvas ::-webkit-scrollbar-thumb': {
       background: 'var(--color-scroll-thumb)'
     },
@@ -29,6 +32,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 export function ChartDonut({ period }: ChartDonutProps) {
   const theme = useTheme();
   const matchUpLg = useMediaQuery(theme.breakpoints.up('lg'));
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   const classes = useStyles();
 
@@ -73,7 +77,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
       fontFamily: theme.fontFamily,
       fontSize: '18',
       fontWeight: 400,
-      position: 'left',
+      position: matchDownSm ? 'bottom' : 'left',
       formatter(legendName, opts) {
         const seriesSum = opts.w.globals.series?.reduce((sum: number, s: number) => sum + s, 0);
         const oneValue = opts.w.globals.series.filter((item: number) => item > 0);
@@ -151,14 +155,24 @@ export function ChartDonut({ period }: ChartDonutProps) {
       boxShadows={theme.palette.mode === ColorMode.Light}
       sx={(theme: any) => ({
         flex: 1,
+        minHeight: matchDownSm ? '600px' : '385px',
         display: 'flex',
-        [theme.breakpoints.down('lg')]: {
-          minHeight: 'calc(100vh - 130px)',
-        },
-        '& .apexcharts-legend': {
-          maxWidth: '40%',
-          minWidth: '260px',
+        '& .apexcharts-legend': matchDownSm ? {
+          width: '100%',
+          flexDirection: 'column',
+          flexWrap: 'nowrap !important',
+          paddingTop: '40px'
         }
+          : {
+            maxWidth: '40%',
+            minWidth: '260px',
+          },
+        '& .MuiPaper-root': {
+          minHeight: '0 !important'
+        },
+        '& .apexcharts-legend-text': matchDownSm ? {
+          width: '100%'
+        } : {}
       })}
     >
       <Stack
@@ -167,7 +181,7 @@ export function ChartDonut({ period }: ChartDonutProps) {
         p={2}
         flex={1}
         display="flex"
-        style={{ maxWidth: '100%', padding: '15px 0' }}
+        style={{ maxWidth: '100%', padding: '15px 0', overflow: 'auto' }}
       >
         {stagesIsLoading
           ? <ChartSkeleton />
