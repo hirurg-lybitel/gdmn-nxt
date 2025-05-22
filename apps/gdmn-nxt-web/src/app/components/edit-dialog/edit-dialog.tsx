@@ -1,4 +1,4 @@
-import { Button, DialogActions, DialogContent, DialogTitle, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Button, DialogActions, DialogContent, DialogTitle, Stack, Tooltip } from '@mui/material';
 import CustomizedDialog from '../Styled/customized-dialog/customized-dialog';
 import ButtonWithConfirmation from '../button-with-confirmation/button-with-confirmation';
 import ItemButtonDelete from '../customButtons/item-button-delete/item-button-delete';
@@ -65,8 +65,6 @@ export default function EditDialog(props: Readonly<EditDialogProps>) {
     submitHint = '',
     selectDialog = false
   } = props;
-
-  const theme = useTheme();
 
   return (
     <CustomizedDialog

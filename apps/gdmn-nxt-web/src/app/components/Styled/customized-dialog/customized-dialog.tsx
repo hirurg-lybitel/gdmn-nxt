@@ -1,6 +1,5 @@
 import { Dialog, Slide, useMediaQuery, useTheme } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import './customized-dialog.module.less';
+import style from './customized-dialog.module.less';
 import { forwardRef, ReactElement, ReactNode, Ref, useEffect, useMemo, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
@@ -143,6 +142,11 @@ function CustomizedDialog(props: CustomizedDialogProps) {
             maxHeight: '100%',
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
+            ...(leftIndent === 0 && {
+              left: leftIndent,
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0
+            }),
             '& .MuiDialogActions-root': {
               padding: '12px 24px 12px 24px !important',
               gap: '6px',
