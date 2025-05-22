@@ -19,7 +19,6 @@ import {
 import dayjs from '@gdmn-nxt/dayjs';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { SyntheticEvent, useRef, useState } from 'react';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MessageIcon from '@mui/icons-material/Message';
 import EmailIcon from '@mui/icons-material/Email';
@@ -27,7 +26,6 @@ import PlaceIcon from '@mui/icons-material/Place';
 import PhoneInTalkIcon from '@mui/icons-material/PhoneInTalk';
 import ChatIcon from '@mui/icons-material/Chat';
 import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
-import FeedIcon from '@mui/icons-material/Feed';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
@@ -63,14 +61,17 @@ const AccordionSummary = styled((props: AccordionSummaryProps) => (
     marginLeft: theme.spacing(1),
   },
   '.StyledDeleteButton': {
-    top: '-4px',
-    left: 0,
     position: 'absolute',
-    display: 'none'
-
+    top: 0,
+    right: '16px',
+    alignSelf: 'anchor-center',
+    display: 'none',
   },
   ':hover .StyledDeleteButton': {
     display: 'inline-flex'
+  },
+  ':hover .ExtraInfo': {
+    display: 'none'
   }
 }));
 
@@ -135,24 +136,9 @@ export const FeedbackItem = ({
   const theme = useTheme();
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const time = (<>
-    <Typography variant="body2" color="textSecondary">
-      {dayjs(creationDate).format('MMM D, YYYY')}
-    </Typography>
-    <Typography
-      variant="body2"
-      color="textSecondary"
-      style={{ textWrap: 'nowrap' }}
-    >
-      {dayjs(creationDate).format('H:mm')}
-    </Typography>
-  </>);
-
-  const mobile = useMediaQuery('(pointer: coarse)');
-
   return (
     <TimelineItem>
-      <TimelineOppositeContent sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column', minWidth: '80px' }}>
+      <TimelineOppositeContent sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column', minWidth: '112px' }}>
         <Typography variant="body2" color="textSecondary">
           {dayjs(creationDate).format('MMM D, YYYY')}
         </Typography>
@@ -184,20 +170,12 @@ export const FeedbackItem = ({
         </TimelineDot>
         <TimelineConnector hidden={isLast} />
       </TimelineSeparator>
-      <TimelineContent sx={{ pt: 0 }}>
+      <TimelineContent sx={{ pt: 0, pb: 2 }}>
         <CustomizedCard sx={{ boxShadow: 3 }}>
           <Accordion expanded={expanded} onChange={handleChange}>
-            <AccordionSummary >
-              <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', paddingTop: { xs: '16px', sm: 0 } }}>
-                <Stack sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 0, sm: '16px' } }}>
-                  {matchDownSm && <Typography
-                    sx={{ position: 'absolute', top: '5px', right: '10px' }}
-                    variant="caption"
-                    color="textSecondar"
-                  >
-                    {dayjs(creationDate).format('MMM D, YYYY')}
-                    {' ' + dayjs(creationDate).format('H:mm')}
-                  </Typography>}
+            <AccordionSummary>
+              <Stack direction="row" flex={1}>
+                <Stack>
                   <Typography fontWeight={600} sx={{ display: 'flex', alignItems: 'center' }}>
                     {(() => {
                       switch (type) {
@@ -216,33 +194,25 @@ export const FeedbackItem = ({
                       }
                     })()}
                   </Typography>
-                  <div>
-                    <Typography variant="caption">
-                      {feedback?.creator?.CONTACT?.NAME}
-                    </Typography>
-                  </div>
+                  {matchDownSm && <Typography variant="caption">{feedback?.creator?.CONTACT?.NAME}</Typography>}
                 </Stack>
                 <Box flex={1} />
-                <Box
-                  sx={{
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '30px',
-                    height: '20px',
-                    '& .StyledDeleteButton': {
-                      display: mobile ? 'inline-flex' : undefined
-                    }
-                  }}
-                >
+                {matchDownSm ? (
+                  <Stack textAlign="right">
+                    <Typography variant="caption">{dayjs(creationDate).format('MMM D, YYYY')}</Typography>
+                    <Typography variant="caption">{dayjs(creationDate).format('H:mm')}</Typography>
+                  </Stack>
+                ) : (
+                  <Typography className="ExtraInfo" variant="caption">{feedback?.creator?.CONTACT?.NAME}</Typography>
+                )}
+                {!matchDownSm && (
                   <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
                     <div onClick={handleStopPropagation}>
                       <ItemButtonDelete button onClick={onDelete} />
                     </div>
                   </PermissionsGate>
-                </Box>
-              </Box>
+                )}
+              </Stack>
             </AccordionSummary>
             <AccordionDetails>
               <FormikProvider value={formik}>
@@ -277,6 +247,13 @@ export const FeedbackItem = ({
                       />
                     </Stack>
                     <Stack direction="row">
+                      {matchDownSm && (
+                        <PermissionsGate actionAllowed={userPermissions?.feedback?.DELETE}>
+                          <div onClick={handleStopPropagation}>
+                            <ItemButtonDelete button onClick={onDelete} />
+                          </div>
+                        </PermissionsGate>
+                      )}
                       <Box flex={1} />
                       <Button
                         variant="contained"
