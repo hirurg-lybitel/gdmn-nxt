@@ -27,6 +27,7 @@ export default function FilterDialog(props: Readonly<FilterDialogProps>) {
       open={open}
       onClose={onClose}
       width={width}
+      maxWidth={'80%'}
     >
       <CardContent style={{ flex: 1 }}>{children}</CardContent>
       <CardActions style={{ padding: '16px', flexDirection: 'column' }}>

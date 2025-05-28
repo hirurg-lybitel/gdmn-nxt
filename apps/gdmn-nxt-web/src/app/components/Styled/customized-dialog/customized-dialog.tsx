@@ -40,7 +40,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
     width,
     minWidth = 0,
     fullwidth = false,
-    maxWidth = (!width && !fullwidth) || Number(width) <= 600 ? '80%' : '100%',
+    maxWidth,
     hideBackdrop = false,
     disableEscape = false,
 
