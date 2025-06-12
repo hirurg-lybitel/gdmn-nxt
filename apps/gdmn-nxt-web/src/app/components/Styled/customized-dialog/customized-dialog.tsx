@@ -1,6 +1,6 @@
 import { Dialog, Slide, useMediaQuery, useTheme } from '@mui/material';
 import style from './customized-dialog.module.less';
-import { forwardRef, ReactElement, ReactNode, Ref, useEffect, useMemo, useState } from 'react';
+import { forwardRef, ReactElement, ReactNode, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
 import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 
@@ -40,7 +40,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
     width,
     minWidth = 0,
     fullwidth = false,
-    maxWidth = (!width && !fullwidth) || Number(width) <= 600 ? '80%' : '100%',
+    maxWidth,
     hideBackdrop = false,
     disableEscape = false,
 
@@ -52,12 +52,19 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const leftIndent = matchDownSm ? 0 : matchDownMd ? 100 : matchDownLg ? 190 : theme.drawerWidth;
+  const leftIndent =
+    matchDownSm
+      ? 0
+      : matchDownMd
+        ? 100
+        : matchDownLg
+          ? 190
+          : theme.drawerWidth;
 
   const styles = {
-    width: width ?? (fullwidth ? `calc(100% - ${leftIndent}px)` : 500),
+    width: leftIndent === 0 ? '100%' : (width ?? (fullwidth ? `calc(100% - ${leftIndent}px)` : 500)),
     minWidth,
-    maxWidth
+    maxWidth: maxWidth ?? (leftIndent === 0 ? 'none' : (!width && !fullwidth) || Number(width) <= 600 ? '80%' : '100%')
   };
 
   const [cleanDom, setCleanDom] = useState(false);
@@ -97,16 +104,16 @@ function CustomizedDialog(props: CustomizedDialogProps) {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     onClose && onClose();
     setConfirmOpen(false);
-  };
+  }, [onClose]);
 
   const handleCinfirmCancel = () => {
     setConfirmOpen(false);
   };
 
-  const memoConfirmDialog = useMemo(() =>
+  const memoConfirmDialog = useMemo(() => (
     <ConfirmDialog
       open={confirmOpen}
       dangerous={false}
@@ -114,8 +121,7 @@ function CustomizedDialog(props: CustomizedDialogProps) {
       text={'Изменения будут утеряны. Продолжить?'}
       confirmClick={handleConfirm}
       cancelClick={handleCinfirmCancel}
-    />,
-  [confirmOpen]);
+    />), [confirmOpen, handleConfirm]);
 
   if (cleanDom) {
     return <></>;
@@ -143,7 +149,6 @@ function CustomizedDialog(props: CustomizedDialogProps) {
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
             ...(leftIndent === 0 && {
-              left: leftIndent,
               borderTopLeftRadius: 0,
               borderBottomLeftRadius: 0
             }),
