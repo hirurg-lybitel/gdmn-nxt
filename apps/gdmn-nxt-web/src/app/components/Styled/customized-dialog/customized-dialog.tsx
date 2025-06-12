@@ -52,7 +52,14 @@ function CustomizedDialog(props: CustomizedDialogProps) {
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const leftIndent = matchDownSm ? 0 : matchDownMd ? 100 : matchDownLg ? 190 : theme.drawerWidth;
+  const leftIndent =
+    matchDownSm
+      ? 0
+      : matchDownMd
+        ? 100
+        : matchDownLg
+          ? 190
+          : theme.drawerWidth;
 
   const styles = {
     width: leftIndent === 0 ? '100%' : (width ?? (fullwidth ? `calc(100% - ${leftIndent}px)` : 500)),
