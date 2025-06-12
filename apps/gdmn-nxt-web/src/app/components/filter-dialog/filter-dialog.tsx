@@ -7,7 +7,7 @@ interface FilterDialogProps {
   onClose?: (event?: object, reason?: 'backdropClick' | 'escapeKeyDown' | 'swipe') => void,
   onClear: () => void,
   children: ReactNode,
-  width?: number | string
+  width?: number | string;
 }
 
 export default function FilterDialog(props: Readonly<FilterDialogProps>) {

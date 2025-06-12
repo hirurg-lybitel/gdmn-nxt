@@ -93,6 +93,7 @@ export function CustomerInfo(props: CustomerInfoProps) {
       field: 'PHONE',
       title: 'Тел.',
       renderFn: (value: string) => {
+        if (!value) return '';
         const phones = value.split(',');
         return phones.map((phone, index) => <span key={index} style={{ textWrap: 'nowrap' }} >
           {phone}{index === phones.length - 1 ? '' : ','}
@@ -103,6 +104,7 @@ export function CustomerInfo(props: CustomerInfoProps) {
       field: 'FAX',
       title: 'Факс',
       renderFn: (value: string) => {
+        if (!value) return '';
         const phones = value.split(',');
         return phones.map((phone, index) => <span key={index} style={{ textWrap: 'nowrap' }} >
           {phone}{index === phones.length - 1 ? '' : ','}
