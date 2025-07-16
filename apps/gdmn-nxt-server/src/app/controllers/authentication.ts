@@ -76,7 +76,7 @@ const sendEmailConfirmation = async (userId: number, email: string, info?: Info)
 };
 
 const signIn: RequestHandler = async (req, res, next) => {
-  passport.authenticate('local', async function(err, user, info) {
+  passport.authenticate('local', async function (err, user, info) {
     if (err) {
       return next(err);
     }
@@ -84,14 +84,19 @@ const signIn: RequestHandler = async (req, res, next) => {
     const { userName, ip, device } = req.body;
 
     if (user) {
-      const result = await profileSettingsController.getSettings({ userId: user.id, sessionId: req.sessionID });
-      const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
+      const result = await profileSettingsController.getSettings({
+        userId: user.id,
+        sessionId: req.sessionID,
+        isCustomerRepresentative: user.isCustomerRepresentative
+      });
 
+      const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
 
       /** Require captcha for new address only */
       const IP = req.socket.remoteAddress;
       if (IP !== LAST_IP) {
         req.session.userId = user.id;
+        req.session.isCustomerRepresentative = user.isCustomerRepresentative;
         return res.json(authResult(
           'REQUIRED_CAPTCHA',
           'Требуется пройти дополнительную проверку.'
@@ -176,7 +181,7 @@ const signIn: RequestHandler = async (req, res, next) => {
 };
 
 const signIn2fa: RequestHandler = async (req, res, next) => {
-  passport.authenticate('local', async function(err, user, info) {
+  passport.authenticate('local', async function (err, user, info) {
     if (err) {
       return next(err);
     }

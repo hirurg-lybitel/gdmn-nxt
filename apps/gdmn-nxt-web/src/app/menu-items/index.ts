@@ -6,8 +6,9 @@ import preferences from './preferences';
 import { systemMenu } from './system';
 import { ActionMethod, Permissions } from '@gsbelarus/util-api-types';
 import marketing from './marketing';
+import representative from './representative';
 
-type IType = 'group' | 'collapse' | 'item'
+type IType = 'group' | 'collapse' | 'item';
 export interface IMenuItem {
   id: string;
   title?: string;
@@ -20,7 +21,7 @@ export interface IMenuItem {
   actionCheck?: {
     name: keyof Permissions;
     method: ActionMethod;
-  }
+  };
 }
 
 const menuItems = {
@@ -31,6 +32,12 @@ const menuItems = {
     analytics,
     preferences,
   ].concat(process.env.NODE_ENV === 'development' ? systemMenu : [])
+};
+
+export const representativeMenuItems = {
+  items: [
+    representative
+  ]
 };
 
 export default menuItems;

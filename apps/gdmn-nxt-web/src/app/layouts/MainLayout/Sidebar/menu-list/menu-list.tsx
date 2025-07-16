@@ -1,5 +1,5 @@
 import { Box, Stack, TextField, Typography, useTheme } from '@mui/material';
-import menuItems, { IMenuItem } from '../../../../menu-items';
+import menuItems, { IMenuItem, representativeMenuItems } from '../../../../menu-items';
 import MenuGroup from '../menu-group/menu-group';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { makeStyles } from '@mui/styles';
@@ -29,12 +29,14 @@ const useStyles = makeStyles(() => ({
 
 /* eslint-disable-next-line */
 export interface MenuListProps {
-  onItemClick?: (item: IMenuItem, lavel: number) => void
+  onItemClick?: (item: IMenuItem, lavel: number) => void;
 }
 
-export function MenuList({ onItemClick }: MenuListProps) {
+export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
   const classes = useStyles();
   const theme = useTheme();
+
+  const representative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
 
   const [searchText, setSearchText] = useState('');
 
@@ -60,7 +62,7 @@ export function MenuList({ onItemClick }: MenuListProps) {
     onItemClick && onItemClick(item, lavel);
   }, [onItemClick]);
 
-  const navItems = useMemo(() => filterMenuItems(menuItems.items, searchText)
+  const navItems = useMemo(() => filterMenuItems(representative ? representativeMenuItems.items : menuItems.items, searchText)
     .map((item) => {
       switch (item.type) {
         case 'collapse':

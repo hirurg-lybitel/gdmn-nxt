@@ -15,7 +15,9 @@ import { useGetAllSegmentsQuery } from '../features/Marketing/segments/segmentsA
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
-  const skip = userId < 0;
+  const isCustomerRepresentative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
+  const skip = userId < 0 || isCustomerRepresentative;
+
   const { } = useGetSystemSettingsQuery(undefined, { skip });
   const { } = useGetAllUpdatesQuery(undefined, { skip });
   const { } = useGetFiltersDeadlineQuery(undefined, { skip });

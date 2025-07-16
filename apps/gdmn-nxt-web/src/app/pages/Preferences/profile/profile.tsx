@@ -22,12 +22,14 @@ import OptionsTab from './tabs/options';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
-export interface ProfileProps {}
+export interface ProfileProps {
+  baseUrl?: string;
+}
 
 export const TABS = ['account', 'security', 'notifications', 'system', 'options'] as const;
 type TabIndex = typeof TABS[number];
 
-export function Profile(props: ProfileProps) {
+export function Profile({ baseUrl = '/employee/system' }: Readonly<ProfileProps>) {
   const userProfile = useUserData();
   const userPermissions = usePermissions();
   const { isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
@@ -59,28 +61,28 @@ export function Profile(props: ProfileProps) {
             <LinkTab
               label="Профиль"
               value="account"
-              href="/employee/system/settings/account"
+              href={`${baseUrl}/settings/account`}
               icon={<PersonIcon />}
               iconPosition="start"
             />
             <LinkTab
               label="Безопасность"
               value="security"
-              href="/employee/system/settings/security"
+              href={`${baseUrl}/settings/security`}
               icon={<ShieldIcon />}
               iconPosition="start"
             />
             <LinkTab
               label="Уведомления"
               value="notifications"
-              href="/employee/system/settings/notifications"
+              href={`${baseUrl}/settings/notifications`}
               icon={<NotificationsIcon />}
               iconPosition="start"
             />
             <LinkTab
               label="Система"
               value="system"
-              href="/employee/system/settings/system"
+              href={`${baseUrl}/settings/system`}
               className={!userPermissions?.system?.PUT ? styles.tabHeaderHide : ''}
               icon={<SettingsSuggestIcon />}
               iconPosition="start"
@@ -88,7 +90,7 @@ export function Profile(props: ProfileProps) {
             <LinkTab
               label="Опции"
               value="options"
-              href="/employee/system/settings/options"
+              href={`${baseUrl}/settings/options`}
               icon={<TuneIcon />}
               iconPosition="start"
             />

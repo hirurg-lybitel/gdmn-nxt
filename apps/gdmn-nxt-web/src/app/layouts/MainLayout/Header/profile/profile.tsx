@@ -64,10 +64,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export interface ProfileProps {
-  menuItemClick: (item: IMenuItem, level: number) => void
+  menuItemClick: (item: IMenuItem, level: number) => void;
 }
 
-export function Profile(props: ProfileProps) {
+export function Profile(props: Readonly<ProfileProps>) {
   const classes = useStyles();
   const { menuItemClick } = props;
 
@@ -80,6 +80,7 @@ export function Profile(props: ProfileProps) {
 
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
   const { data: settings } = useGetProfileSettingsQuery(userProfile?.id || -1);
+  const representative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
 
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);
@@ -90,15 +91,17 @@ export function Profile(props: ProfileProps) {
     setOpen(false);
   };
 
+  const baseUrl = representative ? 'settings/' : 'system/settings/';
+
   const handleAccountClick = () => {
-    const url = 'system/settings/account';
+    const url = `${baseUrl}account`;
     menuItemClick({ url, id: '', type: 'item' }, 0);
     navigate(url);
     handleClose();
   };
 
   const handleSettingsClick = () => {
-    const url = 'system/settings/security';
+    const url = `${baseUrl}security`;
     menuItemClick({ url, id: '', type: 'item' }, 0);
     navigate(url);
     handleClose();
@@ -113,24 +116,26 @@ export function Profile(props: ProfileProps) {
 
   const accountComponent = {
     // eslint-disable-next-line react/display-name
-    component: forwardRef((props, ref: ForwardedRef<any>) =>
+    component: forwardRef((props, ref: ForwardedRef<any>) => (
       <Link
         ref={ref}
         {...props}
-        to="system/settings/account"
+        to={`${baseUrl}account`}
         target="_self"
-      />)
+      />
+    ))
   };
 
   const settingsComponent = {
     // eslint-disable-next-line react/display-name
-    component: forwardRef((props, ref: ForwardedRef<any>) =>
+    component: forwardRef((props, ref: ForwardedRef<any>) => (
       <Link
         ref={ref}
         {...props}
-        to="system/settings/security"
+        to={`${baseUrl}security`}
         target="_self"
-      />)
+      />
+    ))
   };
 
   const logout = () => {

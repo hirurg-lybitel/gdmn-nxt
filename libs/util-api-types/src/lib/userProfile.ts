@@ -14,4 +14,5 @@ export interface IUserProfile {
   base32Secret?: string;
   colorMode?: string;
   fullName?: string;
+  isCustomerRepresentative?: boolean;
 };

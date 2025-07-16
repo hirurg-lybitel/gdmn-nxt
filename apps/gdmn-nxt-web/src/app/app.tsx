@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode, ISessionInfo } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha, signedInRepresentative } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
@@ -36,7 +36,7 @@ const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<
 const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
 const get = <T = IAuthResult>(url: string) => query<T>({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });
 
-export interface AppProps {}
+export interface AppProps { }
 
 export default function App(props: AppProps) {
   const dispatch = useDispatch<AppDispatch>();
@@ -127,16 +127,18 @@ export default function App(props: AppProps) {
   /** Wait for new color mod was applied */
   const theme = useTheme();
   useEffect(() => {
-    if (loginStage === 'QUERY_LOGIN' &&
-        theme.palette.mode === user?.colorMode &&
-        !!user) {
+    if (loginStage === 'QUERY_LOGIN' && theme.palette.mode === user?.colorMode && !!user) {
+      if (user.isCustomerRepresentative) {
+        dispatch(signedInRepresentative({ ...user }));
+        return;
+      }
       if (user.gedeminUser) {
         dispatch(signedInEmployee({ ...user }));
-      } else {
-        dispatch(signedInCustomer({ userName: user.userName, id: user.id, contactkey: user.contactkey }));
+        return;
       }
+      dispatch(signedInCustomer({ userName: user.userName, id: user.id, contactkey: user.contactkey }));
     }
-  }, [loginStage, theme.palette.mode, user]);
+  }, [dispatch, loginStage, theme.palette.mode, user]);
 
 
   useEffect(() => {
@@ -274,6 +276,9 @@ export default function App(props: AppProps) {
         return <Navigate to="/customer" />;
       case 'EMPLOYEE':
         return <Navigate to="/employee/dashboard" />;
+      case 'REPRESENTATIVE': {
+        return <Navigate to="/representative/tickets" />;
+      }
       case 'CREATE_CUSTOMER_ACCOUNT':
         return <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />;
       case 'SIGN_IN_EMPLOYEE':
