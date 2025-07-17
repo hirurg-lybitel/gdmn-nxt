@@ -1,7 +1,7 @@
 import { Captcha, CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
-import { IAuthResult, IUserProfile, ColorMode, ISessionInfo } from '@gsbelarus/util-api-types';
+import { IAuthResult, IUserProfile, ColorMode, ISessionInfo, UserType } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
 import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha, signedInTicketsUser } from './features/user/userSlice';
@@ -155,7 +155,7 @@ export default function App(props: AppProps) {
 
   const handleSignInWithEmail = (email: string) => handleSignIn({ userName: userProfile?.userName ?? '', password: userProfile?.password ?? '', email });
 
-  const handleSignIn = async ({ type = 'crm', userName, password, email }: { type?: 'tickets' | 'crm', userName: string, password: string, email?: string; }) => {
+  const handleSignIn = async ({ type = UserType.CRM, userName, password, email }: { type?: UserType, userName: string, password: string, email?: string; }) => {
     const loginData: Pick<ISessionInfo, 'ip' | 'device'> = { ip: 'unknown' };
     const browser = bowser.parse(window.navigator.userAgent);
 
@@ -174,7 +174,7 @@ export default function App(props: AppProps) {
     const response = await post('user/signin', {
       userName,
       password,
-      employeeMode: type === 'crm',
+      employeeMode: type === UserType.CRM,
       ticketsUser: type === 'tickets',
       ...(email && { email }),
       ...loginData

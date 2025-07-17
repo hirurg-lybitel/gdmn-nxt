@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
 import { useCallback, useMemo, useReducer, useState } from 'react';
 import './sign-in-sign-up.module.less';
-import type { IAuthResult } from '@gsbelarus/util-api-types';
+import { IAuthResult, UserType } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
 import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton, Box, Link } from '@mui/material';
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Stage = 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
 
 export interface SignInSignUpProps {
-  onSignIn: (params: { type: 'tickets' | 'crm', userName: string, password: string; }) => Promise<IAuthResult>;
+  onSignIn: (params: { type: UserType, userName: string, password: string; }) => Promise<IAuthResult>;
   /**
    * Если call-back для создания пользователя не задан, то в окне будет отключен
    * функционал создания новой учетной записи.
@@ -121,7 +121,7 @@ export function SignInSignUp({
 
   const doSignIn = useCallback(async () => {
     setLaunching(true);
-    const type = window.location.pathname === '/tickets/login' ? 'tickets' : 'crm';
+    const type = window.location.pathname === '/tickets/login' ? UserType.Tickets : UserType.CRM;
     const res = await onSignIn({ type, userName, password });
     dispatch({ type: 'SET_AUTHRESULT', authResult: res });
     setLaunching(false);

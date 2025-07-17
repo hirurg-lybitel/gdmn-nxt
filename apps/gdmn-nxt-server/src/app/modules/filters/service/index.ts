@@ -1,11 +1,12 @@
-import { IFilter, InternalServerErrorException, NotFoundException } from '@gsbelarus/util-api-types';
+import { IFilter, InternalServerErrorException, UserType, NotFoundException } from '@gsbelarus/util-api-types';
 import { filtersRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
 const findAll = async (
   sessionID: string,
   userId: number,
-  entityName?: string
+  type?: UserType,
+  entityName?: string,
 ) => {
   try {
     const filters = await filtersRepository.find(
@@ -13,7 +14,9 @@ const findAll = async (
       {
         ...(entityName && { USR$ENTITYNAME: entityName }),
         USR$USERKEY: userId
-      }
+      },
+      undefined,
+      type
     );
 
     return {
@@ -28,11 +31,11 @@ const createFilter = async (
   sessionID: string,
   userId: number,
   body: Omit<IFilter, 'ID'>,
-  ticketsUser?: boolean
+  type: UserType
 ) => {
   try {
-    const newFilter = await filtersRepository.save(sessionID, { ...body, userId }, ticketsUser ? 'tickets' : 'crm');
-    const filter = await filtersRepository.findOne(sessionID, { id: newFilter.ID });
+    const newFilter = await filtersRepository.save(sessionID, { ...body, userId }, type);
+    const filter = await filtersRepository.findOne(sessionID, { id: newFilter.ID }, type);
 
     return filter;
   } catch (error) {
@@ -43,14 +46,15 @@ const createFilter = async (
 const updateById = async (
   sessionID: string,
   id: number,
-  body: Omit<IFilter, 'ID'>
+  body: Omit<IFilter, 'ID'>,
+  type: UserType
 ) => {
   try {
-    const updatedSegment = await filtersRepository.update(sessionID, id, body);
+    const updatedSegment = await filtersRepository.update(sessionID, id, body, type);
     if (!updatedSegment?.ID) {
       throw NotFoundException(`Не найден фильтр с id=${id}`);
     }
-    const filter = await filtersRepository.findOne(sessionID, { id: updatedSegment.ID });
+    const filter = await filtersRepository.findOne(sessionID, { id: updatedSegment.ID }, type);
 
     return filter;
   } catch (error) {
@@ -60,15 +64,16 @@ const updateById = async (
 
 const removeById = async (
   sessionID: string,
-  id: number
+  id: number,
+  type: UserType
 ) => {
   try {
-    const checkFilter = await filtersRepository.findOne(sessionID, { ID: id });
+    const checkFilter = await filtersRepository.findOne(sessionID, { ID: id }, type);
     if (!checkFilter?.ID) {
       throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND);
     }
 
-    return await filtersRepository.remove(sessionID, id);
+    return await filtersRepository.remove(sessionID, id, type);
   } catch (error) {
     throw InternalServerErrorException(error.message);
   }
