@@ -4,7 +4,7 @@ import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { resultError, validPassword } from '@gsbelarus/util-helpers';
 import { ISessionInfo, IsNotNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
-import { checkCustomerRepresentative, checkGedeminUser, getAccount, getCustomerRepresentative, getGedeminUser } from './app/controllers/app';
+import { checkTiscketsUser, checkGedeminUser, getAccount, getTicketsUser, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
 import departments from './app/controllers/departments';
@@ -68,7 +68,7 @@ declare module 'express-session' {
     email: string;
     userName: string;
     captcha: string;
-    isCustomerRepresentative: boolean;
+    ticketsUser: boolean;
   }
 }
 
@@ -86,11 +86,11 @@ interface ICustomerUser extends IBaseUser {
   salt: string;
   expireOn?: number;
 };
-interface ICustomerRepresentative extends IBaseUser {
-  isCustomerRepresentative: true;
+interface ITicketsUser extends IBaseUser {
+  ticketsUser: true;
 }
 
-type IUser = IGedeminUser | ICustomerUser | ICustomerRepresentative;
+type IUser = IGedeminUser | ICustomerUser | ITicketsUser;
 
 /** Local cache initialization */
 cacheManager.init({ useClones: false });
@@ -178,38 +178,48 @@ passport.use(new Strategy(
     passReqToCallback: true
   },
   async (req, userName, password, done) => {
-    const { employeeMode } = req.body;
-    try {
-      if (employeeMode) {
-        const userRes = await checkGedeminUser(userName, password);
-        const cusRepRes = await checkCustomerRepresentative(userName, password);
+    const { employeeMode, ticketsUser } = req.body;
 
-        if (userRes.result === 'UNKNOWN_USER' && cusRepRes.result === 'UNKNOWN_USER') {
-          console.log('Unknown gedemin user', { userName, password });
+    try {
+      if (ticketsUser) {
+        const res = await checkTiscketsUser(userName, password);
+
+        if (res.result === 'UNKNOWN_USER') {
+          console.log('Unknown tickets user', { userName, password });
           return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
         }
 
-        if (cusRepRes.result === 'SUCCESS') {
-          console.log('valid customer representative');
+        if (res.result === 'SUCCESS') {
+          console.log('valid tickets user');
 
           const permissions = await cacheManager.getKey('permissions') ?? {};
-          const userPermissions: Permissions = permissions?.[cusRepRes.userProfile.id];
+          const userPermissions: Permissions = permissions?.[res.userProfile.id];
 
           return done(null, {
             userName,
             gedeminUser: true,
-            id: cusRepRes.userProfile.id,
-            email: cusRepRes.userProfile.email,
+            id: res.userProfile.id,
+            email: res.userProfile.email,
             permissions: userPermissions,
-            isCustomerRepresentative: cusRepRes.userProfile.isCustomerRepresentative
+            ticketsUser: true
           });
         }
+        console.log('Invalid tickets user', { userName, password });
+        return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
+      }
+      if (employeeMode) {
+        const res = await checkGedeminUser(userName, password);
 
-        if (userRes.result === 'SUCCESS') {
+        if (res.result === 'UNKNOWN_USER') {
+          console.log('Unknown gedemin user', { userName, password });
+          return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
+        }
+
+        if (res.result === 'SUCCESS') {
           console.log('valid gedemin user');
 
           const permissions = await cacheManager.getKey('permissions') ?? {};
-          const userPermissions: Permissions = permissions?.[userRes.userProfile.id];
+          const userPermissions: Permissions = permissions?.[res.userProfile.id];
 
           if (!userPermissions) {
             return done(null, false, { message: 'Пользователю ограничен доступ к приложению.' });
@@ -218,29 +228,28 @@ passport.use(new Strategy(
           return done(null, {
             userName,
             gedeminUser: true,
-            id: userRes.userProfile.id,
-            email: userRes.userProfile.email,
+            id: res.userProfile.id,
+            email: res.userProfile.email,
             permissions: userPermissions,
-            isCustomerRepresentative: userRes.userProfile.isCustomerRepresentative
+            ticketsUser: false
           });
         }
-
         console.log('Invalid gedemin user', { userName, password });
         return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
+      }
+
+      const account = await getAccount(req.sessionID, userName);
+
+      if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
+        return done(null, false);
+      }
+
+      if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
+        console.log('valid user');
+        return done(null, { userName });
       } else {
-        const account = await getAccount(req.sessionID, userName);
-
-        if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
-          return done(null, false);
-        }
-
-        if (validPassword(password, account.USR$HASH, account.USR$SALT)) {
-          console.log('valid user');
-          return done(null, { userName });
-        } else {
-          console.log('Invalid user', { userName, password });
-          return done(null, false);
-        }
+        console.log('Invalid user', { userName, password });
+        return done(null, false);
       }
     } catch (err) {
       console.error('Passport error:', err);
@@ -263,11 +272,11 @@ passport.deserializeUser(async (user: IUser, done) => {
   const userType = name.slice(0, 1);
   const userName = name.slice(1);
 
-  if (user['isCustomerRepresentative']) {
-    const res = await getCustomerRepresentative(userName);
+  if (user['ticketsUser']) {
+    const res = await getTicketsUser(userName);
 
     if (res) {
-      return done(null, { ...user, ...res, isCustomerRepresentative: true, gedeminUser: true });
+      return done(null, { ...user, ...res, ticketsUser: true, gedeminUser: true });
     }
     return done(`Unknown user userName: ${userName}`);
   }

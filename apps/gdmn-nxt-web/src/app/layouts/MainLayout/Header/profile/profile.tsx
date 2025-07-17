@@ -80,7 +80,7 @@ export function Profile(props: Readonly<ProfileProps>) {
 
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
   const { data: settings } = useGetProfileSettingsQuery(userProfile?.id || -1);
-  const representative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
 
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);
@@ -91,7 +91,7 @@ export function Profile(props: Readonly<ProfileProps>) {
     setOpen(false);
   };
 
-  const baseUrl = representative ? 'settings/' : 'system/settings/';
+  const baseUrl = ticketsUser ? 'settings/' : 'system/settings/';
 
   const handleAccountClick = () => {
     const url = `${baseUrl}account`;

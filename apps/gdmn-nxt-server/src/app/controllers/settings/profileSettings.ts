@@ -9,7 +9,7 @@ import { setPermissonsCache } from '../../middlewares/permissions';
 
 type GetSettingsParams = {
   sessionId: string;
-  isCustomerRepresentative?: boolean;
+  ticketsUser?: boolean;
 } & ({
   userId: number;
   contactId?: number;
@@ -22,7 +22,7 @@ const getSettings = async ({
   sessionId,
   userId: _userId,
   contactId,
-  isCustomerRepresentative
+  ticketsUser
 }: GetSettingsParams) => {
   const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(sessionId);
   const { attachment, transaction } = await getReadTransaction(sessionId);
@@ -40,7 +40,7 @@ const getSettings = async ({
     })();
 
     const required2fa = await (async () => {
-      if (isCustomerRepresentative) return false;
+      if (ticketsUser) return false;
 
       const check2FA = await fetchAsSingletonObject(`
       SELECT ug.USR$REQUIRED_2FA GROUP_2FA, ul.USR$REQUIRED_2FA USER_2FA
@@ -52,10 +52,9 @@ const getSettings = async ({
     })();
 
     const sqlResult = await (async () => {
-      if (isCustomerRepresentative) {
+      if (ticketsUser) {
         const result = await fetchAsObject(
           `SELECT
-            w.NAME as RANK,
             ps.USR$AVATAR as AVATAR_BLOB,
             ps.USR$MODE as ColorMode,
             ps.USR$LASTVERSION as LASTVERSION,
@@ -66,9 +65,8 @@ const getSettings = async ({
             ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
             ps.USR$LAST_IP as LAST_IP,
             ps.USR$SAVEFILTERS as SAVEFILTERS
-          FROM USR$CRM_CUSTOMER_REPRESENTATIVE u
-            LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$REPRESENTATIVEKEY = u.ID
-            LEFT JOIN WG_POSITION w ON w.ID = u.USR$WPOSITIONKEY
+          FROM USR$CRM_USER u
+            LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$TICKETS_USER_KEY = u.ID
           WHERE u.ID = :userId`,
           { userId }
         );
@@ -169,8 +167,8 @@ const getSettings = async ({
 
 const get: RequestHandler = async (req, res) => {
   const userId = parseIntDef(req.params.userId, -1);
-  const isCustomerRepresentative = req.user['isCustomerRepresentative'];
-  const data = await getSettings({ userId, sessionId: req.sessionID, isCustomerRepresentative });
+  const ticketsUser = req.user['ticketsUser'];
+  const data = await getSettings({ userId, sessionId: req.sessionID, ticketsUser });
 
   if (!data.OK) return res.status(500).send(resultError(data.error));
 
@@ -187,7 +185,7 @@ const set: RequestHandler = async (req, res) => {
   const { attachment, transaction, releaseTransaction, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   const userId = parseIntDef(req.params.userId, -1);
-  const isCustomerRepresentative = req.user['isCustomerRepresentative'];
+  const ticketsUser = req.user['ticketsUser'];
 
   const {
     AVATAR: avatar,
@@ -207,9 +205,9 @@ const set: RequestHandler = async (req, res) => {
     await blob.write(blobBuffer);
     await blob.close();
 
-    if (isCustomerRepresentative) {
+    if (ticketsUser) {
       const updateEmail = await fetchAsObject(
-        `UPDATE USR$CRM_CUSTOMER_REPRESENTATIVE c
+        `UPDATE USR$CRM_USER c
           SET USR$EMAIL = :EMAIL
         WHERE c.ID = :userId
         RETURNING USR$EMAIL`,
@@ -225,7 +223,7 @@ const set: RequestHandler = async (req, res) => {
       );
     }
 
-    const keyFieldName = isCustomerRepresentative ? 'USR$REPRESENTATIVEKEY' : 'USR$USERKEY';
+    const keyFieldName = ticketsUser ? 'USR$TICKETS_USER_KEY' : 'USR$USERKEY';
 
     const sqlResult = await fetchAsSingletonObject(
       `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(${keyFieldName}, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS)
@@ -292,9 +290,9 @@ const upsertLastIP = async (req: Request, body: { userId: number, ip: string; })
 
   const { userId, ip } = body;
 
-  const { isCustomerRepresentative } = req.session;
+  const { ticketsUser } = req.session;
 
-  const keyFiledName = isCustomerRepresentative ? 'USR$REPRESENTATIVEKEY' : 'USR$USERKEY';
+  const keyFiledName = ticketsUser ? 'USR$TICKETS_USER_KEY' : 'USR$USERKEY';
 
   try {
     await executeSingletonAsObject(

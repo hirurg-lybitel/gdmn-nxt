@@ -34,7 +34,7 @@ const find: FindHandler<IFilter> = async (
         USR$CRM_FILTERS f
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
-    const filters = await fetchAsObject<any> (sql, params);
+    const filters = await fetchAsObject<any>(sql, params);
 
     await forEachAsync<IFilter>(filters, async f => {
       const filter = await blob2String(f['USR$FILTERS']);
@@ -101,12 +101,13 @@ const update: UpdateHandler<IFilter> = async (
 };
 
 interface IFilterSave extends IFilter {
-  userId: number
+  userId: number;
 }
 
 const save: SaveHandler<IFilterSave> = async (
   sessionID,
-  metadata
+  metadata,
+  type
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
 
@@ -140,7 +141,7 @@ const remove: RemoveOneHandler = async (
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   try {
-    const deletedFilter = await fetchAsSingletonObject<{ID: number}>(
+    const deletedFilter = await fetchAsSingletonObject<{ ID: number; }>(
       `DELETE FROM USR$CRM_FILTERS WHERE ID = :id
       RETURNING ID`,
       { id }

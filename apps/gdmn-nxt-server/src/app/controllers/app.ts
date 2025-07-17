@@ -1,4 +1,4 @@
-import { ColorMode, CustomerRepresentative, GedeminUser, IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
+import { ColorMode, TicketsUser, GedeminUser, IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
 import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
@@ -47,7 +47,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
             email: data[0]['EMAIL'],
             firstname: data[0]['FIRSTNAME'],
             surname: data[0]['SURNAME'],
-            isCustomerRepresentative: false
+            ticketsUser: false
           }
         };
       } else if (!data.length) {
@@ -65,15 +65,16 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
   }
 };
 
-export const checkCustomerRepresentative = async (userName: string, password: string): Promise<IAuthResult> => {
+export const checkTiscketsUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
     SELECT
       ID,
-      USR$NAME,
+      USR$USERNAME,
       USR$PASSWORD,
-      USR$EMAIL
-    FROM USR$CRM_CUSTOMER_REPRESENTATIVE
-    WHERE UPPER(USR$NAME) = ?
+      USR$EMAIL,
+      USR$DISABLED
+    FROM USR$CRM_USER
+    WHERE UPPER(USR$USERNAME) = ?
   `;
 
   const { attachment, transaction } = await getReadTransaction('passport');
@@ -83,6 +84,12 @@ export const checkCustomerRepresentative = async (userName: string, password: st
       const data = await rs.fetchAsObject();
 
       if (data.length === 1) {
+        if (data[0]['USR$DISABLED']) {
+          return {
+            result: 'ACCESS_DENIED'
+          };
+        }
+
         if (data[0]['USR$PASSWORD'] !== password) {
           return {
             result: 'INVALID_PASSWORD'
@@ -93,9 +100,9 @@ export const checkCustomerRepresentative = async (userName: string, password: st
           result: 'SUCCESS',
           userProfile: {
             id: data[0]['ID'],
-            userName,
+            userName: data[0]['USR$USERNAME'],
             email: data[0]['USR$EMAIL'],
-            isCustomerRepresentative: true
+            ticketsUser: true
           }
         };
       } else if (!data.length) {
@@ -161,18 +168,16 @@ export const getGedeminUser = async (userName: string): Promise<GedeminUser | un
   }
 };
 
-export const getCustomerRepresentative = async (userName: string): Promise<CustomerRepresentative | undefined> => {
+export const getTicketsUser = async (userName: string): Promise<TicketsUser | undefined> => {
   const query = `
     SELECT
       u.ID,
-      w.NAME as RANK,
       ps.USR$MODE as ColorMode,
       u.USR$FULLNAME as FULLNAME,
       ps.USR$SAVEFILTERS as SAVEFILTERS
-    FROM USR$CRM_CUSTOMER_REPRESENTATIVE u
-      LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$REPRESENTATIVEKEY = u.ID
-      LEFT JOIN WG_POSITION w ON w.ID = u.USR$WPOSITIONKEY
-    WHERE UPPER(u.USR$NAME) = ?
+    FROM USR$CRM_USER u
+      LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$TICKETS_USER_KEY = u.ID
+    WHERE UPPER(u.USR$USERNAME) = ?
   `;
 
   const { attachment, transaction } = await getReadTransaction('passport');
@@ -185,7 +190,7 @@ export const getCustomerRepresentative = async (userName: string): Promise<Custo
         return {
           id: data[0]['ID'],
           userName,
-          rank: data[0]['RANK'],
+          rank: null,
           colorMode: data[0]['COLORMODE'] ?? ColorMode.Dark,
           fullName: data[0]['FULLNAME'],
           saveFilters: data[0]['SAVEFILTERS'] === 1

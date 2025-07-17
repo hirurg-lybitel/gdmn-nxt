@@ -140,7 +140,7 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [showedMessages, setShowedMessages] = useState<number[]>([]);
   const [isActivePage, setIsActivePage] = useState<boolean>(true);
-  const representative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
 
   function onBlur() {
     setIsActivePage(false);
@@ -261,7 +261,7 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
   };
 
   const navigate = useNavigate();
-  const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery(undefined, { skip: representative });
+  const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery(undefined, { skip: ticketsUser });
 
   const dispatch = useDispatch();
 

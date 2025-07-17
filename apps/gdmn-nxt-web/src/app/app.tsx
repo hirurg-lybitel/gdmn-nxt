@@ -4,7 +4,7 @@ import type { AxiosError, AxiosRequestConfig } from 'axios';
 import { IAuthResult, IUserProfile, ColorMode, ISessionInfo } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha, signedInRepresentative } from './features/user/userSlice';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha, signedInTicketsUser } from './features/user/userSlice';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
@@ -56,6 +56,7 @@ export default function App(props: AppProps) {
 
   const pathName: string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
+
   // Поиск и установка id страницы, который соответствует url, в state
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
@@ -65,6 +66,10 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
+          if (pathName[0] === 'tickets') {
+            navigate('/tickets/login');
+            break;
+          };
           navigate('/');
           break;
         case 'LAUNCHING':
@@ -90,10 +95,13 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
+          navigate('/');
+
           /** Получение последнего url клиента */
           const res = await fetch(`${baseUrlApi}filters/menu`, { method: 'GET', credentials: 'include' });
           if (res.ok) {
             const pathnameData = await res.json();
+
 
             const pathname = Array.isArray(pathnameData.queries?.filters) ? pathnameData.queries.filters[0]?.filters?.path : '';
             dispatch(saveFilterData({ menu: { path: pathname } }));
@@ -128,8 +136,8 @@ export default function App(props: AppProps) {
   const theme = useTheme();
   useEffect(() => {
     if (loginStage === 'QUERY_LOGIN' && theme.palette.mode === user?.colorMode && !!user) {
-      if (user.isCustomerRepresentative) {
-        dispatch(signedInRepresentative({ ...user }));
+      if (user.ticketsUser) {
+        dispatch(signedInTicketsUser({ ...user }));
         return;
       }
       if (user.gedeminUser) {
@@ -145,9 +153,9 @@ export default function App(props: AppProps) {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
   }, [loginStage]);
 
-  const handleSignInWithEmail = (email: string) => handleSignIn(userProfile?.userName ?? '', userProfile?.password ?? '', email);
+  const handleSignInWithEmail = (email: string) => handleSignIn({ userName: userProfile?.userName ?? '', password: userProfile?.password ?? '', email });
 
-  const handleSignIn = async (userName: string, password: string, email?: string) => {
+  const handleSignIn = async ({ type = 'crm', userName, password, email }: { type?: 'tickets' | 'crm', userName: string, password: string, email?: string; }) => {
     const loginData: Pick<ISessionInfo, 'ip' | 'device'> = { ip: 'unknown' };
     const browser = bowser.parse(window.navigator.userAgent);
 
@@ -166,7 +174,8 @@ export default function App(props: AppProps) {
     const response = await post('user/signin', {
       userName,
       password,
-      employeeMode: true,
+      employeeMode: type === 'crm',
+      ticketsUser: type === 'tickets',
       ...(email && { email }),
       ...loginData
     });
@@ -205,10 +214,10 @@ export default function App(props: AppProps) {
     const response = await post('user/create-2fa', { authCode, emailCode });
 
     if (response.result === 'SUCCESS') {
-      handleSignIn(
-        userProfile?.userName ?? '',
-        userProfile?.password ?? '',
-      );
+      handleSignIn({
+        userName: userProfile?.userName ?? '',
+        password: userProfile?.password ?? '',
+      });
     };
 
     return response;
@@ -234,10 +243,10 @@ export default function App(props: AppProps) {
 
     if (response.result === 'SUCCESS') {
       setCaptchaImage('');
-      handleSignIn(
-        userProfile?.userName ?? '',
-        userProfile?.password ?? ''
-      );
+      handleSignIn({
+        userName: userProfile?.userName ?? '',
+        password: userProfile?.password ?? ''
+      });
       return true;
     };
     return false;
@@ -276,8 +285,8 @@ export default function App(props: AppProps) {
         return <Navigate to="/customer" />;
       case 'EMPLOYEE':
         return <Navigate to="/employee/dashboard" />;
-      case 'REPRESENTATIVE': {
-        return <Navigate to="/representative/tickets" />;
+      case 'TISCKETS': {
+        return <Navigate to="/tickets/tickets" />;
       }
       case 'CREATE_CUSTOMER_ACCOUNT':
         return <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />;
@@ -301,7 +310,7 @@ export default function App(props: AppProps) {
       case 'CAPTCHA':
         return (
           <SignInSignUp
-            onSignIn={(userName, password) => post('user/signin', { userName, password })}
+            onSignIn={({ userName, password }) => post('user/signin', { userName, password })}
             newPassword={(email) => post('user/forgot-password', { email })}
             // onSignIn={handleSignIn}
             bottomDecorator={() =>

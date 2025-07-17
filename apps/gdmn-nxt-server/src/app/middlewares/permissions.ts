@@ -7,7 +7,7 @@ import { config } from '@gdmn-nxt/config';
 import { ERROR_MESSAGES } from '../constants/messages';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 
-const customerRepresentativeRoutes = [
+const ticketsUserRoutes = [
   'profile-settings/userId',
   'security/active-sessions',
   'security/closeSessionBySessionId',
@@ -25,10 +25,10 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
   };
   const userId = req.user['id'];
 
-  const isCustomerRepresentative = req.user['isCustomerRepresentative'];
+  const ticketsUser = req.user['ticketsUser'];
   const { url, method } = req;
-  if (isCustomerRepresentative) {
-    for (const name of customerRepresentativeRoutes) {
+  if (ticketsUser) {
+    for (const name of ticketsUserRoutes) {
       const regEx = new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\w-]*$`);
 
       if (regEx.test(url.split('?')[0])) return next();

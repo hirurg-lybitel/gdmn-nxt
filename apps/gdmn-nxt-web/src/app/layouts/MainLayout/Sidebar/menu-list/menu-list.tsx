@@ -1,5 +1,5 @@
 import { Box, Stack, TextField, Typography, useTheme } from '@mui/material';
-import menuItems, { IMenuItem, representativeMenuItems } from '../../../../menu-items';
+import menuItems, { IMenuItem } from '../../../../menu-items';
 import MenuGroup from '../menu-group/menu-group';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { makeStyles } from '@mui/styles';
@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import { Permissions } from '@gsbelarus/util-api-types';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import MenuCollapse from '../menu-collapse/menu-collapse';
+import ticketsMenuItems from 'apps/gdmn-nxt-web/src/app/menu-items/tickets';
 
 const useStyles = makeStyles(() => ({
   scroll: {
@@ -36,7 +37,7 @@ export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
   const classes = useStyles();
   const theme = useTheme();
 
-  const representative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
 
   const [searchText, setSearchText] = useState('');
 
@@ -62,7 +63,7 @@ export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
     onItemClick && onItemClick(item, lavel);
   }, [onItemClick]);
 
-  const navItems = useMemo(() => filterMenuItems(representative ? representativeMenuItems.items : menuItems.items, searchText)
+  const navItems = useMemo(() => filterMenuItems(ticketsUser ? ticketsMenuItems.items : menuItems.items, searchText)
     .map((item) => {
       switch (item.type) {
         case 'collapse':

@@ -15,7 +15,7 @@ export type LoginStage =
   | 'OTHER_LOADINGS' // processes after getting the user id, but before rendering the app
   | 'CUSTOMER' //
   | 'EMPLOYEE' //
-  | 'REPRESENTATIVE'
+  | 'TISCKETS'
   | 'SIGN_IN_EMPLOYEE' // show sign-in or sign-up screen for an employee
   | 'SIGN_IN_CUSTOMER' // show sign-in or sign-up screen for a customer
   | 'CREATE_CUSTOMER_ACCOUNT'
@@ -26,7 +26,7 @@ export type LoginStage =
 
 export interface UserState {
   loginStage: LoginStage;
-  userType?: 'CUSTOMER' | 'EMPLOYEE' | 'REPRESENTATIVE';
+  userType?: 'CUSTOMER' | 'EMPLOYEE' | 'TISCKETS';
   userProfile?: IUserProfile;
   gedeminUser?: boolean;
 };
@@ -46,7 +46,7 @@ export const userSlice = createSlice({
     createCustomerAccount: () => ({ loginStage: 'CREATE_CUSTOMER_ACCOUNT' } as UserState),
     signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
     signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'CUSTOMER', userProfile: action.payload } as UserState),
-    signedInRepresentative: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'REPRESENTATIVE', userProfile: action.payload } as UserState),
+    signedInTicketsUser: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'TISCKETS', userProfile: action.payload } as UserState),
     signIn2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SIGN_IN_2FA', userProfile: { ...action.payload } } as UserState),
     create2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CREATE_2FA', userProfile: { ...action.payload } } as UserState),
     setEmail: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SET_EMAIL', userProfile: { ...action.payload } } as UserState),
@@ -74,7 +74,7 @@ export const {
   setEmail,
   signIn2fa,
   checkCaptcha,
-  signedInRepresentative
+  signedInTicketsUser
 } = userSlice.actions;
 
 export default userSlice.reducer;

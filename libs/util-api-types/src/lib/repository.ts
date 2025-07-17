@@ -6,7 +6,7 @@ export type SortMode = 'ASC' | 'DESC';
  * @param sessionID Session identifier
  * @param clause The find clause object
  */
-export type FindHandler<T = object> = (sessionID: string, clause?: object, order?: { [key: string]: SortMode}) => Promise<T[]>;
+export type FindHandler<T = object> = (sessionID: string, clause?: object, order?: { [key: string]: SortMode; }) => Promise<T[]>;
 
 /**
  * Finds first entity that match given find clause.
@@ -29,7 +29,7 @@ export type UpdateHandler<T = object> = (sessionID: string, id: number, metadata
  * @param sessionID Session identifier
  * @param metadata the entity
  */
-export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID' | 'id'>) => Promise<T>;
+export type SaveHandler<T = object> = (sessionID: string, metadata: Omit<T, 'ID' | 'id'>, type?: 'tickets' | 'crm') => Promise<T>;
 
 /**
  * Delete entities by clause.

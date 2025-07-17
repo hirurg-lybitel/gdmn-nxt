@@ -81,22 +81,22 @@ const signIn: RequestHandler = async (req, res, next) => {
       return next(err);
     }
 
-    const { userName, ip, device } = req.body;
+    const { userName, ip, device, ticketsUser } = req.body;
 
     if (user) {
       const result = await profileSettingsController.getSettings({
         userId: user.id,
         sessionId: req.sessionID,
-        isCustomerRepresentative: user.isCustomerRepresentative
+        ticketsUser: ticketsUser
       });
 
       const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
 
       /** Require captcha for new address only */
       const IP = req.socket.remoteAddress;
-      if (IP !== LAST_IP) {
+      if (IP !== LAST_IP && !ticketsUser) {
         req.session.userId = user.id;
-        req.session.isCustomerRepresentative = user.isCustomerRepresentative;
+        req.session.ticketsUser = user.ticketsUser;
         return res.json(authResult(
           'REQUIRED_CAPTCHA',
           'Требуется пройти дополнительную проверку.'

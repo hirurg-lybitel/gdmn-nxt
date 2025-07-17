@@ -5,6 +5,7 @@ import { authenticationController } from '@gdmn-nxt/controllers/authentication';
 export const router = express.Router();
 
 router.post('/user/signin', authenticationController.signIn);
+router.post('/user/signin', authenticationController.signIn);
 router.post('/user/signin-2fa', authenticationController.signIn2fa);
 router.get('/user/create-2fa', authenticationController.startCreate2fa);
 router.post('/user/create-2fa', authenticationController.endCreate2fa);

@@ -31,7 +31,7 @@ const findAll: RequestHandler = async (req, res) => {
 const createFilter: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
-    const filters = await filtersService.createFilter(req.sessionID, userId, req.body);
+    const filters = await filtersService.createFilter(req.sessionID, userId, req.body, req.user['ticketsUser']);
 
     const result: IRequestResult = {
       queries: { filters: [filters] },

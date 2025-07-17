@@ -6,7 +6,7 @@ import preferences from './preferences';
 import { systemMenu } from './system';
 import { ActionMethod, Permissions } from '@gsbelarus/util-api-types';
 import marketing from './marketing';
-import representative from './representative';
+import tickets from './tickets';
 
 type IType = 'group' | 'collapse' | 'item';
 export interface IMenuItem {
@@ -32,12 +32,6 @@ const menuItems = {
     analytics,
     preferences,
   ].concat(process.env.NODE_ENV === 'development' ? systemMenu : [])
-};
-
-export const representativeMenuItems = {
-  items: [
-    representative
-  ]
 };
 
 export default menuItems;

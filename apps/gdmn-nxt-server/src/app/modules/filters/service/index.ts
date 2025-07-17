@@ -27,10 +27,11 @@ const findAll = async (
 const createFilter = async (
   sessionID: string,
   userId: number,
-  body: Omit<IFilter, 'ID'>
+  body: Omit<IFilter, 'ID'>,
+  ticketsUser?: boolean
 ) => {
   try {
-    const newFilter = await filtersRepository.save(sessionID, { ...body, userId });
+    const newFilter = await filtersRepository.save(sessionID, { ...body, userId }, ticketsUser ? 'tickets' : 'crm');
     const filter = await filtersRepository.findOne(sessionID, { id: newFilter.ID });
 
     return filter;

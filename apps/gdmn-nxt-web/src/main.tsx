@@ -62,10 +62,9 @@ import ExpectedReceiptsDev from './app/pages/Analytics/UserReports/expected-rece
 import Expenses from './app/pages/Analytics/UserReports/expenses/expenses';
 import Debts from './app/pages/Analytics/UserReports/debts/debts';
 import Revenue from './app/pages/Analytics/UserReports/revenue/revenue';
-import Tickets from './app/pages/Representative/profile/tickets';
+import TicketsList from './app/pages/Tickets/ticketsList/ticketsList';
 
 registerMUI();
-
 
 const Main = () => {
   const customization = useSelector(
@@ -120,20 +119,20 @@ const Main = () => {
                 {
                   <>
                     {(() => {
-                      if (loginStage === 'REPRESENTATIVE') {
+                      if (loginStage === 'TISCKETS') {
                         return (
                           <Routes>
-                            <Route path="" element={<Navigate to="representative" />} />
-                            <Route path="representative" element={<MainLayout />}>
-                              <Route path="" element={<Navigate to="tickets" />} />
-                              <Route path="tickets" element={<Tickets />} />
+                            <Route path="" element={<Navigate to="tickets" />} />
+                            <Route path="tickets" element={<MainLayout />}>
+                              <Route path="" element={<Navigate to="list" />} />
+                              <Route path="list" element={<TicketsList />} />
                               <Route path="settings">
                                 <Route path="" element={<Navigate to="account" />} />
                                 {TABS.map((tab) => (
                                   <Route
                                     key={tab}
                                     path={tab}
-                                    element={<Profile baseUrl={'/representative'} />}
+                                    element={<Profile baseUrl={'/tickets'} />}
                                   />
                                 ))}
                               </Route>

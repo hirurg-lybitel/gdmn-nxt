@@ -85,7 +85,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   const { errorMessage, errorStatus } = useSelector((state: RootState) => state.error);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
-  const representative = useSelector<RootState, boolean>(state => state.user.userProfile?.isCustomerRepresentative ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
 
   const dispatch = useDispatch<AppDispatch>();
   const onIdleHandler = () => {
@@ -179,7 +179,7 @@ export const MainLayout = (props: MainLayoutProps) => {
 
   return (
     <>
-      {!representative && <UpdatesInfo />}
+      {!ticketsUser && <UpdatesInfo />}
       <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
         <Sidebar
           open={menuOpened}

@@ -135,7 +135,7 @@ export type GedeminUser = {
   saveFilters: boolean;
 };
 
-export type CustomerRepresentative = {
+export type TicketsUser = {
   id: number;
   userName: string;
   rank?: string;
