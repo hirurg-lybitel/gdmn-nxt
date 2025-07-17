@@ -176,7 +176,7 @@ export const getTicketsUser = async (userName: string): Promise<TicketsUser | un
       u.USR$FULLNAME as FULLNAME,
       ps.USR$SAVEFILTERS as SAVEFILTERS
     FROM USR$CRM_USER u
-      LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$TICKETS_USER_KEY = u.ID
+      LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
     WHERE UPPER(u.USR$USERNAME) = ?
   `;
 

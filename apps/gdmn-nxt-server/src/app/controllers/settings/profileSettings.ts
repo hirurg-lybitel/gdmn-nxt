@@ -58,15 +58,12 @@ const getSettings = async ({
             ps.USR$AVATAR as AVATAR_BLOB,
             ps.USR$MODE as ColorMode,
             ps.USR$LASTVERSION as LASTVERSION,
-            ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS,
+            ps.USR$SEND_EMAIL_NOTIFICATION as SEND_EMAIL_NOTIFICATIONS,
             u.USR$EMAIL as EMAIL,
-            ps.USR$2FA_ENABLED AS ENABLED_2FA,
-            ps.USR$SECRETKEY AS SECRETKEY,
-            ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
-            ps.USR$LAST_IP as LAST_IP,
+            ps.USR$PUSH_NOTIFICATIONS as PUSH_NOTIFICATIONS_ENABLED,
             ps.USR$SAVEFILTERS as SAVEFILTERS
           FROM USR$CRM_USER u
-            LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$TICKETS_USER_KEY = u.ID
+            LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
           WHERE u.ID = :userId`,
           { userId }
         );
@@ -90,8 +87,8 @@ const getSettings = async ({
           };
           r['SEND_EMAIL_NOTIFICATIONS'] = (r['SEND_EMAIL_NOTIFICATIONS'] ?? 0) === 1;
           r['PUSH_NOTIFICATIONS_ENABLED'] = (r['PUSH_NOTIFICATIONS_ENABLED'] ?? 0) === 1;
-          r['ENABLED_2FA'] = r['ENABLED_2FA'] === 1;
-          r['REQUIRED_2FA'] = required2fa;
+          r['ENABLED_2FA'] = false;
+          r['REQUIRED_2FA'] = false;
           r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
           delete r['AVATAR_BLOB'];
         };
@@ -223,22 +220,38 @@ const set: RequestHandler = async (req, res) => {
       );
     }
 
-    const keyFieldName = ticketsUser ? 'USR$TICKETS_USER_KEY' : 'USR$USERKEY';
-
-    const sqlResult = await fetchAsSingletonObject(
-      `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(${keyFieldName}, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS)
+    const sqlResult = await (async () => {
+      if (ticketsUser) {
+        return await fetchAsSingletonObject(
+          `UPDATE OR INSERT INTO USR$CRM_T_USER_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATION, USR$PUSH_NOTIFICATIONS, USR$SAVEFILTERS)
+          VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS)
+          MATCHING(USR$USERKEY)
+          RETURNING ID`,
+          {
+            userId,
+            avatar: blob,
+            colorMode,
+            lastVersion,
+            SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
+            PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
+            SAVEFILTERS: (SAVEFILTERS ? 1 : 0)
+          });
+      }
+      return await fetchAsSingletonObject(
+        `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS)
       VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS)
-      MATCHING(${keyFieldName})
+      MATCHING(USR$USERKEY)
       RETURNING ID`,
-      {
-        userId,
-        avatar: blob,
-        colorMode,
-        lastVersion,
-        SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
-        PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
-        SAVEFILTERS: (SAVEFILTERS ? 1 : 0)
-      });
+        {
+          userId,
+          avatar: blob,
+          colorMode,
+          lastVersion,
+          SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
+          PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
+          SAVEFILTERS: (SAVEFILTERS ? 1 : 0)
+        });
+    })();
 
     const result: IRequestResult = {
       queries: { settings: [sqlResult] },
@@ -292,13 +305,11 @@ const upsertLastIP = async (req: Request, body: { userId: number, ip: string; })
 
   const { ticketsUser } = req.session;
 
-  const keyFiledName = ticketsUser ? 'USR$TICKETS_USER_KEY' : 'USR$USERKEY';
-
   try {
     await executeSingletonAsObject(
-      `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(${keyFiledName}, USR$LAST_IP)
+      `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$LAST_IP)
       VALUES(:userId, :ip)
-      MATCHING(${keyFiledName})`,
+      MATCHING(USR$USERKEY)`,
       { userId, ip }
     );
     return true;
