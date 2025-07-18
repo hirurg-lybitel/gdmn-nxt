@@ -1,0 +1,76 @@
+import { RequestHandler } from 'express';
+import { IRequestResult, UserType } from '@gsbelarus/util-api-types';
+import { ticketsService } from '../service';
+import { resultError } from '@gsbelarus/util-helpers';
+
+const findAll: RequestHandler = async (req, res) => {
+  try {
+    const { id: sessionID } = req.session;
+
+    const ticketsUser = req.user['ticketsUser'];
+
+    const response = await ticketsService.findAll(
+      sessionID,
+      { ...req.query },
+      ticketsUser ? UserType.Tickets : UserType.CRM
+    );
+
+    const result: IRequestResult = {
+      queries: { ...response },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const createTicket: RequestHandler = async (req, res) => {
+  try {
+    const userId = req.user['id'];
+    const tickets = await ticketsService.createTicket(req.sessionID, userId, req.body, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+
+    const result: IRequestResult = {
+      queries: { tickets: [tickets] },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const updateById: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res
+      .status(422)
+      .send(resultError('Field ID is not defined or is not numeric'));
+  }
+
+  try {
+    const updatedTicket = await ticketsService.updateById(
+      req.sessionID,
+      id,
+      req.body,
+      req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM
+    );
+
+    const result: IRequestResult = {
+      queries: { tickets: [updatedTicket] },
+      _params: [{ id }],
+      _schema: {}
+    };
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+export const ticketsController = {
+  findAll,
+  createTicket,
+  updateById
+};

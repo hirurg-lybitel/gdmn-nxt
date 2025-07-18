@@ -680,3 +680,25 @@ export enum UserType {
   Tickets = 'tickets',
   CRM = 'crm'
 };
+
+export interface ITicketUser {
+  id: number,
+  fullName: string;
+  phone?: string,
+  email?: string,
+  avatar?: string;
+}
+
+export interface ITicket {
+  id: number,
+  title: string;
+  companyKey: number,
+  openAt: Date;
+  closeAt?: Date;
+  state: {
+    name: string,
+    code: number;
+  },
+  sender: ITicketUser;
+  message?: string;
+}

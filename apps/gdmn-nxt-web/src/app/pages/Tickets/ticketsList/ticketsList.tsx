@@ -1,13 +1,18 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import { Button, CardContent, Chip, Divider, Theme, Typography, useTheme } from '@mui/material';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Button, CardContent, Chip, Divider, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { useCallback, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { useAddTicketMutation, useGetAllTicketsQuery } from '../../../features/tickets/ticketsApi';
+import { ITicket } from '@gsbelarus/util-api-types';
+import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
+import pluralize from 'libs/util-useful/src/lib/pluralize';
+import TicketEdit from './ticketEdit';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -25,13 +30,6 @@ const closedTickets = Array.from({ length: 19 }, (_, i) => ({
   opened: false,
   state: 3,
 }));
-
-interface ITicket {
-  id: string,
-  title: string,
-  opened: boolean,
-  state: number,
-}
 
 const useStyles = makeStyles((theme: Theme) => ({
   itemTitle: {
@@ -54,44 +52,77 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export function TicketsList(props: ticketsListProps) {
-  const [statusFilter, setStatusFilter] = useState<'opened' | 'closed'>();
+  const [statusFilter, setStatusFilter] = useState<'opened' | 'closed'>('opened');
 
-  const tickets = statusFilter === 'opened' ? openTickets : closedTickets;
+  const { data = [], refetch } = useGetAllTicketsQuery({ active: statusFilter === 'opened' });
+  const [addTicket] = useAddTicketMutation();
+
+  const [openEdit, setOpenEdit] = useState(false);
+
+  const handleSubmit = useCallback((ticket: ITicket, isDelete: boolean) => {
+    setOpenEdit(false);
+    addTicket(ticket);
+  }, [addTicket]);
+
+  const memoEdit = useMemo(() => (
+    <TicketEdit
+      open={openEdit}
+      onSubmit={handleSubmit}
+      onCancelClick={() => setOpenEdit(false)}
+    />
+  ), [handleSubmit, openEdit]);
 
   return (
-    <CustomizedCard style={{ width: '100%' }}>
-      <CustomCardHeader title={'Настройки'} />
-      <Divider />
-      <CardContent style={{ padding: 0 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-          <div style={{ padding: '8px 16px' }}>
-            <div>
-              <Button style={{ gap: '5px', paddingRight: '6px' }} onClick={() => setStatusFilter('opened')}>
-                Активные
-                <Chip label={openTickets.length} size="small" />
-              </Button>
-              <Button style={{ gap: '5px', paddingRight: '6px' }} onClick={() => setStatusFilter('closed')}>
-                Зарешенные
-                <Chip
-                  label={closedTickets.length}
-                  size="small"
-                />
-              </Button>
+    <>
+      {memoEdit}
+      <CustomizedCard style={{ width: '100%' }}>
+        <CustomCardHeader
+          title={'Настройки'}
+          addButton
+          addButtonHint="Создать тикет"
+          onAddClick={() => setOpenEdit(true)}
+        />
+        <Divider />
+        <CardContent style={{ padding: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+            <div style={{ padding: '8px 16px' }}>
+              <div>
+                <Button
+                  sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: statusFilter === 'closed' ? theme.palette.text.primary : undefined })}
+                  onClick={() => setStatusFilter('opened')}
+                >
+                  Активные
+                  <Chip label={openTickets.length} size="small" />
+                </Button>
+                <Button
+                  sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: statusFilter === 'opened' ? theme.palette.text.primary : undefined })}
+                  onClick={() => setStatusFilter('closed')}
+                >
+                  Завершенные
+                  <Chip
+                    label={closedTickets.length}
+                    size="small"
+                  />
+                </Button>
+                <Button onClick={refetch}>
+                  refresh
+                </Button>
+              </div>
+            </div>
+            <Divider />
+            <div style={{ overflow: 'auto', position: 'relative', flex: 1, width: '100%' }}>
+              <div style={{ position: 'absolute', inset: 0 }}>
+                {data.map((item, index) => <Item
+                  key={item.id}
+                  {...item}
+                  last={false}
+                />)}
+              </div>
             </div>
           </div>
-          <Divider />
-          <div style={{ overflow: 'auto', position: 'relative', flex: 1, width: '100%' }}>
-            <div style={{ position: 'absolute', inset: 0 }}>
-              {tickets.map((item, index) => <Item
-                key={item.id}
-                {...item}
-                last={tickets.length - 1 === index}
-              />)}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </CustomizedCard>
+        </CardContent>
+      </CustomizedCard>
+    </>
   );
 }
 
@@ -99,8 +130,41 @@ interface IItemProps extends ITicket {
   last: boolean;
 }
 
-const Item = ({ id, title, state, last }: IItemProps) => {
+const Item = ({ id, title, state, last, sender, openAt }: IItemProps) => {
   const classes = useStyles();
+
+  function timeAgo(date: Date): string {
+    const now = new Date();
+    const openAt = new Date(date);
+    const diffMs = now.getTime() - openAt.getTime();
+
+    const sec = Math.floor(diffMs / 1000);
+    const min = Math.floor(sec / 60);
+    const hour = Math.floor(min / 60);
+    const day = Math.floor(hour / 24);
+    const month = Math.floor(day / 30);
+    const year = Math.floor(month / 12);
+
+    if (sec < 60) return `${sec} ${pluralize(sec, 'секунду', 'секунды', 'секунд')} назад`;
+    if (min < 60) return `${min} ${pluralize(min, 'минуту', 'минуты', 'минут')} назад`;
+    if (hour < 24) return `${hour} ${pluralize(hour, 'час', 'часа', 'часов')} назад`;
+    if (day < 30) return `${day} ${pluralize(day, 'день', 'дня', 'дней')} назад`;
+    if (month < 12) return `${month} ${pluralize(month, 'месяц', 'месяца', 'месяцев')} назад`;
+    return `${year} ${pluralize(year, 'год', 'года', 'лет')} назад`;
+  }
+
+  function formatDate(dateString: Date): string {
+    const date = new Date(dateString);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1); // месяцы от 0
+    const year = date.getFullYear();
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  }
 
   const iconByStage = (stage: number) => {
     switch (stage) {
@@ -118,16 +182,33 @@ const Item = ({ id, title, state, last }: IItemProps) => {
 
   return (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '8px 16px', borderBottom: last ? 'none' : '1px solid var(--color-grid-borders)' }}>
-      {iconByStage(state)}
+      {iconByStage(state.code)}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Link to={id} className={classes.itemTitle} >
+        <Link to={id + ''} className={classes.itemTitle} >
           {title}
         </Link>
         <Typography variant="caption" color="text.secondary">
           # {id}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Отрыт: <span className={classes.openBy}>Иван иванов иванович</span>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          style={{ display: 'flex', gap: '5px' }}
+        >
+          Открыт
+          <UserTooltip
+            name={sender.fullName}
+            phone={sender.phone}
+            email={sender.email}
+            avatar={sender.avatar}
+          >
+            <div className={classes.openBy}>{sender.fullName}</div>
+          </UserTooltip>
+          <Tooltip arrow title={formatDate(openAt)}>
+            <div>
+              {timeAgo(openAt)}
+            </div>
+          </Tooltip>
         </Typography>
       </div>
     </div >

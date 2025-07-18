@@ -15,4 +15,5 @@ export interface IUserProfile {
   colorMode?: string;
   fullName?: string;
   ticketsUser?: boolean;
+  companyKey?: number;
 };

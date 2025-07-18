@@ -13,6 +13,7 @@ const ticketsUserRoutes = [
   'security/closeSessionBySessionId',
   'filters',
   'filters/menu',
+  'tickets',
 ];
 
 export const checkPermissions: RequestHandler = (req, res, next) => {

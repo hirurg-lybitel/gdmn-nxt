@@ -54,6 +54,7 @@ import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
 import { securityRouter } from './app/routes/security';
 import { dealFeedbackRouter } from './app/routes/dealFeedbackRouter';
+import { ticketsRouter } from './app/routes/ticketsRouter';
 
 const COOKIE_AGE = 24 * 60 * 60 * 1000;
 
@@ -201,7 +202,8 @@ passport.use(new Strategy(
             id: res.userProfile.id,
             email: res.userProfile.email,
             permissions: userPermissions,
-            ticketsUser: true
+            ticketsUser: true,
+            companyKey: res.userProfile.companyKey
           });
         }
         console.log('Invalid tickets user', { userName, password });
@@ -436,6 +438,7 @@ router.use(filtersRouter);
 router.use(customerFeedbackRouter);
 router.use(dealFeedbackRouter);
 router.use(timeTrackingRouter);
+router.use(ticketsRouter);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;

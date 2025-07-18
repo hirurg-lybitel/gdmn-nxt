@@ -72,7 +72,8 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
       USR$USERNAME,
       USR$PASSWORD,
       USR$EMAIL,
-      USR$DISABLED
+      DISABLED,
+      USR$COMPANYKEY
     FROM USR$CRM_USER
     WHERE UPPER(USR$USERNAME) = ?
   `;
@@ -84,7 +85,7 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
       const data = await rs.fetchAsObject();
 
       if (data.length === 1) {
-        if (data[0]['USR$DISABLED']) {
+        if (data[0]['DISABLED'] === 1) {
           return {
             result: 'ACCESS_DENIED'
           };
@@ -102,7 +103,8 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
             id: data[0]['ID'],
             userName: data[0]['USR$USERNAME'],
             email: data[0]['USR$EMAIL'],
-            ticketsUser: true
+            ticketsUser: true,
+            companyKey: data[0]['USR$COMPANYKEY']
           }
         };
       } else if (!data.length) {
