@@ -5,8 +5,6 @@ const router = express.Router();
 
 router.get('/tickets', ticketsController.findAll);
 router.post('/tickets', ticketsController.createTicket);
-// router.get('/tickets/:entityName', filtersController.findAll);
-// router.put('/tickets/:id', filtersController.updateById);
-// router.delete('/tickets/:id', filtersController.removeById);
+router.put('/tickets/:id', ticketsController.updateById);
 
 export const ticketsRouter = router;
