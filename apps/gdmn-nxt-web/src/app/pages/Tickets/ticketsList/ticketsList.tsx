@@ -1,7 +1,7 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import { Button, CardContent, Chip, Divider, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { Button, CardContent, Chip, Divider, Skeleton, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 export function TicketsList(props: ticketsListProps) {
   const [statusFilter, setStatusFilter] = useState<'opened' | 'closed'>('opened');
 
-  const { data = [], refetch } = useGetAllTicketsQuery({ active: statusFilter === 'opened' });
+  const { data, refetch, isLoading, isFetching } = useGetAllTicketsQuery({ active: statusFilter === 'opened' });
   const [addTicket] = useAddTicketMutation();
 
   const [openEdit, setOpenEdit] = useState(false);
@@ -112,11 +112,26 @@ export function TicketsList(props: ticketsListProps) {
             <Divider />
             <div style={{ overflow: 'auto', position: 'relative', flex: 1, width: '100%' }}>
               <div style={{ position: 'absolute', inset: 0 }}>
-                {data.map((item, index) => <Item
-                  key={item.id}
-                  {...item}
-                  last={false}
-                />)}
+                {(data && !isLoading && !isFetching) ?
+                  data.length > 0 ? data.map((item, index) => (
+                    <Item
+                      key={item.id}
+                      {...item}
+                      last={false}
+                    />
+                  ))
+                    : <h2 style={{ textAlign: 'center', opacity: '0.2', userSelect: 'none' }}>Нет тикетов</h2>
+                  : Array.from({ length: 25 }, (_, index) => {
+                    return (
+                      <Skeleton
+                        key={index}
+                        height={83}
+                        style={{ marginBottom: '2px' }}
+                        variant="rectangular"
+                      />
+                    );
+                  })
+                }
               </div>
             </div>
           </div>

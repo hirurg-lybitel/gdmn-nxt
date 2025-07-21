@@ -10,7 +10,7 @@ interface IUserTooltipProps extends Omit<TooltipProps, 'title'> {
   avatar?: string;
 }
 
-export default function UserTooltip({ name, phone, email, avatar, ...rest }: IUserTooltipProps) {
+export default function UserTooltip({ name, phone, email, avatar, ...rest }: Readonly<IUserTooltipProps>) {
   return (
     <Tooltip
       {...rest}
@@ -22,7 +22,7 @@ export default function UserTooltip({ name, phone, email, avatar, ...rest }: IUs
               src={avatar}
             />
             <div style={{ fontSize: '14px' }}>
-              Тест тестов тестович
+              {name}
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

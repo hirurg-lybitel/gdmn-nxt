@@ -27,6 +27,20 @@ const findAll = async (
   }
 };
 
+const findOne = async (
+  sessionID: string,
+  id: string,
+  type: UserType
+) => {
+  try {
+    const ticket = await ticketsRepository.findOne(sessionID, { id }, type);
+
+    return ticket;
+  } catch (error) {
+    throw InternalServerErrorException(error.message);
+  }
+};
+
 const createTicket = async (
   sessionID: string,
   userId: number,
@@ -47,15 +61,15 @@ const createTicket = async (
 const updateById = async (
   sessionID: string,
   id: number,
-  body: Omit<IFilter, 'ID'>,
+  body: Omit<ITicket, 'ID'>,
   type: UserType
 ) => {
   try {
     const updatedTicket = await ticketsRepository.update(sessionID, id, body, type);
-    if (!updatedTicket?.ID) {
+    if (!updatedTicket?.id) {
       throw NotFoundException(`Не найден тикет с id=${id}`);
     }
-    const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.ID }, type);
+    const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.id }, type);
 
     return ticket;
   } catch (error) {
@@ -66,5 +80,6 @@ const updateById = async (
 export const ticketsService = {
   findAll,
   createTicket,
-  updateById
+  updateById,
+  findOne
 };

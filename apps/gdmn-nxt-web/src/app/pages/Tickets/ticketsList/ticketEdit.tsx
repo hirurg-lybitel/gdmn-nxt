@@ -1,12 +1,13 @@
-import { Stack, TextField, useTheme } from '@mui/material';
+import { Stack, TextField } from '@mui/material';
 import { useCallback, useEffect, } from 'react';
-import { ITicket, Permissions } from '@gsbelarus/util-api-types';
+import { ITicket } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
 import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
+import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -14,6 +15,9 @@ export interface ITicketEditProps {
   onSubmit: (ticket: ITicket, isDelete: boolean) => void;
   onCancelClick: () => void;
 };
+
+const maxFileSize = 4 * 1024 * 1024; // 4MB
+const maxFilesCount = 10;
 
 export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const { open, ticket } = props;
@@ -33,7 +37,8 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
       id: ticket?.sender?.id ?? user.userProfile?.id ?? -1,
       fullName: ticket?.sender?.fullName ?? user.userProfile?.fullName ?? ''
     },
-    message: ''
+    message: '',
+    files: []
   };
 
   const formik = useFormik<ITicket>({
@@ -63,6 +68,32 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const handleDelete = useCallback(() => {
     onSubmit(formik.values, true);
   }, [formik.values, onSubmit]);
+
+  const attachmentsChange = useCallback(async (files: File[]) => {
+    const promises = files.map(file => {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.readAsDataURL(file);
+        reader.onerror = () => {
+          reader.abort();
+          reject(new DOMException('Problem parsing input file.'));
+        };
+        reader.onloadend = (e) => {
+          const stringFile = reader.result?.toString() ?? '';
+          resolve({
+            fileName: file.name,
+            content: stringFile
+          });
+        };
+      });
+    });
+
+    const attachments = await Promise.all(promises);
+    if (JSON.stringify(formik.values.files) === JSON.stringify(attachments)) {
+      return;
+    }
+    formik.setFieldValue('files', attachments);
+  }, [formik]);
 
   return (
     <EditDialog
@@ -111,6 +142,12 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
               value={formik.values.message}
               error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
               helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
+            />
+            <Dropzone
+              maxFileSize={maxFileSize}
+              filesLimit={maxFilesCount}
+              showPreviews
+              onChange={attachmentsChange}
             />
           </Stack>
         </Form>

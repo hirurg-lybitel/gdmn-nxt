@@ -2,7 +2,8 @@ import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket } fr
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
-export type ITicketRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
+export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
+export type ITicketRequestResult = IRequestResult<{ ticket: ITicket; }>;
 
 export const ticketsApi = createApi({
   reducerPath: 'tickets',
@@ -18,10 +19,19 @@ export const ticketsApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: ITicketRequestResult) => response.queries?.tickets || null,
+      transformResponse: (response: ITicketsRequestResult) => response.queries?.tickets || null,
       providesTags: ['tickets']
     }),
-    addTicket: builder.mutation<ITicketRequestResult, ITicket>({
+    getTicketById: builder.query<ITicket, string>({
+      query: (options) => {
+        return {
+          url: `tickets/${options}`,
+          method: 'GET'
+        };
+      },
+      providesTags: ['tickets']
+    }),
+    addTicket: builder.mutation<ITicketsRequestResult, ITicket>({
       query: (body) => ({
         url: 'tickets',
         body: body,
@@ -62,5 +72,6 @@ export const ticketsApi = createApi({
 
 export const {
   useGetAllTicketsQuery,
-  useAddTicketMutation
+  useAddTicketMutation,
+  useGetTicketByIdQuery
 } = ticketsApi;

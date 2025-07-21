@@ -1,6 +1,6 @@
+import { ticketsService } from './../service/index';
 import { RequestHandler } from 'express';
 import { IRequestResult, UserType } from '@gsbelarus/util-api-types';
-import { ticketsService } from '../service';
 import { resultError } from '@gsbelarus/util-helpers';
 
 const findAll: RequestHandler = async (req, res) => {
@@ -21,6 +21,16 @@ const findAll: RequestHandler = async (req, res) => {
     };
 
     return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const findOne: RequestHandler = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const ticket = await ticketsService.findOne(req.sessionID, id, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    return res.status(200).json(ticket);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
   }
@@ -72,5 +82,6 @@ const updateById: RequestHandler = async (req, res) => {
 export const ticketsController = {
   findAll,
   createTicket,
-  updateById
+  updateById,
+  findOne
 };

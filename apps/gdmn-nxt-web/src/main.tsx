@@ -63,6 +63,7 @@ import Expenses from './app/pages/Analytics/UserReports/expenses/expenses';
 import Debts from './app/pages/Analytics/UserReports/debts/debts';
 import Revenue from './app/pages/Analytics/UserReports/revenue/revenue';
 import TicketsList from './app/pages/Tickets/ticketsList/ticketsList';
+import TicketChat from './app/pages/Tickets/ticketChat/ticketChat';
 
 registerMUI();
 
@@ -126,6 +127,7 @@ const Main = () => {
                             <Route path="tickets" element={<MainLayout />}>
                               <Route path="" element={<Navigate to="list" />} />
                               <Route path="list" element={<TicketsList />} />
+                              <Route path="list/:id" element={<TicketChat />} />
                               <Route path="settings">
                                 <Route path="" element={<Navigate to="account" />} />
                                 {TABS.map((tab) => (

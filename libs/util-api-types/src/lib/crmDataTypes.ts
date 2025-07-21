@@ -701,4 +701,5 @@ export interface ITicket {
   },
   sender: ITicketUser;
   message?: string;
+  files?: File[];
 }
