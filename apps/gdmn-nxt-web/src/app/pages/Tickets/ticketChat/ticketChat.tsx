@@ -92,7 +92,7 @@ const FilesView = ({ files, onDelete }: { files: IFIle[], onDelete?: (index: num
                 >
                   <div >
                     <div style={{ background: 'rgb(0 0 0 / 40%)' }}>
-                      {onDelete && <IconButton onClick={() => onDelete(index + index2)}>
+                      {onDelete && <IconButton color="secondary" onClick={() => onDelete(index + index2)}>
                         <DeleteIcon />
                       </IconButton>}
                     </div>
@@ -386,13 +386,12 @@ const UserMessage = ({ user, files, message }: IUserMessage) => {
       {senderMessage && avatar}
       <div
         style={{
-          background: theme.palette.primary.main,
-          color: theme.palette.primary.contrastText, borderRadius: '14px',
+          background: 'var(--color-card-bg)', borderRadius: '14px',
           zIndex: 1, maxWidth: '45%', minWidth: '300px', overflow: 'hidden',
           ...(senderMessage ? { borderEndStartRadius: 0, marginLeft: '10px' } : { borderEndEndRadius: 0, marginRight: '10px' })
         }}
       >
-        <div style={{ background: theme.palette.background.paper }}>
+        <div style={{ background: 'var(--color-card-bg)' }}>
           {memoFiles}
         </div>
         {message && <div style={{ padding: '5px 10px' }}>
@@ -410,7 +409,7 @@ const UserMessage = ({ user, files, message }: IUserMessage) => {
         />
         <div
           style={{
-            background: theme.palette.primary.main, position: 'absolute', height: '10px', bottom: '0', width: '30px',
+            background: 'var(--color-card-bg)', position: 'absolute', height: '10px', bottom: '0', width: '30px',
             ...(senderMessage ? { left: '32px' } : { right: '32px' })
           }}
         />
