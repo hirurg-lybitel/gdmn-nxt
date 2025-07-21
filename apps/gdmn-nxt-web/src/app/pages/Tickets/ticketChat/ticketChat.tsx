@@ -237,7 +237,7 @@ export default function TicketChat(props: ITicketChatProps) {
   const fileFialog = useMemo(() => {
     return (
       <Dialog open={files.length > 0}>
-        <div style={{ padding: '16px', paddingTop: '8px', minWidth: '400px', maxHeight: 'calc(100% - 64px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '16px', paddingTop: '8px', minWidth: '400px', maxHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h6">
             Отправка файлов
           </Typography>
