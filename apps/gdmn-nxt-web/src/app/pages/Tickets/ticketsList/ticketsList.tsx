@@ -104,9 +104,6 @@ export function TicketsList(props: ticketsListProps) {
                     size="small"
                   />
                 </Button>
-                <Button onClick={refetch}>
-                  refresh
-                </Button>
               </div>
             </div>
             <Divider />
