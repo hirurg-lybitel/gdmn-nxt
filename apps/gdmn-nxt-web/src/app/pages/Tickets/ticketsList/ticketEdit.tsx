@@ -24,8 +24,6 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const { open, ticket } = props;
   const { onSubmit, onCancelClick } = props;
   const user = useSelector<RootState, UserState>(state => state.user);
-  const { data: states } = useGetAllTicketsStatesQuery();
-  const defaultState = states?.find(state => state.code === 1);
 
   const initValue: ITicket = {
     ID: ticket?.ID ?? -1,
@@ -33,14 +31,15 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     companyKey: ticket?.companyKey ?? user.userProfile?.companyKey ?? -1,
     openAt: ticket?.openAt ? new Date(ticket?.openAt) : new Date(),
     state: {
-      ID: ticket?.state?.ID ?? defaultState?.ID ?? -1,
-      name: ticket?.state?.name ?? defaultState?.name ?? '',
-      code: ticket?.state?.code ?? defaultState?.code ?? 0
+      ID: ticket?.state?.ID ?? -1,
+      name: ticket?.state?.name ?? '',
+      code: ticket?.state?.code ?? 0
     },
     sender: {
-      id: ticket?.sender?.id ?? user.userProfile?.id ?? -1,
+      ID: ticket?.sender?.ID ?? user.userProfile?.id ?? -1,
       fullName: ticket?.sender?.fullName ?? user.userProfile?.fullName ?? ''
     },
+    needCall: ticket?.needCall ?? false,
     message: '',
     files: []
   };
@@ -147,12 +146,12 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
               error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
               helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
             />
-            <Dropzone
+            {/* <Dropzone
               maxFileSize={maxFileSize}
               filesLimit={maxFilesCount}
               showPreviews
               onChange={attachmentsChange}
-            />
+            /> */}
           </Stack>
         </Form>
       </FormikProvider>

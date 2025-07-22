@@ -1,6 +1,7 @@
 import { IFilter, InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket } from '@gsbelarus/util-api-types';
 import { ticketsRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
+import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
 
 const findAll = async (
   sessionID: string,
@@ -49,8 +50,18 @@ const createTicket = async (
 ) => {
   try {
     const newTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
-    console.log(newTicket);
     const ticket = await ticketsRepository.findOne(sessionID, { id: newTicket.ID }, type);
+
+    const newMessage = await ticketsMessagesService.createMessage(
+      sessionID,
+      userId,
+      {
+        body: body.message,
+        ticketKey: ticket.ID,
+        state: ticket.state
+      },
+      type
+    );
 
     return ticket;
   } catch (error) {

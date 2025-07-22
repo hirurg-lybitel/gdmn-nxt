@@ -681,8 +681,7 @@ export enum UserType {
   CRM = 'crm'
 };
 
-export interface ITicketUser {
-  id: number,
+export interface ITicketUser extends IWithID {
   fullName: string;
   phone?: string,
   email?: string,
@@ -701,6 +700,14 @@ export interface ITicket extends IWithID {
   closeAt?: Date;
   state: ITicketState,
   sender: ITicketUser;
+  needCall: boolean;
   message?: string;
   files?: File[];
+}
+
+export interface ITicketMessage extends IWithID {
+  body: string,
+  ticketKey: number,
+  user: ITicketUser & { type: 'empl' | 'user'; },
+  state: ITicketState;
 }

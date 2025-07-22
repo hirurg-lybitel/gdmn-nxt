@@ -14,7 +14,9 @@ const ticketsUserRoutes = [
   'filters',
   'filters/menu',
   'tickets',
-  'tickets-states'
+  'tickets/byId',
+  'tickets/states',
+  'tickets/messages'
 ];
 
 export const checkPermissions: RequestHandler = (req, res, next) => {

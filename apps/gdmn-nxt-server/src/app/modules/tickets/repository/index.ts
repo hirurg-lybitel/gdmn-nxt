@@ -1,4 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
 import { FindHandler, FindOneHandler, FindOperator, ITicket, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { bin2String } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
@@ -40,6 +41,7 @@ const find: FindHandler<ITicket> = async (
         t.USR$USERKEY,
         t.USR$OPENAT,
         t.USR$CLOSEAT,
+        t.USR$NEEDCALL,
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE,
@@ -72,12 +74,13 @@ const find: FindHandler<ITicket> = async (
           code: data['STATE_CODE']
         },
         sender: {
-          id: data['USER_ID'],
+          ID: data['USER_ID'],
           fullName: data['USER_NAME'],
           phone: data['USER_PHONE'],
           email: data['USER_EMAIL'],
           avatar
-        }
+        },
+        needCall: data['USR$NEEDCALL'] === 1
       };
     }));
 
@@ -110,16 +113,21 @@ const save: SaveHandler<ITicketSave> = async (
 
   const { title, companyKey, userId, openAt } = metadata;
 
+  const ticketStates = await ticketsStateRepository.find(sessionID);
+
+  const openState = ticketStates.find(state => state.code === 0);
+
   try {
     const ticket = await fetchAsSingletonObject<ITicketSave>(
-      `INSERT INTO USR$CRM_TICKET(USR$TITLE,USR$COMPANYKEY,USR$USERKEY,USR$OPENAT)
-      VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT)
+      `INSERT INTO USR$CRM_TICKET(USR$TITLE,USR$COMPANYKEY,USR$USERKEY,USR$OPENAT,USR$STATE)
+      VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT,:STATEID)
       RETURNING ID`,
       {
         TITLE: title,
         COMPANYKEY: companyKey,
         USERKEY: userId,
-        OPENAT: new Date(openAt)
+        OPENAT: new Date(openAt),
+        STATEID: openState.ID
       }
     );
 
@@ -145,20 +153,23 @@ const update: UpdateHandler<ITicket> = async (
 
     const {
       title,
-      openAt
+      openAt,
+      needCall
     } = metadata;
 
     const updatedTicket = await fetchAsSingletonObject<ITicket>(
       `UPDATE USR$CRM_TICKET
         SET
           USR$TITLE = :TITLE,
-          USR$OPENAT = :OPENAT
+          USR$OPENAT = :OPENAT,
+          USR$NEEDCALL = :NEEDCALL
         WHERE
           ID = :ID
         RETURNING ID`,
       {
         TITLE: title,
         OPENAT: new Date(openAt),
+        NEEDCALL: needCall,
         ID
       }
     );

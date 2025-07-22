@@ -1,21 +1,22 @@
-import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
 export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
-export type ITicketsStatesRequestResult = IRequestResult<{ ticketsStates: ITicketState[]; }>;
+export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicketState[]; }>;
+export type ITicketMessagesRequestResult = IRequestResult<{ messages: ITicketMessage[]; }>;
 
 export const ticketsApi = createApi({
   reducerPath: 'tickets',
   tagTypes: ['tickets', 'ticketsStates'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'tickets', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<ITicket[], Partial<{ active: boolean; } & IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
         return {
-          url: `tickets${params ? `?${params}` : ''}`,
+          url: `${params ? `?${params}` : ''}`,
           method: 'GET'
         };
       },
@@ -25,15 +26,23 @@ export const ticketsApi = createApi({
     getTicketById: builder.query<ITicket, string>({
       query: (options) => {
         return {
-          url: `tickets/${options}`,
+          url: `/byId/${options}`,
           method: 'GET'
         };
       },
       providesTags: ['tickets']
     }),
+    updateTicket: builder.mutation<ITicket, Partial<ITicket>>({
+      query: ({ ID, ...body }) => ({
+        url: `/${ID}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: () => ['tickets']
+    }),
     addTicket: builder.mutation<ITicketsRequestResult, ITicket>({
       query: (body) => ({
-        url: 'tickets',
+        url: '',
         body: body,
         method: 'POST'
       }),
@@ -42,21 +51,42 @@ export const ticketsApi = createApi({
     getAllTicketsStates: builder.query<ITicketState[], void>({
       query: (options) => {
         return {
-          url: 'tickets-states',
+          url: '/states',
           method: 'GET'
         };
       },
-      transformResponse: (response: ITicketsStatesRequestResult) => response.queries?.ticketsStates || null,
+      transformResponse: (response: ITicketsStatesRequestResult) => response.queries?.ticketStates || null,
       providesTags: ['ticketsStates']
     }),
     getTicketStateById: builder.query<ITicketState, string>({
       query: (options) => {
         return {
-          url: `tickets-states/${options}`,
+          url: `/states/${options}`,
           method: 'GET'
         };
       },
       providesTags: ['ticketsStates']
+    }),
+    getAllTicketMessages: builder.query<ITicketMessage[], Partial<{ id: string; } & IQueryOptions>>({
+      query: (options) => {
+        const { id } = options;
+        const params = queryOptionsToParamsString(options);
+
+        return {
+          url: `/messages/${id}${params ? `?${params}` : ''}`,
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: ITicketMessagesRequestResult) => response.queries?.messages || null,
+      providesTags: ['tickets']
+    }),
+    addTicketMessage: builder.mutation<ITicketsRequestResult, Partial<ITicketMessage>>({
+      query: (body) => ({
+        url: '/messages',
+        body: body,
+        method: 'POST'
+      }),
+      invalidatesTags: ['tickets']
     }),
     // getFilterByEntityName: builder.query<IFilter, string>({
     //   query: (entityName) => `filters/${entityName}`,
@@ -94,5 +124,8 @@ export const {
   useAddTicketMutation,
   useGetTicketByIdQuery,
   useGetAllTicketsStatesQuery,
-  useGetTicketStateByIdQuery
+  useGetTicketStateByIdQuery,
+  useGetAllTicketMessagesQuery,
+  useAddTicketMessageMutation,
+  useUpdateTicketMutation
 } = ticketsApi;

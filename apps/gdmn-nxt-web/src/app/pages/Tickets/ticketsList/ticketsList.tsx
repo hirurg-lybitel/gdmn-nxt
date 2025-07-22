@@ -1,18 +1,21 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import { Button, CardContent, Chip, Divider, Skeleton, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { Button, CardContent, Chip, Divider, Skeleton, Theme, Tooltip, Typography } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { useAddTicketMutation, useGetAllTicketsQuery, useGetAllTicketsStatesQuery } from '../../../features/tickets/ticketsApi';
+import { useAddTicketMutation, useGetAllTicketsQuery } from '../../../features/tickets/ticketsApi';
 import { ITicket } from '@gsbelarus/util-api-types';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import TicketEdit from './ticketEdit';
+import { UserState } from '../../../features/user/userSlice';
+import { RootState } from '@gdmn-nxt/store';
+import { useSelector } from 'react-redux';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -54,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 export function TicketsList(props: ticketsListProps) {
   const [statusFilter, setStatusFilter] = useState<'opened' | 'closed'>('opened');
 
-  const { data, refetch, isLoading, isFetching } = useGetAllTicketsQuery({ active: statusFilter === 'opened' });
+  const { data, isLoading, isFetching } = useGetAllTicketsQuery({ active: statusFilter === 'opened' });
 
   const [addTicket] = useAddTicketMutation();
 
@@ -143,8 +146,10 @@ interface IItemProps extends ITicket {
   last: boolean;
 }
 
-const Item = ({ ID, title, state, last, sender, openAt }: IItemProps) => {
+const Item = ({ ID, title, last, sender, openAt, closeAt }: IItemProps) => {
   const classes = useStyles();
+
+  const user = useSelector<RootState, UserState>(state => state.user);
 
   function timeAgo(date: Date): string {
     const now = new Date();
@@ -179,23 +184,30 @@ const Item = ({ ID, title, state, last, sender, openAt }: IItemProps) => {
     return `${day}.${month}.${year} ${hours}:${minutes}`;
   }
 
-  const iconByStage = (stage: number) => {
-    switch (stage) {
-      case 1: return (
-        <AdjustIcon color={'success'} />
-      );
-      case 2: return (
-        <ErrorOutlineIcon color={'warning'} />
-      );
-      default: return (
-        <CheckCircleOutlineIcon color={'primary'} />
-      );
+  const ticketIcon = useMemo(() => {
+    const startDate = new Date(openAt);
+    const now = new Date();
+
+    const msInDay = 1000 * 60 * 60 * 24;
+    const daysLeft = Math.floor((now.getTime() - startDate.getTime()) / msInDay);
+
+    if (closeAt) {
+      return <CheckCircleOutlineIcon color={'primary'} />;
     }
-  };
+    if (!user.userProfile?.ticketsUser) {
+      if (daysLeft === 1) {
+        return <ErrorOutlineIcon color={'warning'} />;
+      }
+      if (daysLeft > 1) {
+        return <ErrorOutlineIcon color={'error'} />;
+      }
+    }
+    return <AdjustIcon color={'success'} />;
+  }, [closeAt, openAt, user.userProfile?.ticketsUser]);
 
   return (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '8px 16px', borderBottom: last ? 'none' : '1px solid var(--color-grid-borders)' }}>
-      {iconByStage(state.code)}
+      {ticketIcon}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <Link to={ID + ''} className={classes.itemTitle} >
           {title}
