@@ -50,7 +50,7 @@ const createTicket = async (
   try {
     const newTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
     console.log(newTicket);
-    const ticket = await ticketsRepository.findOne(sessionID, { id: newTicket.id }, type);
+    const ticket = await ticketsRepository.findOne(sessionID, { id: newTicket.ID }, type);
 
     return ticket;
   } catch (error) {
@@ -66,10 +66,10 @@ const updateById = async (
 ) => {
   try {
     const updatedTicket = await ticketsRepository.update(sessionID, id, body, type);
-    if (!updatedTicket?.id) {
+    if (!updatedTicket?.ID) {
       throw NotFoundException(`Не найден тикет с id=${id}`);
     }
-    const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.id }, type);
+    const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.ID }, type);
 
     return ticket;
   } catch (error) {

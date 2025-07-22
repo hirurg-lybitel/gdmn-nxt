@@ -8,7 +8,7 @@ import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { useAddTicketMutation, useGetAllTicketsQuery } from '../../../features/tickets/ticketsApi';
+import { useAddTicketMutation, useGetAllTicketsQuery, useGetAllTicketsStatesQuery } from '../../../features/tickets/ticketsApi';
 import { ITicket } from '@gsbelarus/util-api-types';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
@@ -55,6 +55,7 @@ export function TicketsList(props: ticketsListProps) {
   const [statusFilter, setStatusFilter] = useState<'opened' | 'closed'>('opened');
 
   const { data, refetch, isLoading, isFetching } = useGetAllTicketsQuery({ active: statusFilter === 'opened' });
+
   const [addTicket] = useAddTicketMutation();
 
   const [openEdit, setOpenEdit] = useState(false);
@@ -112,7 +113,7 @@ export function TicketsList(props: ticketsListProps) {
                 {(data && !isLoading && !isFetching) ?
                   data.length > 0 ? data.map((item, index) => (
                     <Item
-                      key={item.id}
+                      key={item.ID}
                       {...item}
                       last={false}
                     />
@@ -142,7 +143,7 @@ interface IItemProps extends ITicket {
   last: boolean;
 }
 
-const Item = ({ id, title, state, last, sender, openAt }: IItemProps) => {
+const Item = ({ ID, title, state, last, sender, openAt }: IItemProps) => {
   const classes = useStyles();
 
   function timeAgo(date: Date): string {
@@ -196,11 +197,11 @@ const Item = ({ id, title, state, last, sender, openAt }: IItemProps) => {
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '8px 16px', borderBottom: last ? 'none' : '1px solid var(--color-grid-borders)' }}>
       {iconByStage(state.code)}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Link to={id + ''} className={classes.itemTitle} >
+        <Link to={ID + ''} className={classes.itemTitle} >
           {title}
         </Link>
         <Typography variant="caption" color="text.secondary">
-          # {id}
+          # {ID}
         </Typography>
         <Typography
           variant="caption"

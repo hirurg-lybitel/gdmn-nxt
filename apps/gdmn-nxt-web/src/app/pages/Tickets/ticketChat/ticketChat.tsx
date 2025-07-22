@@ -297,7 +297,7 @@ export default function TicketChat(props: ITicketChatProps) {
               {data?.title}
             </Typography>
             <Typography variant="caption">
-              {data?.id}
+              {data?.ID}
             </Typography>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }} >

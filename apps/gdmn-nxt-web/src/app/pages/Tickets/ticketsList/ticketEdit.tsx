@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import { useGetAllTicketsStatesQuery } from '../../../features/tickets/ticketsApi';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -23,15 +24,18 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const { open, ticket } = props;
   const { onSubmit, onCancelClick } = props;
   const user = useSelector<RootState, UserState>(state => state.user);
+  const { data: states } = useGetAllTicketsStatesQuery();
+  const defaultState = states?.find(state => state.code === 1);
 
   const initValue: ITicket = {
-    id: ticket?.id ?? -1,
+    ID: ticket?.ID ?? -1,
     title: ticket?.title ?? '',
     companyKey: ticket?.companyKey ?? user.userProfile?.companyKey ?? -1,
     openAt: ticket?.openAt ? new Date(ticket?.openAt) : new Date(),
     state: {
-      name: ticket?.state?.name ?? '',
-      code: ticket?.state?.code ?? 1
+      ID: ticket?.state?.ID ?? defaultState?.ID ?? -1,
+      name: ticket?.state?.name ?? defaultState?.name ?? '',
+      code: ticket?.state?.code ?? defaultState?.code ?? 0
     },
     sender: {
       id: ticket?.sender?.id ?? user.userProfile?.id ?? -1,

@@ -689,16 +689,17 @@ export interface ITicketUser {
   avatar?: string;
 }
 
-export interface ITicket {
-  id: number,
+export interface ITicketState extends IWithID {
+  name: string,
+  code: number;
+}
+
+export interface ITicket extends IWithID {
   title: string;
   companyKey: number,
   openAt: Date;
   closeAt?: Date;
-  state: {
-    name: string,
-    code: number;
-  },
+  state: ITicketState,
   sender: ITicketUser;
   message?: string;
   files?: File[];

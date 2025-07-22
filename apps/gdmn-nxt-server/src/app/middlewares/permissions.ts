@@ -14,6 +14,7 @@ const ticketsUserRoutes = [
   'filters',
   'filters/menu',
   'tickets',
+  'tickets-states'
 ];
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
@@ -31,7 +32,6 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
   if (ticketsUser) {
     for (const name of ticketsUserRoutes) {
       const regEx = new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\w-]*$`);
-
       if (regEx.test(url.split('?')[0])) return next();
     }
     return res.status(403).send(resultError('У вас недостаточно прав'));

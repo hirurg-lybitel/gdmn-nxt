@@ -1,13 +1,13 @@
-import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
 export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
-export type ITicketRequestResult = IRequestResult<{ ticket: ITicket; }>;
+export type ITicketsStatesRequestResult = IRequestResult<{ ticketsStates: ITicketState[]; }>;
 
 export const ticketsApi = createApi({
   reducerPath: 'tickets',
-  tagTypes: ['tickets'],
+  tagTypes: ['tickets', 'ticketsStates'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<ITicket[], Partial<{ active: boolean; } & IQueryOptions> | void>({
@@ -38,6 +38,25 @@ export const ticketsApi = createApi({
         method: 'POST'
       }),
       invalidatesTags: ['tickets']
+    }),
+    getAllTicketsStates: builder.query<ITicketState[], void>({
+      query: (options) => {
+        return {
+          url: 'tickets-states',
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: ITicketsStatesRequestResult) => response.queries?.ticketsStates || null,
+      providesTags: ['ticketsStates']
+    }),
+    getTicketStateById: builder.query<ITicketState, string>({
+      query: (options) => {
+        return {
+          url: `tickets-states/${options}`,
+          method: 'GET'
+        };
+      },
+      providesTags: ['ticketsStates']
     }),
     // getFilterByEntityName: builder.query<IFilter, string>({
     //   query: (entityName) => `filters/${entityName}`,
@@ -73,5 +92,7 @@ export const ticketsApi = createApi({
 export const {
   useGetAllTicketsQuery,
   useAddTicketMutation,
-  useGetTicketByIdQuery
+  useGetTicketByIdQuery,
+  useGetAllTicketsStatesQuery,
+  useGetTicketStateByIdQuery
 } = ticketsApi;

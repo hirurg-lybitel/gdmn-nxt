@@ -40,6 +40,7 @@ const find: FindHandler<ITicket> = async (
         t.USR$USERKEY,
         t.USR$OPENAT,
         t.USR$CLOSEAT,
+        s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE,
         u.ID as USER_ID,
@@ -60,12 +61,13 @@ const find: FindHandler<ITicket> = async (
       const avatar = bin2String(avatarBlob.split(','));
 
       return {
-        id: data['ID'],
+        ID: data['ID'],
         title: data['USR$TITLE'],
         companyKey: data['USR$COMPANYKEY'],
         openAt: data['USR$OPENAT'],
         closeAt: data['USR$CLOSEAT'],
         state: {
+          ID: data['STATEID'],
           name: data['STATE_NAME'],
           code: data['STATE_CODE']
         },
