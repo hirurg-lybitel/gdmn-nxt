@@ -1,5 +1,5 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Avatar, Button, CardContent, Dialog, Divider, IconButton, Skeleton, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { Avatar, Button, CardContent, Dialog, Divider, IconButton, Skeleton, Stack, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,13 +7,18 @@ import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTic
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { UserState } from '../../../features/user/userSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ITicketMessage } from '@gsbelarus/util-api-types';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import Confirmation from '@gdmn-nxt/helpers/confirmation';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import { makeStyles } from '@mui/styles';
+import CloseIcon from '@mui/icons-material/Close';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 
 interface ITicketChatProps {
 
@@ -124,6 +129,18 @@ const FilesView = ({ files, onDelete }: { files: IFIle[], onDelete?: (index: num
   });
 };
 
+const useStyles = makeStyles((theme: Theme) => ({
+  link: {
+    color: 'inherit',
+    textDecoration: 'none',
+    textWrap: 'nowrap',
+    '&:hover': {
+      color: theme.palette.primary.main,
+      textDecoration: 'underline'
+    }
+  },
+}));
+
 export default function TicketChat(props: ITicketChatProps) {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -131,6 +148,8 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: messages = [], isFetching: messagesIsFetching, isLoading: messagesIsLoading } = useGetAllTicketMessagesQuery({ id });
   const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
   const { data: ticket, isFetching: ticketIsFetching, isLoading: ticketIsLoading } = useGetTicketByIdQuery(id ?? '');
+
+  const closed = useMemo(() => !!ticket?.closeAt, [ticket?.closeAt]);
 
   const [addMessages] = useAddTicketMessageMutation();
   const [updateTicket] = useUpdateTicketMutation();
@@ -147,7 +166,7 @@ export default function TicketChat(props: ITicketChatProps) {
   const [files, setFiles] = useState<IFIle[]>([]);
 
   const handleSend = useCallback(() => {
-    if ((message.trim() === '' && files.length === 0) || id) return;
+    if ((message.trim() === '' && files.length === 0) || !id) return;
     addMessages({
       ticketKey: Number(id),
       body: message,
@@ -205,9 +224,18 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const memoFiles = useMemo(() => <FilesView files={files} onDelete={handleRemoveFile} />, [files, handleRemoveFile]);
 
+  const { addSnackbar } = useSnackbar();
+
   const handleRequestCall = useCallback(() => {
     updateTicket({ ...ticket, needCall: true });
+    addSnackbar('Запрос на звонок был олтправлен.', { variant: 'success' });
+  }, [addSnackbar, ticket, updateTicket]);
+
+  const handleEndCall = useCallback(() => {
+    updateTicket({ ...ticket, needCall: false });
   }, [ticket, updateTicket]);
+
+  const classes = useStyles();
 
   const fileFialog = useMemo(() => {
     return (
@@ -273,6 +301,62 @@ export default function TicketChat(props: ITicketChatProps) {
     };
   });
 
+  const back = useCallback(() => {
+    const url = ticketsUser ? '/tickets/list' : '/employee/tickets/list';
+    navigate(url);
+  }, [navigate, ticketsUser]);
+
+  const handleClose = useCallback(() => {
+    updateTicket({ ...ticket, closeAt: new Date(), needCall: false });
+  }, [ticket, updateTicket]);
+
+  const rightButton = useMemo(() => {
+    if (closed) return;
+    if (ticketsUser) {
+      return (
+        <Tooltip title={isLoading ? '' : ticket?.needCall ? 'Запрошен звонок' : 'Запросить звонок'}>
+          <div>
+            <IconButton
+              onClick={handleRequestCall}
+              disabled={isLoading || ticket?.needCall}
+              color="primary"
+            >
+              <LocalPhoneIcon />
+            </IconButton>
+          </div>
+        </Tooltip>
+      );
+    }
+    return (
+      <MenuBurger
+        disabled={isLoading}
+        items={({ closeMenu }) => [
+          <Confirmation
+            key="delete"
+            title="Завершение тикета"
+            text={'Завершить тикет? Изменение нельзя будет отменить.'}
+            dangerous
+            onConfirm={() => {
+              closeMenu();
+              handleClose();
+            }}
+            onClose={closeMenu}
+          >
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              sx={(theme) => ({ color: theme.palette.primary.main })}
+            >
+              <TaskAltIcon color="primary" fontSize="small" />
+              <span>Завершить</span>
+            </Stack>
+          </Confirmation>,
+        ]}
+      />
+    );
+  }, [closed, handleClose, handleRequestCall, isLoading, ticket?.needCall, ticketsUser]);
+
   return (
     <>
       {fileFialog}
@@ -280,7 +364,7 @@ export default function TicketChat(props: ITicketChatProps) {
         <div style={{ display: 'flex', padding: '8px 10px', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>
             <Tooltip title={'Назад'}>
-              <IconButton color="primary" onClick={() => navigate(-1)}>
+              <IconButton color="primary" onClick={back}>
                 <ArrowBackIcon />
               </IconButton>
             </Tooltip>
@@ -294,22 +378,29 @@ export default function TicketChat(props: ITicketChatProps) {
             </Typography>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }} >
-            <Tooltip title={isLoading ? '' : ticket?.needCall ? 'Запрошен звонок' : 'Запросить звонок'}>
-              <div>
-                <IconButton
-                  onClick={handleRequestCall}
-                  disabled={isLoading || ticket?.needCall}
-                  color="primary"
-                >
-                  <LocalPhoneIcon />
-                </IconButton>
-              </div>
-            </Tooltip>
+            {rightButton}
           </div>
         </div>
         <Divider />
         <CardContent style={{ padding: '0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+            {(ticket?.needCall && !ticketsUser && !closed) && <div style={{ background: 'var(--color-card-bg)', width: '100%', padding: '5px', display: 'flex' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', }}>
+                <span>Представитель клиента запросил звонок, вы можете позвонить ему по номеру:</span>
+                <a className={classes.link} href={`tel:${ticket?.sender.phone}`}>{ticket?.sender.phone}</a>
+              </div>
+              <Confirmation
+                key="delete"
+                title="Звонок завершен"
+                text={'Пометить что звонок был завершен?'}
+                dangerous
+                onConfirm={handleEndCall}
+              >
+                <IconButton>
+                  <CloseIcon color="action" fontSize="small" />
+                </IconButton>
+              </Confirmation>
+            </div>}
             <div style={{ flex: 1, padding: '16px', overflow: 'auto', position: 'relative' }}>
               <div style={{ position: 'absolute', inset: '16px', display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content' }}>
                 {(isLoading ? fakeMessages : messages).map((data, index) => <UserMessage
@@ -319,42 +410,44 @@ export default function TicketChat(props: ITicketChatProps) {
                 />)}
               </div>
             </div>
-            <Divider />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
-              <div>
-                <input
-                  style={{ display: 'none' }}
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleUpload}
+            {!closed && <>
+              <Divider />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
+                <div>
+                  <input
+                    style={{ display: 'none' }}
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleUpload}
+                  />
+                  <Tooltip title={'Прикрепить файл'}>
+                    <IconButton
+                      color="primary"
+                      disabled
+                      onClick={uploadClick}
+                    >
+                      <AttachFileIcon />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+                <TextField
+                  value={files.length > 0 ? '' : message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  multiline
+                  maxRows={6}
+                  fullWidth
                 />
-                <Tooltip title={'Прикрепить файл'}>
+                <Tooltip title={'Отправить'}>
                   <IconButton
                     color="primary"
-                    disabled
-                    onClick={uploadClick}
+                    disabled={!message || isLoading}
+                    onClick={handleSend}
                   >
-                    <AttachFileIcon />
+                    <SendIcon />
                   </IconButton>
                 </Tooltip>
               </div>
-              <TextField
-                value={files.length > 0 ? '' : message}
-                onChange={(e) => setMessage(e.target.value)}
-                multiline
-                maxRows={6}
-                fullWidth
-              />
-              <Tooltip title={'Отправить'}>
-                <IconButton
-                  color="primary"
-                  disabled={!message || isLoading}
-                  onClick={handleSend}
-                >
-                  <SendIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
+            </>}
           </div>
         </CardContent>
       </CustomizedCard >

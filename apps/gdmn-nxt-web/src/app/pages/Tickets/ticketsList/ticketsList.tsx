@@ -76,13 +76,15 @@ export function TicketsList(props: ticketsListProps) {
     />
   ), [handleSubmit, openEdit]);
 
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+
   return (
     <>
       {memoEdit}
       <CustomizedCard style={{ width: '100%' }}>
         <CustomCardHeader
           title={'Настройки'}
-          addButton
+          addButton={ticketsUser}
           addButtonHint="Создать тикет"
           onAddClick={() => setOpenEdit(true)}
         />

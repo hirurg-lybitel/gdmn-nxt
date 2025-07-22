@@ -154,6 +154,7 @@ const update: UpdateHandler<ITicket> = async (
     const {
       title,
       openAt,
+      closeAt,
       needCall
     } = metadata;
 
@@ -162,7 +163,8 @@ const update: UpdateHandler<ITicket> = async (
         SET
           USR$TITLE = :TITLE,
           USR$OPENAT = :OPENAT,
-          USR$NEEDCALL = :NEEDCALL
+          USR$NEEDCALL = :NEEDCALL,
+          USR$CLOSEAT = :CLOSEAT
         WHERE
           ID = :ID
         RETURNING ID`,
@@ -170,6 +172,7 @@ const update: UpdateHandler<ITicket> = async (
         TITLE: title,
         OPENAT: new Date(openAt),
         NEEDCALL: needCall,
+        CLOSEAT: new Date(closeAt),
         ID
       }
     );

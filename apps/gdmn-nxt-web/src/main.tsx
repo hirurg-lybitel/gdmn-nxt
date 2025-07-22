@@ -200,6 +200,11 @@ const Main = () => {
                                 </Route>
                                 <Route path="salesfunnel" element={<SalesFunnel />} />
                               </Route>
+                              <Route path="tickets">
+                                <Route path="" element={<Navigate to="list" />} />
+                                <Route path="list" element={<TicketsList />} />
+                                <Route path="list/:id" element={<TicketChat />} />
+                              </Route>
                               <Route path="system">
                                 <Route path="settings">
                                   <Route path="" element={<Navigate to="account" />} />

@@ -1,6 +1,5 @@
-import { IFilter, InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket } from '@gsbelarus/util-api-types';
 import { ticketsRepository } from '../repository';
-import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
 
 const findAll = async (
@@ -76,6 +75,12 @@ const updateById = async (
   type: UserType
 ) => {
   try {
+    const oldTicket = await ticketsRepository.findOne(sessionID, { id }, type);
+
+    if (oldTicket.closeAt) {
+      throw new Error('Тикет завершен');
+    }
+
     const updatedTicket = await ticketsRepository.update(sessionID, id, body, type);
     if (!updatedTicket?.ID) {
       throw NotFoundException(`Не найден тикет с id=${id}`);

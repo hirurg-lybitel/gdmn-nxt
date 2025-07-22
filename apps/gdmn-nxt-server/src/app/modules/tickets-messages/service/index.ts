@@ -1,5 +1,6 @@
 import { InternalServerErrorException, ITicketMessage, UserType } from '@gsbelarus/util-api-types';
 import { ticketsMessagesRepository } from '../repository';
+import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 
 const findAll = async (
   sessionID: string,
@@ -32,6 +33,12 @@ const createMessage = async (
   type: UserType
 ) => {
   try {
+    const oldTicket = await ticketsRepository.findOne(sessionID, { id: body.ticketKey }, type);
+
+    if (oldTicket.closeAt) {
+      throw new Error('Тикет завершен');
+    }
+
     const newMessage = await ticketsMessagesRepository.save(sessionID, { ...body, userId }, type);
     const message = await ticketsMessagesRepository.findOne(sessionID, { id: newMessage.ID }, type);
 
