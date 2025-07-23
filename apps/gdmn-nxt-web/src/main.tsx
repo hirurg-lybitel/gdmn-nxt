@@ -64,6 +64,7 @@ import Debts from './app/pages/Analytics/UserReports/debts/debts';
 import Revenue from './app/pages/Analytics/UserReports/revenue/revenue';
 import TicketsList from './app/pages/Tickets/ticketsList/ticketsList';
 import TicketChat from './app/pages/Tickets/ticketChat/ticketChat';
+import TicketsCustomers from './app/pages/Tickets/tickets-customers/tickets-customers';
 
 registerMUI();
 
@@ -204,6 +205,7 @@ const Main = () => {
                                 <Route path="" element={<Navigate to="list" />} />
                                 <Route path="list" element={<TicketsList />} />
                                 <Route path="list/:id" element={<TicketChat />} />
+                                <Route path="customers" element={<TicketsCustomers />} />
                               </Route>
                               <Route path="system">
                                 <Route path="settings">

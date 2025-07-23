@@ -21,7 +21,8 @@ export const getContacts: RequestHandler = async (req, res) => {
     isFavorite,
     withTasks,
     withAgreements,
-    withDebt
+    withDebt,
+    ticketSystem
   } = req.query;
 
   const sortField = (req.query.field ?? 'NAME') as string;
@@ -42,7 +43,8 @@ export const getContacts: RequestHandler = async (req, res) => {
       req.sessionID,
       {
         DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME,
-        customerId, isFavorite, userId, withTasks, withAgreements, withDebt
+        customerId, isFavorite, userId, withTasks, withAgreements, withDebt,
+        ticketSystem
       },
       {
         [sortField]: sortMode
@@ -128,9 +130,9 @@ export const deleteContact: RequestHandler = async (req, res) => {
 export const getContactHierarchy: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
   try {
-    const _schema = { };
+    const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
         const data = await rs.fetchAsObject();
@@ -315,6 +317,45 @@ const upsertBusinessProcesses = async (firebirdPropsL: any, contactId: number, b
   };
 };
 
+export const addToTickets: RequestHandler = async (req, res) => {
+  try {
+    const newCustomer = await customersService.addToTickets(req.sessionID, req.body);
+
+    await cachedRequets.cacheRequest('customers');
+
+    const result = newCustomer;
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[ update customer tickets add ]', error);
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+export const removeFromTickets: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+
+  if (id && !parseInt(id)) {
+    return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
+  };
+
+  try {
+    const newCustomer = await customersService.removeFromTickets(req.sessionID, parseInt(id));
+
+    cachedRequets.cacheRequest('customers');
+
+    const result = {
+      queries: { contact: newCustomer },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[ update customer tickets remove ]', error);
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const customerController = {
   upsertBusinessProcesses,
   getCustomersCross,
@@ -322,5 +363,7 @@ export const customerController = {
   deleteContact,
   getContacts,
   createContact,
-  updateContact
+  updateContact,
+  addToTickets,
+  removeFromTickets
 };

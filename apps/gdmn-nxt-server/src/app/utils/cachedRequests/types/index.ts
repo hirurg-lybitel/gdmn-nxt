@@ -28,9 +28,12 @@ export interface Customer {
   FULLNAME: string;
   FAX: string;
   POSTADDRESS: string;
+  ticketSystem?: boolean,
+  openTickets?: number,
+  closedTickets?: number;
 }
 
-export interface Phone extends IPhone {}
+export interface Phone extends IPhone { }
 
 export interface CustomerPerson {
   ID: number;

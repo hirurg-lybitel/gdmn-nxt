@@ -172,7 +172,7 @@ const update: UpdateHandler<ITicket> = async (
         TITLE: title,
         OPENAT: new Date(openAt),
         NEEDCALL: needCall,
-        CLOSEAT: new Date(closeAt),
+        CLOSEAT: closeAt ? new Date(closeAt) : undefined,
         ID
       }
     );

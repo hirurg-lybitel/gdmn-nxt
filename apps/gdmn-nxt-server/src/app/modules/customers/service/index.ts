@@ -1,5 +1,5 @@
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, IBusinessProcess, ICustomer, ICustomerFeedback, IFavoriteContact, ILabel, ILabelsContact, ITimeTrackTask, LessThanOrEqual, RemoveOneHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, IBusinessProcess, ICustomer, ICustomerFeedback, ICustomerTickets, IFavoriteContact, ILabel, ILabelsContact, ITimeTrackTask, LessThanOrEqual, RemoveOneHandler } from '@gsbelarus/util-api-types';
 import { cachedRequets, ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import task from '@gdmn-nxt/controllers/kanban/task';
@@ -7,8 +7,9 @@ import { contractsService } from '@gdmn-nxt/modules/contracts/service';
 import { debtsRepository } from '../repository/debts';
 import dayjs from '@gdmn-nxt/dayjs';
 import { customerRepository } from '../repository';
-import { commitTransaction, releaseTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { commitTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { feedbackService } from '@gdmn-nxt/modules/customer-feedback/service';
+import { ticketsUserService } from '@gdmn-nxt/modules/tickets-user/service';
 
 type CustomerDto = Omit<ICustomer, 'ID'>;
 
@@ -27,6 +28,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     withTasks,
     withAgreements,
     withDebt,
+    ticketSystem
   } = clause as any;
 
   const sortField = Object.keys(order)[0] ?? 'NAME';
@@ -168,6 +170,10 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
       .reduce((filteredArray, c) => {
         let checkConditions = true;
 
+        if (ticketSystem) {
+          checkConditions = checkConditions && (c['TICKETSYSTEM'] === (ticketSystem === 'true' ? 1 : 0));
+        }
+
         if (ID) {
           checkConditions = checkConditions && (c.ID === ID);
         }
@@ -190,7 +196,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
         if (NAME) {
           checkConditions = checkConditions && (
             c.NAME?.toLowerCase().includes(String(NAME).toLowerCase()) ||
-              c.TAXID?.toLowerCase().includes(String(NAME).toLowerCase())
+            c.TAXID?.toLowerCase().includes(String(NAME).toLowerCase())
           );
         }
         if (customerId > 0) {
@@ -206,6 +212,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
         if (checkConditions) {
           const customerLabels = labels[c.ID] ?? null;
           const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
+
           filteredArray.push({
             ...c,
             NAME: c.NAME || '<не указано>',
@@ -220,7 +227,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             } : {}),
             ...(withDebtBool ? {
               debt: debts.get(c.ID) ?? 0
-            } : {})
+            } : {}),
           });
         }
         return filteredArray;
@@ -319,16 +326,55 @@ const deleteCustomer: RemoveOneHandler = async (sessionID, id) => {
   }
 };
 
+const addToTickets = async (
+  sessionID: string,
+  body: ICustomerTickets
+) => {
+  try {
+    const newCustomer = await customerRepository.addToTickets(sessionID, body.customer.ID, body);
+    const newUser = await ticketsUserService.create(
+      sessionID,
+      {
+        company: body.customer,
+        password: body.admin.password,
+        fullName: body.admin.fullName,
+        userName: body.admin.name
+      },
+      true
+    );
+
+    return newCustomer;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const removeFromTickets = async (
+  sessionID: string,
+  id: number
+) => {
+  try {
+    // const newCustomer = await customerRepository.updateTickets(sessionID, id, { ticketSystem: false });
+
+    return {};
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 export const customersService = {
   find,
   findOne,
   createCustomer,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  addToTickets,
+  removeFromTickets
 };
 
 
-const upsertLabels = async(firebirdProps: any, contactId: number, labels: ILabel[]): Promise<ILabel[]> => {
+const upsertLabels = async (firebirdProps: any, contactId: number, labels: ILabel[]): Promise<ILabel[]> => {
   const { attachment, transaction } = firebirdProps;
 
 

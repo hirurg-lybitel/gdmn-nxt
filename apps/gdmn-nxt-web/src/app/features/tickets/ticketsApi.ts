@@ -1,10 +1,11 @@
-import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
 export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
 export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicketState[]; }>;
 export type ITicketMessagesRequestResult = IRequestResult<{ messages: ITicketMessage[]; }>;
+export type ITicketUsersRequestResult = IRequestResult<{ users: ITicketUser[]; }>;
 
 export const ticketsApi = createApi({
   reducerPath: 'tickets',
@@ -88,34 +89,18 @@ export const ticketsApi = createApi({
       }),
       invalidatesTags: ['tickets']
     }),
-    // getFilterByEntityName: builder.query<IFilter, string>({
-    //   query: (entityName) => `filters/${entityName}`,
-    //   transformResponse: (response: IRequestResult<{ filters: IFilter[]; }>) => response.queries?.filters[0] || null,
-    //   providesTags: ['filters']
-    // }),
-    // addFilter: builder.mutation<ITicketRequestResult, IFilter>({
-    //   query: (body) => ({
-    //     url: 'filters',
-    //     body: body,
-    //     method: 'POST'
-    //   }),
-    //   invalidatesTags: ['filters']
-    // }),
-    // updateFilter: builder.mutation<ITicketRequestResult, IFilter>({
-    //   query: (body) => ({
-    //     url: `filters/${body.ID}`,
-    //     body: body,
-    //     method: 'PUT'
-    //   }),
-    //   invalidatesTags: ['filters']
-    // }),
-    // deleteFilter: builder.mutation<ITicketRequestResult, number>({
-    //   query: (id) => ({
-    //     url: `filters/${id}`,
-    //     method: 'DELETE',
-    //   }),
-    //   invalidatesTags: ['filters']
-    // })
+    getAllTicketUser: builder.query<ITicketUser[], Partial<IQueryOptions> | void>({
+      query: (options) => {
+        const params = queryOptionsToParamsString(options);
+
+        return {
+          url: `/users${params ? `?${params}` : ''}`,
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: ITicketUsersRequestResult) => response.queries?.users || null,
+      providesTags: ['tickets']
+    }),
   }),
 });
 
@@ -127,5 +112,6 @@ export const {
   useGetTicketStateByIdQuery,
   useGetAllTicketMessagesQuery,
   useAddTicketMessageMutation,
-  useUpdateTicketMutation
+  useUpdateTicketMutation,
+  useGetAllTicketUserQuery
 } = ticketsApi;

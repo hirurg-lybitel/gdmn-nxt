@@ -226,9 +226,9 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const { addSnackbar } = useSnackbar();
 
-  const handleRequestCall = useCallback(() => {
-    updateTicket({ ...ticket, needCall: true });
-    addSnackbar('Запрос на звонок был олтправлен.', { variant: 'success' });
+  const handleRequestCall = useCallback(async () => {
+    const res = await updateTicket({ ...ticket, needCall: true });
+    if ('data' in res) addSnackbar('Запрос на звонок был олтправлен.', { variant: 'success' });
   }, [addSnackbar, ticket, updateTicket]);
 
   const handleEndCall = useCallback(() => {

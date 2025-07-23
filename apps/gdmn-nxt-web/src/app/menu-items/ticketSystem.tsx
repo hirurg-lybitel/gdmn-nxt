@@ -1,7 +1,8 @@
+import { IMenuItem } from '.';
 import Settings from '@mui/icons-material/Settings';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import { IMenuItem } from '.';
-
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 
 const ticketSystem: IMenuItem = {
   id: 'ticket system',
@@ -16,6 +17,14 @@ const ticketSystem: IMenuItem = {
       icon: <SettingsOutlinedIcon color="secondary" />,
       selectedIcon: <Settings color="secondary" />,
     },
+    {
+      id: 'customers',
+      title: 'Клиенты',
+      type: 'item',
+      icon: <PeopleAltOutlinedIcon color="secondary" />,
+      selectedIcon: <PeopleAltIcon color="secondary" />,
+      url: 'tickets/customers'
+    }
   ]
 };
 

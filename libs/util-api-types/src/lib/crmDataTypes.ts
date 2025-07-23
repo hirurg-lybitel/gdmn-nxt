@@ -41,6 +41,9 @@ export interface ICustomer extends IContactWithID {
   agreementCount?: number;
   debt?: number;
   feedback?: ICustomerFeedback[];
+  ticketSystem?: boolean,
+  openTickets?: number,
+  closedTickets?: number;
 };
 
 interface IMapOfArrays {
@@ -681,7 +684,7 @@ export enum UserType {
   CRM = 'crm'
 };
 
-export interface ITicketUser extends IWithID {
+export interface ICRMTicketUser extends IWithID {
   fullName: string;
   phone?: string,
   email?: string,
@@ -699,7 +702,7 @@ export interface ITicket extends IWithID {
   openAt: Date;
   closeAt?: Date;
   state: ITicketState,
-  sender: ITicketUser;
+  sender: ICRMTicketUser;
   needCall: boolean;
   message?: string;
   files?: File[];
@@ -708,6 +711,26 @@ export interface ITicket extends IWithID {
 export interface ITicketMessage extends IWithID {
   body: string,
   ticketKey: number,
-  user: ITicketUser & { type: 'empl' | 'user'; },
+  user: ICRMTicketUser & { type: 'empl' | 'user'; },
   state: ITicketState;
+}
+
+export interface ICustomerTickets {
+  customer?: ICustomer,
+  email?: string,
+  admin?: {
+    name: string,
+    fullName: string,
+    password: string;
+  };
+}
+
+export interface ITicketUser extends IWithID {
+  company: ICustomer,
+  password?: string,
+  fullName: string,
+  userName?: string,
+  email?: string,
+  phone?: string,
+  isAdmin?: boolean;
 }
