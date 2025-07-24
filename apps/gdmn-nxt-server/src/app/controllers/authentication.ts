@@ -82,13 +82,13 @@ const signIn: RequestHandler = async (req, res, next) => {
       return next(err);
     }
 
-    const { userName, ip, device, ticketsUser } = req.body;
+    const { userName, ip, device, type } = req.body;
 
     if (user) {
       const result = await profileSettingsController.getSettings({
         userId: user.id,
         sessionId: req.sessionID,
-        ticketsUser: ticketsUser
+        type
       });
 
       const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP, ONE_TIME_PASSWORD } = result.settings;
@@ -103,9 +103,9 @@ const signIn: RequestHandler = async (req, res, next) => {
 
       /** Require captcha for new address only */
       const IP = req.socket.remoteAddress;
-      if (IP !== LAST_IP && !ticketsUser) {
+      if (IP !== LAST_IP && type !== UserType.Tickets) {
         req.session.userId = user.id;
-        req.session.ticketsUser = user.ticketsUser;
+        req.session.type = user.type;
         return res.json(authResult(
           'REQUIRED_CAPTCHA',
           'Требуется пройти дополнительную проверку.'
@@ -476,7 +476,7 @@ const changePassword: RequestHandler = async (req, res) => {
       ));
     }
 
-    const user = await ticketsUserService.findOne(sessionID, userId, UserType.CRM);
+    const user = await ticketsUserService.findOne(sessionID, userId, UserType.Gedemin);
 
     if (password !== user.password) {
       return res.json(authResult(

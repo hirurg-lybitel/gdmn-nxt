@@ -8,16 +8,16 @@ export type ITicketMessagesRequestResult = IRequestResult<{ messages: ITicketMes
 export type ITicketUsersRequestResult = IRequestResult<{ users: ITicketUser[]; }>;
 
 export const ticketsApi = createApi({
-  reducerPath: 'tickets',
+  reducerPath: 'ticketSystem',
   tagTypes: ['tickets', 'ticketsStates'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'tickets', credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<ITicket[], Partial<{ active: boolean; } & IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
         return {
-          url: `${params ? `?${params}` : ''}`,
+          url: `/tickets${params ? `?${params}` : ''}`,
           method: 'GET'
         };
       },
@@ -27,7 +27,7 @@ export const ticketsApi = createApi({
     getTicketById: builder.query<ITicket, string>({
       query: (options) => {
         return {
-          url: `/byId/${options}`,
+          url: `/tickets/${options}`,
           method: 'GET'
         };
       },
@@ -35,7 +35,7 @@ export const ticketsApi = createApi({
     }),
     updateTicket: builder.mutation<ITicket, Partial<ITicket>>({
       query: ({ ID, ...body }) => ({
-        url: `/${ID}`,
+        url: `/tickets/${ID}`,
         method: 'PUT',
         body,
       }),
@@ -43,7 +43,7 @@ export const ticketsApi = createApi({
     }),
     addTicket: builder.mutation<ITicketsRequestResult, ITicket>({
       query: (body) => ({
-        url: '',
+        url: '/tickets',
         body: body,
         method: 'POST'
       }),

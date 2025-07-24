@@ -12,7 +12,7 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ITicketMessage } from '@gsbelarus/util-api-types';
+import { ITicketMessage, UserType } from '@gsbelarus/util-api-types';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -156,7 +156,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const isLoading = messagesIsLoading || statesIsLoading || ticketIsLoading;
 
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   const stateChange = useMemo(() => states?.find(state => state.code === (ticketsUser ? 3 : 2)), [states, ticketsUser]);
 

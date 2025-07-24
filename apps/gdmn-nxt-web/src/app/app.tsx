@@ -134,11 +134,11 @@ export default function App(props: AppProps) {
   const theme = useTheme();
   useEffect(() => {
     if (loginStage === 'QUERY_LOGIN' && theme.palette.mode === user?.colorMode && !!user) {
-      if (user.ticketsUser) {
+      if (user.type === UserType.Tickets) {
         dispatch(signedInTicketsUser({ ...user }));
         return;
       }
-      if (user.gedeminUser) {
+      if (user.type === UserType.Gedemin) {
         dispatch(signedInEmployee({ ...user }));
         return;
       }
@@ -151,7 +151,7 @@ export default function App(props: AppProps) {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
   }, [loginStage]);
 
-  const handleSignIn = useCallback(async ({ type = UserType.CRM, userName, password, email }: { type?: UserType, userName: string, password: string, email?: string; }) => {
+  const handleSignIn = useCallback(async ({ type = UserType.Gedemin, userName, password, email }: { type?: UserType, userName: string, password: string, email?: string; }) => {
     const loginData: Pick<ISessionInfo, 'ip' | 'device'> = { ip: 'unknown' };
     const browser = bowser.parse(window.navigator.userAgent);
 
@@ -170,8 +170,7 @@ export default function App(props: AppProps) {
     const response = await post('user/signin', {
       userName,
       password,
-      employeeMode: type === UserType.CRM,
-      ticketsUser: type === 'tickets',
+      type,
       ...(email && { email }),
       ...loginData
     });

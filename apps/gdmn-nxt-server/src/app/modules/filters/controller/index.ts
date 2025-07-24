@@ -11,12 +11,10 @@ const findAll: RequestHandler = async (req, res) => {
 
     const userId = req.user['id'];
 
-    const ticketsUser = req.user['ticketsUser'];
-
     const response = await filtersService.findAll(
       sessionID,
       userId,
-      ticketsUser ? UserType.Tickets : UserType.CRM,
+      req.user['type'],
       entityName
     );
 
@@ -34,7 +32,7 @@ const findAll: RequestHandler = async (req, res) => {
 const createFilter: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
-    const filters = await filtersService.createFilter(req.sessionID, userId, req.body, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    const filters = await filtersService.createFilter(req.sessionID, userId, req.body, req.user['type']);
 
     const result: IRequestResult = {
       queries: { filters: [filters] },
@@ -60,7 +58,7 @@ const updateById: RequestHandler = async (req, res) => {
       req.sessionID,
       id,
       req.body,
-      req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM
+      req.user['type']
     );
 
     const result: IRequestResult = {
@@ -83,7 +81,7 @@ const removeById: RequestHandler = async (req, res) => {
   }
 
   try {
-    await filtersService.removeById(req.sessionID, id, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    await filtersService.removeById(req.sessionID, id, req.user['type']);
     res.sendStatus(200);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));

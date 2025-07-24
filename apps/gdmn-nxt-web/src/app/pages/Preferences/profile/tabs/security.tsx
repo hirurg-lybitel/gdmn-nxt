@@ -1,6 +1,6 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
-import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
+import { IAuthResult, IProfileSettings, IUserProfile, UserType } from '@gsbelarus/util-api-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -32,7 +32,7 @@ export default function SecurityTab() {
     refetchOnMountOrArgChange: true,
     skip: !fetchDataCreate2fa
   });
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const [activate2fa] = useCreate2faMutation();
   const [disableOtp] = useDisableOtpMutation();
 

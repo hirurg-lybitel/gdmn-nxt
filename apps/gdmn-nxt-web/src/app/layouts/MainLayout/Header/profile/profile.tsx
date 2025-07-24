@@ -31,6 +31,7 @@ import Logout from '@mui/icons-material/Logout';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
+import { UserType } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   popper: {
@@ -80,7 +81,7 @@ export function Profile(props: Readonly<ProfileProps>) {
 
   const { userProfile } = useSelector<RootState, UserState>(state => state.user);
   const { data: settings } = useGetProfileSettingsQuery(userProfile?.id || -1);
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   const handleToogle = (target: any) => {
     setAnchorProfileEl(target);

@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import { startTransaction } from '@gdmn-nxt/db-connection';
 import { parseIntDef } from '@gsbelarus/util-useful';
-import { ActionName, Permissions } from '@gsbelarus/util-api-types';
+import { ActionName, Permissions, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
 import { config } from '@gdmn-nxt/config';
 import { ERROR_MESSAGES } from '../constants/messages';
@@ -13,10 +13,9 @@ const ticketsUserRoutes = [
   'security/closeSessionBySessionId',
   'filters',
   'filters/menu',
-  'tickets',
-  'tickets/byId',
-  'tickets/states',
-  'tickets/messages'
+  'ticketSystem/tickets',
+  'ticketSystem/states',
+  'ticketSystem/messages'
 ];
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
@@ -29,9 +28,8 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
   };
   const userId = req.user['id'];
 
-  const ticketsUser = req.user['ticketsUser'];
   const { url, method } = req;
-  if (ticketsUser) {
+  if (req.user['type'] === UserType.Tickets) {
     for (const name of ticketsUserRoutes) {
       const regEx = new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\w-]*$`);
       if (regEx.test(url.split('?')[0])) return next();

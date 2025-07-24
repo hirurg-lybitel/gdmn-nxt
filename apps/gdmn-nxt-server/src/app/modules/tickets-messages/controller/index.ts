@@ -15,13 +15,11 @@ const findAll: RequestHandler = async (req, res) => {
       throw new Error('Не указан обязательный параметр ticketId');
     }
 
-    const ticketsUser = req.user['ticketsUser'];
-
     const response = await ticketsMessagesService.findAll(
       sessionID,
       userId,
       ticketId,
-      ticketsUser ? UserType.Tickets : UserType.CRM,
+      req.user['type'],
     );
 
     const result: IRequestResult = {
@@ -38,7 +36,7 @@ const findAll: RequestHandler = async (req, res) => {
 const createMessage: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
-    const messages = await ticketsMessagesService.createMessage(req.sessionID, userId, req.body, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    const messages = await ticketsMessagesService.createMessage(req.sessionID, userId, req.body, req.user['type']);
 
     const result: IRequestResult = {
       queries: { messages: [messages] },

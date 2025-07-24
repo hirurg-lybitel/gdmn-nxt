@@ -7,12 +7,10 @@ const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const ticketsUser = req.user['ticketsUser'];
-
     const response = await ticketsService.findAll(
       sessionID,
       { ...req.query },
-      ticketsUser ? UserType.Tickets : UserType.CRM
+      req.user['type']
     );
 
     const result: IRequestResult = {
@@ -29,7 +27,7 @@ const findAll: RequestHandler = async (req, res) => {
 const findOne: RequestHandler = async (req, res) => {
   try {
     const id = req.params.id;
-    const ticket = await ticketsService.findOne(req.sessionID, id, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    const ticket = await ticketsService.findOne(req.sessionID, id, req.user['type']);
     return res.status(200).json(ticket);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
@@ -39,7 +37,7 @@ const findOne: RequestHandler = async (req, res) => {
 const createTicket: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
-    const tickets = await ticketsService.createTicket(req.sessionID, userId, req.body, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    const tickets = await ticketsService.createTicket(req.sessionID, userId, req.body, req.user['type']);
 
     const result: IRequestResult = {
       queries: { tickets: [tickets] },
@@ -65,7 +63,7 @@ const updateById: RequestHandler = async (req, res) => {
       req.sessionID,
       id,
       req.body,
-      req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM
+      req.user['type']
     );
 
     const result: IRequestResult = {

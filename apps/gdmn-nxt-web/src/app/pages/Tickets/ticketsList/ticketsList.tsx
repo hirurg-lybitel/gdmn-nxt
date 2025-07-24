@@ -9,7 +9,7 @@ import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useAddTicketMutation, useGetAllTicketsQuery } from '../../../features/tickets/ticketsApi';
-import { ITicket } from '@gsbelarus/util-api-types';
+import { ITicket, UserType } from '@gsbelarus/util-api-types';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import TicketEdit from './ticketEdit';
@@ -76,7 +76,7 @@ export function TicketsList(props: ticketsListProps) {
     />
   ), [handleSubmit, openEdit]);
 
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   return (
     <>
@@ -196,7 +196,7 @@ const Item = ({ ID, title, last, sender, openAt, closeAt }: IItemProps) => {
     if (closeAt) {
       return <CheckCircleOutlineIcon color={'primary'} />;
     }
-    if (!user.userProfile?.ticketsUser) {
+    if (user.userProfile?.type !== UserType.Tickets) {
       if (daysLeft === 1) {
         return <ErrorOutlineIcon color={'warning'} />;
       }
@@ -205,7 +205,7 @@ const Item = ({ ID, title, last, sender, openAt, closeAt }: IItemProps) => {
       }
     }
     return <AdjustIcon color={'success'} />;
-  }, [closeAt, openAt, user.userProfile?.ticketsUser]);
+  }, [closeAt, openAt, user.userProfile?.type]);
 
   return (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '8px 16px', borderBottom: last ? 'none' : '1px solid var(--color-grid-borders)' }}>

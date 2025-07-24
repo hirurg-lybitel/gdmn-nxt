@@ -1,4 +1,4 @@
-import { Permissions } from './crmDataTypes';
+import { Permissions, UserType } from './crmDataTypes';
 
 export interface IUserProfile {
   id?: number,
@@ -14,6 +14,7 @@ export interface IUserProfile {
   base32Secret?: string;
   colorMode?: string;
   fullName?: string;
-  ticketsUser?: boolean;
+  type?: UserType;
   companyKey?: number;
+  isAdmin?: boolean;
 };

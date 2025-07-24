@@ -1,4 +1,4 @@
-import { IProfileSettings, IRequestResult } from '@gsbelarus/util-api-types';
+import { IProfileSettings, IRequestResult, UserType } from '@gsbelarus/util-api-types';
 import { parseIntDef } from '@gsbelarus/util-useful';
 import { Request, RequestHandler } from 'express';
 import { resultError } from '../../responseMessages';
@@ -9,7 +9,7 @@ import { setPermissonsCache } from '../../middlewares/permissions';
 
 type GetSettingsParams = {
   sessionId: string;
-  ticketsUser?: boolean;
+  type?: UserType;
 } & ({
   userId: number;
   contactId?: number;
@@ -22,10 +22,12 @@ const getSettings = async ({
   sessionId,
   userId: _userId,
   contactId,
-  ticketsUser
+  type
 }: GetSettingsParams) => {
   const { releaseReadTransaction, fetchAsObject, fetchAsSingletonObject } = await acquireReadTransaction(sessionId);
   const { attachment, transaction } = await getReadTransaction(sessionId);
+
+  const ticketsUser = type === UserType.Tickets;
 
   try {
     const userId: number = await (async () => {
@@ -168,8 +170,7 @@ const getSettings = async ({
 
 const get: RequestHandler = async (req, res) => {
   const userId = parseIntDef(req.params.userId, -1);
-  const ticketsUser = req.user['ticketsUser'];
-  const data = await getSettings({ userId, sessionId: req.sessionID, ticketsUser });
+  const data = await getSettings({ userId, sessionId: req.sessionID, type: req.user['type'] });
 
   if (!data.OK) return res.status(500).send(resultError(data.error));
 
@@ -186,7 +187,7 @@ const set: RequestHandler = async (req, res) => {
   const { attachment, transaction, releaseTransaction, fetchAsObject, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   const userId = parseIntDef(req.params.userId, -1);
-  const ticketsUser = req.user['ticketsUser'];
+  const ticketsUser = req.user['type'] === UserType.Tickets;
 
   const {
     AVATAR: avatar,
@@ -306,8 +307,6 @@ const upsertLastIP = async (req: Request, body: { userId: number, ip: string; })
   const { releaseTransaction, executeSingletonAsObject } = await startTransaction(req.sessionID);
 
   const { userId, ip } = body;
-
-  const { ticketsUser } = req.session;
 
   try {
     await executeSingletonAsObject(

@@ -33,6 +33,7 @@ import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
+import { UserType } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -140,7 +141,7 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [showedMessages, setShowedMessages] = useState<number[]>([]);
   const [isActivePage, setIsActivePage] = useState<boolean>(true);
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   function onBlur() {
     setIsActivePage(false);

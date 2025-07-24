@@ -57,10 +57,10 @@ const find: FindHandler<ITicketUser> = async (
     const users: ITicketUser[] = await Promise.all(result.map(async (data) => {
       return {
         ID: data['ID'],
-        ...(type === UserType.CRM ? { password: data['USR$PASSWORD'] } : {}),
+        ...(type === UserType.Gedemin ? { password: data['USR$PASSWORD'] } : {}),
         company: sortedCustomers[data['USR$COMPANYKEY']],
         fullName: data['USR$FULLNAME'],
-        ...(type === UserType.CRM ? { userName: data['USR$USERNAME'] } : {}),
+        ...(type === UserType.Gedemin ? { userName: data['USR$USERNAME'] } : {}),
         email: data['USR$EMAIL'],
         phone: data['USR$PHONE'],
         isAdmin: data['USR$ISADMIN'] === 1

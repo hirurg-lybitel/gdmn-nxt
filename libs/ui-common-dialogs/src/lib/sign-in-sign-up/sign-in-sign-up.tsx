@@ -121,7 +121,7 @@ export function SignInSignUp({
 
   const doSignIn = useCallback(async () => {
     setLaunching(true);
-    const type = window.location.pathname === '/tickets/login' ? UserType.Tickets : UserType.CRM;
+    const type = window.location.pathname === '/tickets/login' ? UserType.Tickets : UserType.Gedemin;
     const res = await onSignIn({ type, userName, password });
     dispatch({ type: 'SET_AUTHRESULT', authResult: res });
     setLaunching(false);

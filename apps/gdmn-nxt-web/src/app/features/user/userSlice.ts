@@ -29,7 +29,6 @@ export interface UserState {
   loginStage: LoginStage;
   userType?: 'CUSTOMER' | 'EMPLOYEE' | 'TISCKETS';
   userProfile?: IUserProfile;
-  gedeminUser?: boolean;
 };
 
 const initialState: UserState = {

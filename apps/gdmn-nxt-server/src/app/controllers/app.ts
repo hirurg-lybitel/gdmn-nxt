@@ -1,4 +1,4 @@
-import { ColorMode, TicketsUser, GedeminUser, IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
+import { ColorMode, TicketsUser, GedeminUser, IAccount, IAuthResult, IWithID, UserType } from '@gsbelarus/util-api-types';
 import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
 import { compare } from 'bcryptjs';
 
@@ -48,7 +48,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
             email: data[0]['EMAIL'],
             firstname: data[0]['FIRSTNAME'],
             surname: data[0]['SURNAME'],
-            ticketsUser: false
+            type: UserType.Gedemin
           }
         };
       } else if (!data.length) {
@@ -66,7 +66,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
   }
 };
 
-export const checkTiscketsUser = async (userName: string, password: string): Promise<IAuthResult> => {
+export const checkTicketsUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
     SELECT
       ID,
@@ -75,7 +75,8 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
       USR$EMAIL,
       DISABLED,
       USR$COMPANYKEY,
-      USR$ONE_TIME_PASSWORD
+      USR$ONE_TIME_PASSWORD,
+      USR$ISADMIN
     FROM USR$CRM_USER
     WHERE UPPER(USR$USERNAME) = ?
   `;
@@ -109,8 +110,9 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
             id: data[0]['ID'],
             userName: data[0]['USR$USERNAME'],
             email: data[0]['USR$EMAIL'],
-            ticketsUser: true,
-            companyKey: data[0]['USR$COMPANYKEY']
+            type: UserType.Tickets,
+            companyKey: data[0]['USR$COMPANYKEY'],
+            isAdmin: data[0]['USR$ISADMIN'] === 1
           }
         };
       } else if (!data.length) {

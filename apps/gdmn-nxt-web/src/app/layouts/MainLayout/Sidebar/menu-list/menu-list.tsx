@@ -8,7 +8,7 @@ import { useCallback, useMemo, useState } from 'react';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import MenuItem from '../menu-item/menu-item';
 import { useSelector } from 'react-redux';
-import { Permissions } from '@gsbelarus/util-api-types';
+import { Permissions, UserType } from '@gsbelarus/util-api-types';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import MenuCollapse from '../menu-collapse/menu-collapse';
 import ticketsMenuItems from 'apps/gdmn-nxt-web/src/app/menu-items/tickets';
@@ -37,7 +37,7 @@ export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
   const classes = useStyles();
   const theme = useTheme();
 
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.ticketsUser ?? false);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   const [searchText, setSearchText] = useState('');
 

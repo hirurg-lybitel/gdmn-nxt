@@ -681,7 +681,8 @@ export interface IRevenue {
 
 export enum UserType {
   Tickets = 'tickets',
-  CRM = 'crm'
+  Gedemin = 'crm',
+  Customer = 'customer'
 };
 
 export interface ICRMTicketUser extends IWithID {

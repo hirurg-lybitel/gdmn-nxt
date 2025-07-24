@@ -12,7 +12,7 @@ const findAll: RequestHandler = async (req, res) => {
     const response = await ticketsUserService.findAll(
       sessionID,
       req.query,
-      ticketsUser ? UserType.Tickets : UserType.CRM,
+      ticketsUser ? UserType.Tickets : UserType.Gedemin,
     );
 
     const result: IRequestResult = {
@@ -76,7 +76,7 @@ const removeById: RequestHandler = async (req, res) => {
   }
 
   try {
-    await ticketsUserService.removeById(req.sessionID, id, req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM);
+    await ticketsUserService.removeById(req.sessionID, id, req.user['ticketsUser'] ? UserType.Tickets : UserType.Gedemin);
     res.sendStatus(200);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));

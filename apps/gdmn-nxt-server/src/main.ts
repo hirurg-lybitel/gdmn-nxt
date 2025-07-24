@@ -3,8 +3,8 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { resultError, validPassword } from '@gsbelarus/util-helpers';
-import { ISessionInfo, IsNotNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
-import { checkTiscketsUser, checkGedeminUser, getAccount, getTicketsUser, getGedeminUser } from './app/controllers/app';
+import { ISessionInfo, IsNotNull, MailingStatus, Permissions, UserType } from '@gsbelarus/util-api-types';
+import { checkTicketsUser, checkGedeminUser, getAccount, getTicketsUser, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
 import departments from './app/controllers/departments';
@@ -69,7 +69,7 @@ declare module 'express-session' {
     email: string;
     userName: string;
     captcha: string;
-    ticketsUser: boolean;
+    type: UserType;
   }
 }
 
@@ -78,7 +78,7 @@ interface IBaseUser {
 };
 
 interface IGedeminUser extends IBaseUser {
-  gedeminUser: true;
+  type: UserType.Gedemin;
 };
 
 interface ICustomerUser extends IBaseUser {
@@ -88,7 +88,7 @@ interface ICustomerUser extends IBaseUser {
   expireOn?: number;
 };
 interface ITicketsUser extends IBaseUser {
-  ticketsUser: true;
+  type: UserType.Tickets;
 }
 
 type IUser = IGedeminUser | ICustomerUser | ITicketsUser;
@@ -179,11 +179,11 @@ passport.use(new Strategy(
     passReqToCallback: true
   },
   async (req, userName, password, done) => {
-    const { employeeMode, ticketsUser } = req.body;
+    const { type } = req.body;
 
     try {
-      if (ticketsUser) {
-        const res = await checkTiscketsUser(userName, password);
+      if (type === UserType.Tickets) {
+        const res = await checkTicketsUser(userName, password);
 
         if (res.result === 'UNKNOWN_USER') {
           console.log('Unknown tickets user', { userName, password });
@@ -198,18 +198,18 @@ passport.use(new Strategy(
 
           return done(null, {
             userName,
-            gedeminUser: true,
             id: res.userProfile.id,
             email: res.userProfile.email,
             permissions: userPermissions,
-            ticketsUser: true,
-            companyKey: res.userProfile.companyKey
+            type: UserType.Tickets,
+            companyKey: res.userProfile.companyKey,
+            isAdmin: res.userProfile.isAdmin
           });
         }
         console.log('Invalid tickets user', { userName, password });
         return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
       }
-      if (employeeMode) {
+      if (type === UserType.Gedemin) {
         const res = await checkGedeminUser(userName, password);
 
         if (res.result === 'UNKNOWN_USER') {
@@ -229,11 +229,10 @@ passport.use(new Strategy(
 
           return done(null, {
             userName,
-            gedeminUser: true,
+            type: UserType.Gedemin,
             id: res.userProfile.id,
             email: res.userProfile.email,
             permissions: userPermissions,
-            ticketsUser: false
           });
         }
         console.log('Invalid gedemin user', { userName, password });
@@ -271,19 +270,19 @@ passport.deserializeUser(async (user: IUser, done) => {
 
   const { userName: name } = user;
 
-  const userType = name.slice(0, 1);
+  const typeOfUser = name.slice(0, 1);
   const userName = name.slice(1);
 
-  if (user['ticketsUser']) {
+  if (user['type'] === UserType.Tickets) {
     const res = await getTicketsUser(userName);
 
     if (res) {
-      return done(null, { ...user, ...res, ticketsUser: true, gedeminUser: true });
+      return done(null, { ...user, ...res });
     }
     return done(`Unknown user userName: ${userName}`);
   }
 
-  if (userType === 'U') {
+  if (typeOfUser === 'U') {
     const account = await getAccount('passport', userName);
 
     if (account) {
