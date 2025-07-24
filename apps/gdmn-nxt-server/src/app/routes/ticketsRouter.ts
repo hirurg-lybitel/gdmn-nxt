@@ -20,5 +20,7 @@ router.get('/messages/:ticketId', ticketsMessagesController.findAll);
 router.post('/messages', ticketsMessagesController.createMessage);
 
 router.get('/users', ticketsUserController.findAll);
+router.post('/users', ticketsUserController.create);
+router.delete('/users/:id', ticketsUserController.removeById);
 
 export const ticketsRouter = parentRouter;

@@ -18,6 +18,10 @@ export function CustomerEdit({
 }: Readonly<CustomerEditProps>) {
   const { data, isLoading, isFetching } = useGetAllTicketUserQuery({ filter: { isAdmin: true, companyKey: customer?.ID } }, { skip: !customer });
 
+  const user = useMemo(() => {
+    return data?.users[0];
+  }, [JSON.stringify(data?.users)]);
+
   const content = useMemo(() => {
     if (isLoading || isFetching) {
       return (
@@ -37,11 +41,11 @@ export function CustomerEdit({
         </>
       );
     }
-    if (data?.length === 0 || !data?.[0].password) {
+    if (!user?.password) {
       return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: '0.4', flex: 1, paddingBottom: '10px' }}>
           <Typography variant="h6">
-            {data?.length === 0 ? 'Пользователь не найден' : 'Пользователь сменил пароль'}
+            {!user ? 'Пользователь не найден' : 'Пользователь сменил пароль'}
           </Typography>
         </div>
       );
@@ -53,18 +57,18 @@ export function CustomerEdit({
           label="Логин"
           type="text"
           disabled
-          value={data?.[0]?.userName ?? ''}
+          value={user?.userName ?? ''}
         />
         <TextField
           fullWidth
           label="Одноразовый пароль"
           type="text"
           disabled
-          value={data?.[0]?.password ?? ''}
+          value={user?.password ?? ''}
         />
       </>
     );
-  }, [data, isFetching, isLoading]);
+  }, [isFetching, isLoading, user]);
 
   return (
     <EditDialog

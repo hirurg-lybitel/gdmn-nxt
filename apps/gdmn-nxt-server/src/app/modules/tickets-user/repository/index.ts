@@ -1,7 +1,7 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { FindHandler, FindOneHandler, FindOperator, ITicketUser, RemoveOneHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
-import { compare, hash } from 'bcryptjs';
+import { hash } from 'bcryptjs';
 
 const find: FindHandler<ITicketUser> = async (
   sessionID,
@@ -74,13 +74,13 @@ const find: FindHandler<ITicketUser> = async (
 };
 
 const findOne: FindOneHandler<ITicketUser> = async (sessionID, clause = {}, type) => {
-  const filter = await find(sessionID, clause, undefined, type);
+  const user = await find(sessionID, clause, undefined, type);
 
-  if (filter.length === 0) {
+  if (user.length === 0) {
     return Promise.resolve(undefined);
   }
 
-  return filter[0];
+  return user[0];
 };
 
 const update: UpdateHandler<ITicketUser> = async (
@@ -100,27 +100,6 @@ const update: UpdateHandler<ITicketUser> = async (
       email,
       phone,
     } = metadata;
-
-    console.log(`UPDATE USR$CRM_USER
-      SET
-        USR$COMPANYKEY = :COMPANYKEY,
-        ${password ? 'USR$PASSWORD = :PASSWORD' : ''},
-        USR$FULLNAME = :FULLNAME,
-        USR$EMAIL = :EMAIL,
-        USR$PHONE = :PHONE,
-        USR$ONE_TIME_PASSWORD = :ONE_TIME_PASSWORD
-      WHERE
-        ID = :ID
-      RETURNING ID`,
-      {
-        ID,
-        COMPANYKEY: company.ID,
-        ...(password ? { PASSWORD: await hash(password, 12) } : {}),
-        FULLNAME: fullName,
-        EMAIL: email,
-        PHONE: phone,
-        ONE_TIME_PASSWORD: false
-      });
 
     const updatedFilter = await fetchAsSingletonObject<ITicketUser>(
       `UPDATE USR$CRM_USER
@@ -163,7 +142,9 @@ const save: Save = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { company, password, fullName, userName, email, phone } = metadata;
+  const { company, password: propPassword, fullName, userName, email, phone } = metadata;
+
+  const password = isAdmin ? propPassword : await hash(propPassword, 12);
 
   try {
     const user = await fetchAsSingletonObject<ITicketUser>(
@@ -199,7 +180,7 @@ const remove: RemoveOneHandler = async (
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   try {
-    const deletedFilter = await fetchAsSingletonObject<{ ID: number; }>(
+    const deletedUser = await fetchAsSingletonObject<{ ID: number; }>(
       `DELETE FROM USR$CRM_USER WHERE ID = :id
       RETURNING ID`,
       { id }
@@ -207,7 +188,7 @@ const remove: RemoveOneHandler = async (
 
     await releaseTransaction();
 
-    return !!deletedFilter.ID;
+    return !!deletedUser.ID;
   } catch (error) {
     await releaseTransaction(false);
     throw new Error(error);

@@ -18,6 +18,12 @@ const ticketsUserRoutes = [
   'ticketSystem/messages'
 ];
 
+const ticketsAdminRoutes = [
+  ...ticketsUserRoutes,
+  'ticketSystem/users',
+  'contacts/customerId'
+];
+
 export const checkPermissions: RequestHandler = (req, res, next) => {
   const apiAccessKey = req.headers['x-api-key'] as string;
   if (!!apiAccessKey && apiAccessKey !== config.apiAccessToken) {
@@ -30,7 +36,7 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 
   const { url, method } = req;
   if (req.user['type'] === UserType.Tickets) {
-    for (const name of ticketsUserRoutes) {
+    for (const name of (req.user['isAdmin'] ? ticketsAdminRoutes : ticketsUserRoutes)) {
       const regEx = new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\w-]*$`);
       if (regEx.test(url.split('?')[0])) return next();
     }

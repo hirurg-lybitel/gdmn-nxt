@@ -65,7 +65,7 @@ import Revenue from './app/pages/Analytics/UserReports/revenue/revenue';
 import TicketsList from './app/pages/Tickets/ticketsList/ticketsList';
 import TicketChat from './app/pages/Tickets/ticketChat/ticketChat';
 import TicketsCustomers from './app/pages/Tickets/tickets-customers/tickets-customers';
-import TicketsUsers from './app/pages/Tickets/ticketsUsers/ticketsUsers';
+import TicketsUsers from './app/pages/Tickets/tickets-users/tickets-users';
 
 registerMUI();
 

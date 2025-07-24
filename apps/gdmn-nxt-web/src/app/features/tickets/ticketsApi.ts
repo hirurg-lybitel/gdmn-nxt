@@ -5,11 +5,12 @@ import { baseUrlApi } from '@gdmn/constants/client';
 export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
 export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicketState[]; }>;
 export type ITicketMessagesRequestResult = IRequestResult<{ messages: ITicketMessage[]; }>;
-export type ITicketUsersRequestResult = IRequestResult<{ users: ITicketUser[]; }>;
+export type ITicketUsersRequestResult = IRequestResult<{ users: ITicketUser[], count: number; }>;
+export type ITicketUserRequestResult = IRequestResult<{ users: ITicketUser[]; }>;
 
 export const ticketsApi = createApi({
   reducerPath: 'ticketSystem',
-  tagTypes: ['tickets', 'ticketsStates'],
+  tagTypes: ['tickets', 'ticketsStates', 'users'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<ITicket[], Partial<{ active: boolean; } & IQueryOptions> | void>({
@@ -89,7 +90,7 @@ export const ticketsApi = createApi({
       }),
       invalidatesTags: ['tickets']
     }),
-    getAllTicketUser: builder.query<ITicketUser[], Partial<IQueryOptions> | void>({
+    getAllTicketUser: builder.query<{ users: ITicketUser[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
@@ -98,8 +99,23 @@ export const ticketsApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: ITicketUsersRequestResult) => response.queries?.users || null,
-      providesTags: ['tickets']
+      transformResponse: (response: ITicketUsersRequestResult) => response.queries ?? { users: [], count: 0 },
+      providesTags: ['users']
+    }),
+    addTicketUser: builder.mutation<ITicketUserRequestResult, ITicketUser>({
+      query: (body) => ({
+        url: '/users',
+        body: body,
+        method: 'POST'
+      }),
+      invalidatesTags: ['users']
+    }),
+    deleteTicketUser: builder.mutation<ITicketUserRequestResult, number>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['users']
     }),
   }),
 });
@@ -113,5 +129,7 @@ export const {
   useGetAllTicketMessagesQuery,
   useAddTicketMessageMutation,
   useUpdateTicketMutation,
-  useGetAllTicketUserQuery
+  useGetAllTicketUserQuery,
+  useAddTicketUserMutation,
+  useDeleteTicketUserMutation
 } = ticketsApi;

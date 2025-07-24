@@ -1,4 +1,4 @@
-import { IFilter, InternalServerErrorException, UserType, NotFoundException, ITicketUser } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, ITicketUser } from '@gsbelarus/util-api-types';
 import { ticketsUserRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
@@ -26,7 +26,8 @@ const findAll = async (
     );
 
     return {
-      users: users
+      users: users,
+      count: users.length
     };
   } catch (error) {
     throw InternalServerErrorException(error.message);
@@ -88,8 +89,8 @@ const removeById = async (
   type: UserType
 ) => {
   try {
-    const checkFilter = await ticketsUserRepository.findOne(sessionID, { ID: id }, type);
-    if (!checkFilter?.ID) {
+    const checkUser = await ticketsUserRepository.findOne(sessionID, { ID: id }, type);
+    if (!checkUser?.ID) {
       throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND);
     }
 

@@ -4,8 +4,8 @@ import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import * as yup from 'yup';
-import { passwordSchema } from '@gsbelarus/util-useful';
 import { ErrorTooltip } from '../Styled/error-tooltip/error-tooltip';
+import { passwordValidation } from '@gdmn-nxt/helpers/validators';
 
 interface IData {
   password: string,
@@ -27,8 +27,8 @@ export default function ChangePassword({ onSubmit }: Readonly<IChangePasswordPro
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const schema = yup.object().shape({
-    password: passwordSchema,
-    repeatPassword: passwordSchema.test(
+    password: passwordValidation(),
+    repeatPassword: passwordValidation().test(
       'must-match',
       'Пароли не совпадают',
       (value) => value === data.password
