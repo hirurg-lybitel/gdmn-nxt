@@ -1,5 +1,6 @@
 import { ColorMode, TicketsUser, GedeminUser, IAccount, IAuthResult, IWithID } from '@gsbelarus/util-api-types';
 import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
+import { compare } from 'bcryptjs';
 
 export const checkGedeminUser = async (userName: string, password: string): Promise<IAuthResult> => {
   const query = `
@@ -73,7 +74,8 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
       USR$PASSWORD,
       USR$EMAIL,
       DISABLED,
-      USR$COMPANYKEY
+      USR$COMPANYKEY,
+      USR$ONE_TIME_PASSWORD
     FROM USR$CRM_USER
     WHERE UPPER(USR$USERNAME) = ?
   `;
@@ -91,7 +93,11 @@ export const checkTiscketsUser = async (userName: string, password: string): Pro
           };
         }
 
-        if (data[0]['USR$PASSWORD'] !== password) {
+        const validPassword = data[0]['USR$ONE_TIME_PASSWORD'] === 1
+          ? data[0]['USR$PASSWORD'] === password
+          : await compare(password, data[0]['USR$PASSWORD'] ?? '');
+
+        if (!validPassword) {
           return {
             result: 'INVALID_PASSWORD'
           };

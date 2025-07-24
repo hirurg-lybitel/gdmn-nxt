@@ -109,6 +109,7 @@ export interface IProfileSettings {
   SECRETKEY?: string;
   LAST_IP?: string;
   SAVEFILTERS?: boolean;
+  ONE_TIME_PASSWORD?: boolean;
 }
 
 export interface ISystemSettings extends IWithID {

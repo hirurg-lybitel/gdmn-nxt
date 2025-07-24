@@ -164,7 +164,15 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     const buisnessProcessIds = BUSINESSPROCESSES ? (BUSINESSPROCESSES as string).split(',').map(Number) ?? [] : [];
     const favoriteOnly = (isFavorite as string)?.toLowerCase() === 'true';
 
-    const cachedContacts = (await cacheManager.getKey<Customer[]>('customers')) ?? [];
+    const cachedContacts = await (async () => {
+      const customers = await cacheManager.getKey<Customer[]>('customers');
+      if (!customers) {
+        await cachedRequets.cacheRequest('customers');
+        const customers = await cacheManager.getKey<Customer[]>('customers');
+        return customers ?? [];
+      }
+      return customers;
+    })();
 
     const contacts = cachedContacts
       .reduce((filteredArray, c) => {

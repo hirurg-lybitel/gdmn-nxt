@@ -1,5 +1,7 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IFilter, ITicketUser, RemoveOneHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
+import { customersService } from '@gdmn-nxt/modules/customers/service';
+import { FindHandler, FindOneHandler, FindOperator, ITicketUser, RemoveOneHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
+import { compare, hash } from 'bcryptjs';
 
 const find: FindHandler<ITicketUser> = async (
   sessionID,
@@ -44,11 +46,19 @@ const find: FindHandler<ITicketUser> = async (
 
     const result = await fetchAsObject<any>(sql, params);
 
+    const customers = await customersService.find(sessionID, { ticketSystem: 'true' });
+
+    let sortedCustomers = {};
+
+    for (const customer of customers) {
+      sortedCustomers = { ...sortedCustomers, [customer.ID]: customer };
+    }
+
     const users: ITicketUser[] = await Promise.all(result.map(async (data) => {
       return {
         ID: data['ID'],
         ...(type === UserType.CRM ? { password: data['USR$PASSWORD'] } : {}),
-        company: data['USR$COMPANYKEY'],
+        company: sortedCustomers[data['USR$COMPANYKEY']],
         fullName: data['USR$FULLNAME'],
         ...(type === UserType.CRM ? { userName: data['USR$USERNAME'] } : {}),
         email: data['USR$EMAIL'],
@@ -63,8 +73,8 @@ const find: FindHandler<ITicketUser> = async (
   }
 };
 
-const findOne: FindOneHandler<ITicketUser> = async (sessionID, clause = {}) => {
-  const filter = await find(sessionID, clause);
+const findOne: FindOneHandler<ITicketUser> = async (sessionID, clause = {}, type) => {
+  const filter = await find(sessionID, clause, undefined, type);
 
   if (filter.length === 0) {
     return Promise.resolve(undefined);
@@ -73,33 +83,65 @@ const findOne: FindOneHandler<ITicketUser> = async (sessionID, clause = {}) => {
   return filter[0];
 };
 
-const update: UpdateHandler<IFilter> = async (
+const update: UpdateHandler<ITicketUser> = async (
   sessionID,
   id,
   metadata
 ) => {
-  const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   try {
     const ID = id;
 
     const {
-      filters,
-      entityName
+      company,
+      password,
+      fullName,
+      email,
+      phone,
     } = metadata;
 
-    const updatedFilter = await fetchAsSingletonObject<IFilter>(
-      `UPDATE USR$CRM_USER
+    console.log(`UPDATE USR$CRM_USER
       SET
-        USR$ENTITYNAME = :ENTITYNAME,
-        USR$FILTERS = :FILTERS
+        USR$COMPANYKEY = :COMPANYKEY,
+        ${password ? 'USR$PASSWORD = :PASSWORD' : ''},
+        USR$FULLNAME = :FULLNAME,
+        USR$EMAIL = :EMAIL,
+        USR$PHONE = :PHONE,
+        USR$ONE_TIME_PASSWORD = :ONE_TIME_PASSWORD
       WHERE
         ID = :ID
       RETURNING ID`,
       {
         ID,
-        ENTITYNAME: entityName,
-        FILTERS: await string2Blob(JSON.stringify(filters)),
+        COMPANYKEY: company.ID,
+        ...(password ? { PASSWORD: await hash(password, 12) } : {}),
+        FULLNAME: fullName,
+        EMAIL: email,
+        PHONE: phone,
+        ONE_TIME_PASSWORD: false
+      });
+
+    const updatedFilter = await fetchAsSingletonObject<ITicketUser>(
+      `UPDATE USR$CRM_USER
+      SET
+        USR$COMPANYKEY = :COMPANYKEY,
+        ${password ? 'USR$PASSWORD = :PASSWORD' : ''},
+        USR$FULLNAME = :FULLNAME,
+        USR$EMAIL = :EMAIL,
+        USR$PHONE = :PHONE,
+        USR$ONE_TIME_PASSWORD = :ONE_TIME_PASSWORD
+      WHERE
+        ID = :ID
+      RETURNING ID`,
+      {
+        ID,
+        COMPANYKEY: company.ID,
+        ...(password ? { PASSWORD: await hash(password, 12) } : {}),
+        FULLNAME: fullName,
+        EMAIL: email,
+        PHONE: phone,
+        ONE_TIME_PASSWORD: false
       }
     );
 

@@ -18,7 +18,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
           '--color-borders': theme.mainContent.borderColor,
           '--color-grid-borders': theme.palette.mode === 'dark' ? 'rgba(81, 81, 81, 1)' : 'rgba(224, 224, 224, 1)',
           '--color-hihglight-bg': 'yellow',
-          '--color-error': 'rgb(143, 64, 64)',
+          '--color-error': theme.palette.mode === 'dark' ? 'rgb(143, 64, 64)' : 'rgb(205, 92, 92)',
           '--color-disabled': 'rgba(255, 255, 255, 0.3)',
           '--border-radius': theme.mainContent.borderRadius,
           '--btn-border-radius': '6px',

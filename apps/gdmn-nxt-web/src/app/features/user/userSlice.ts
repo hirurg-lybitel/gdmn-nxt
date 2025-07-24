@@ -22,7 +22,8 @@ export type LoginStage =
   | 'CREATE_2FA'
   | 'SET_EMAIL'
   | 'SIGN_IN_2FA'
-  | 'CAPTCHA';
+  | 'CAPTCHA'
+  | 'ONE_TIME_PASSWORD';
 
 export interface UserState {
   loginStage: LoginStage;
@@ -51,6 +52,7 @@ export const userSlice = createSlice({
     create2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CREATE_2FA', userProfile: { ...action.payload } } as UserState),
     setEmail: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SET_EMAIL', userProfile: { ...action.payload } } as UserState),
     checkCaptcha: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CAPTCHA', userProfile: { ...action.payload } } as UserState),
+    changePassword: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'ONE_TIME_PASSWORD', userProfile: { ...action.payload } } as UserState),
     renderApp: (state) => {
       state.loginStage = state.userType || 'CUSTOMER';
     }
@@ -74,7 +76,8 @@ export const {
   setEmail,
   signIn2fa,
   checkCaptcha,
-  signedInTicketsUser
+  signedInTicketsUser,
+  changePassword
 } = userSlice.actions;
 
 export default userSlice.reducer;

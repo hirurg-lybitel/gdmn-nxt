@@ -61,7 +61,8 @@ const getSettings = async ({
             ps.USR$SEND_EMAIL_NOTIFICATION as SEND_EMAIL_NOTIFICATIONS,
             u.USR$EMAIL as EMAIL,
             ps.USR$PUSH_NOTIFICATIONS as PUSH_NOTIFICATIONS_ENABLED,
-            ps.USR$SAVEFILTERS as SAVEFILTERS
+            ps.USR$SAVEFILTERS as SAVEFILTERS,
+            u.USR$ONE_TIME_PASSWORD
           FROM USR$CRM_USER u
             LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
           WHERE u.ID = :userId`,
@@ -90,6 +91,8 @@ const getSettings = async ({
           r['ENABLED_2FA'] = false;
           r['REQUIRED_2FA'] = false;
           r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
+          r['ONE_TIME_PASSWORD'] = r['USR$ONE_TIME_PASSWORD'] === 1;
+          delete r['USR$ONE_TIME_PASSWORD'];
           delete r['AVATAR_BLOB'];
         };
 
@@ -135,6 +138,7 @@ const getSettings = async ({
         r['ENABLED_2FA'] = r['ENABLED_2FA'] === 1;
         r['REQUIRED_2FA'] = required2fa;
         r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
+        r['ONE_TIME_PASSWORD'] = false;
         delete r['AVATAR_BLOB'];
       };
 

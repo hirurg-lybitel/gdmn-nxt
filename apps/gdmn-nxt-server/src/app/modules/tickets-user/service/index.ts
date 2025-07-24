@@ -33,6 +33,20 @@ const findAll = async (
   }
 };
 
+const findOne = async (
+  sessionID: string,
+  userId: number,
+  type: UserType
+) => {
+  try {
+    const user = await ticketsUserRepository.findOne(sessionID, { id: userId }, type);
+
+    return user;
+  } catch (error) {
+    throw InternalServerErrorException(error.message);
+  }
+};
+
 const create = async (
   sessionID: string,
   body: Omit<ITicketUser, 'ID'>,
@@ -53,17 +67,16 @@ const create = async (
 const updateById = async (
   sessionID: string,
   id: number,
-  body: Omit<IFilter, 'ID'>,
-  type: UserType
+  body: Omit<ITicketUser, 'ID'>
 ) => {
   try {
-    const updatedSegment = await ticketsUserRepository.update(sessionID, id, body, type);
-    if (!updatedSegment?.ID) {
-      throw NotFoundException(`Не найден фильтр с id=${id}`);
+    const updatedUser = await ticketsUserRepository.update(sessionID, id, body);
+    if (!updatedUser?.ID) {
+      throw NotFoundException(`Не найден пользователь с id=${id}`);
     }
-    const filter = await ticketsUserRepository.findOne(sessionID, { id: updatedSegment.ID }, type);
+    const user = await ticketsUserRepository.findOne(sessionID, { id: updatedUser.ID });
 
-    return filter;
+    return user;
   } catch (error) {
     throw InternalServerErrorException(error.message);
   }
@@ -88,6 +101,7 @@ const removeById = async (
 
 export const ticketsUserService = {
   findAll,
+  findOne,
   create,
   updateById,
   removeById

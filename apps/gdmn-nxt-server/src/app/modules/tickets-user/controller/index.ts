@@ -50,15 +50,14 @@ const updateById: RequestHandler = async (req, res) => {
   }
 
   try {
-    const updatedFIlter = await ticketsUserService.updateById(
+    const updatedUser = await ticketsUserService.updateById(
       req.sessionID,
       id,
-      req.body,
-      req.user['ticketsUser'] ? UserType.Tickets : UserType.CRM
+      req.body
     );
 
     const result: IRequestResult = {
-      queries: { filters: [updatedFIlter] },
+      queries: { users: [updatedUser] },
       _params: [{ id }],
       _schema: {}
     };
