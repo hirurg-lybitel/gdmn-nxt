@@ -8,19 +8,68 @@ const findAll = async (
   type?: UserType,
 ) => {
   try {
-    const active = filter['active'] === 'true';
+    const {
+      active,
+      conpanyKey,
+      userId,
+      state,
+      performerKey,
+      name,
+      pageSize,
+      pageNo,
+    } = filter;
 
-    const tickets = await ticketsRepository.find(
+    let fromRecord = 0;
+    let toRecord: number;
+
+    if (pageNo && pageSize) {
+      fromRecord = Number(pageNo) * Number(pageSize);
+      toRecord = fromRecord + Number(pageSize);
+    };
+
+    const result = await ticketsRepository.find(
       sessionID,
       {
-        USR$CLOSEAT: (active ? IsNull : IsNotNull)()
+        // ...(active ? { USR$CLOSEAT: (active === 'true' ? IsNull : IsNotNull)() } : {}),
+        ...(conpanyKey ? { USR$COMPANYKEY: conpanyKey ?? -1 } : {}),
+        ...(userId ? { USR$USERKEY: userId } : {}),
+        ...(state ? { USR$STATE: state } : {}),
+        ...(performerKey ? { USR$PERFORMERKEY: performerKey } : {})
       },
       undefined,
       type
     );
 
+    const tickets = result.reduce<ITicket[]>((filteredArray, ticket) => {
+      let checkConditions = true;
+
+      if (name) {
+        const lowerName = String(name).toLowerCase();
+        checkConditions = checkConditions && ticket.title.toLowerCase().includes(lowerName);
+      }
+
+      if ('active' in filter) {
+        checkConditions = checkConditions && (active === 'true' ? !ticket.closeAt : !!ticket.closeAt);
+      }
+
+      if (checkConditions) {
+        filteredArray.push({
+          ...ticket
+        });
+      }
+      return filteredArray;
+    }, []);
+
+    const usersWithPagination = tickets.slice(fromRecord, toRecord);
+    const rowCount = tickets.length;
+
+    const closed = result.filter(item => !!item.closeAt).length;
+
     return {
-      tickets: tickets
+      tickets: usersWithPagination,
+      count: rowCount,
+      closed,
+      open: result.length - closed
     };
   } catch (error) {
     throw InternalServerErrorException(error.message);
@@ -49,7 +98,7 @@ const createTicket = async (
 ) => {
   try {
     const newTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
-    const ticket = await ticketsRepository.findOne(sessionID, { id: newTicket.ID }, type);
+    const ticket = await ticketsRepository.findOne(sessionID, { ID: newTicket.ID }, type);
 
     const newMessage = await ticketsMessagesService.createMessage(
       sessionID,

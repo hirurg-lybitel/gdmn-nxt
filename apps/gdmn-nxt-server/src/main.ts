@@ -1,4 +1,4 @@
-import express, { Request } from 'express';
+import express from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
@@ -86,6 +86,7 @@ interface ICustomerUser extends IBaseUser {
   hash: string;
   salt: string;
   expireOn?: number;
+  type: UserType.Customer;
 };
 interface ITicketsUser extends IBaseUser {
   type: UserType.Tickets;
@@ -268,12 +269,11 @@ passport.serializeUser((user: IUser, done) => {
 passport.deserializeUser(async (user: IUser, done) => {
   // console.log('passport deserialize');
 
-  const { userName: name } = user;
+  const { userName: name, type } = user;
 
-  const typeOfUser = name.slice(0, 1);
   const userName = name.slice(1);
 
-  if (user['type'] === UserType.Tickets) {
+  if (type === UserType.Tickets) {
     const res = await getTicketsUser(userName);
 
     if (res) {
@@ -282,7 +282,7 @@ passport.deserializeUser(async (user: IUser, done) => {
     return done(`Unknown user userName: ${userName}`);
   }
 
-  if (typeOfUser === 'U') {
+  if (type === UserType.Customer) {
     const account = await getAccount('passport', userName);
 
     if (account) {
@@ -295,7 +295,7 @@ passport.deserializeUser(async (user: IUser, done) => {
   const res = await getGedeminUser(userName);
 
   if (res) {
-    return done(null, { ...user, ...res, gedeminUser: true });
+    return done(null, { ...user, ...res, type });
   } else {
     return done(`Unknown user userName: ${userName}`);
   }

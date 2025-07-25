@@ -7,12 +7,11 @@ import { ICustomer, IFilteringData, IPaginationData, ISortingData, ITicketUser }
 import { useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import style from './tickets-customers.module.less';
-import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { RootState } from '@gdmn-nxt/store';
 import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
-import { useAddCustomerTicketsMutation, useGetCustomerQuery } from '../../../features/customer/customerApi_new';
+import { useGetCustomerQuery } from '../../../features/customer/customerApi_new';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { useAddTicketUserMutation, useDeleteTicketUserMutation, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsApi';
@@ -93,7 +92,14 @@ export function TicketsUsers(props: TicketsCustomersProps) {
     setDataChanged(false);
   }, [filteringData]);
 
-  const { data, isFetching: usersIsFetching, isLoading: usersIsLoading, refetch: usersRefetch } = useGetAllTicketUserQuery();
+  const { data, isFetching: usersIsFetching, isLoading: usersIsLoading, refetch: usersRefetch } = useGetAllTicketUserQuery(
+    {
+      pagination: paginationData,
+      ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
+      ...(sortingData ? { sort: sortingData } : {})
+    }
+  );
+
   const companyKey = useSelector<RootState, number>(state => state.user.userProfile?.companyKey ?? -1);
   const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 });
 
@@ -113,11 +119,6 @@ export function TicketsUsers(props: TicketsCustomersProps) {
     {
       field: 'fullName',
       headerName: 'ФИО',
-      flex: 1,
-    },
-    {
-      field: 'userName',
-      headerName: 'Логин',
       flex: 1,
     },
     {
@@ -158,16 +159,16 @@ export function TicketsUsers(props: TicketsCustomersProps) {
     },
     handleRequestSearch: async (value: string) => {
       const newObject = { ...filteringData };
-      delete newObject.NAME;
+      delete newObject.name;
       setFilteringData({
         ...newObject,
-        ...(value !== '' ? { NAME: [value] } : {})
+        ...(value !== '' ? { name: [value] } : {})
       });
       setPaginationData(prev => ({ ...prev, pageNo: 0 }));
     },
     handleCancelSearch: async () => {
       const newObject = { ...filteringData };
-      delete newObject.NAME;
+      delete newObject.name;
       setFilteringData(newObject);
     },
     handleFilteringData: async (newValue: IFilteringData) => {
@@ -230,13 +231,13 @@ export function TicketsUsers(props: TicketsCustomersProps) {
         <CustomCardHeader
           search
           refetch
-          title={'Отвественные'}
-          searchPlaceholder="Поиск отвественного"
+          title={'Ответственные'}
+          searchPlaceholder="Поиск ответственного"
           isLoading={usersIsLoading || filtersIsLoading || companyIsLoading}
           isFetching={usersIsFetching || filtersIsFetching || companyIsFetching}
           onCancelSearch={filterHandlers.handleCancelSearch}
           onRequestSearch={filterHandlers.handleRequestSearch}
-          searchValue={filteringData?.NAME?.[0]}
+          searchValue={filteringData?.name?.[0]}
           onRefetch={usersRefetch}
           addButton
           onAddClick={() => setOpenEditForm(true)}

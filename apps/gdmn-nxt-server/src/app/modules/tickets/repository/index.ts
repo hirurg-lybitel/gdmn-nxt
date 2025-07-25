@@ -1,4 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
 import { FindHandler, FindOneHandler, FindOperator, ITicket, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 import { bin2String } from '@gsbelarus/util-helpers';
@@ -42,30 +43,60 @@ const find: FindHandler<ITicket> = async (
         t.USR$OPENAT,
         t.USR$CLOSEAT,
         t.USR$NEEDCALL,
+
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE,
+
         u.ID as USER_ID,
         u.USR$FULLNAME as USER_NAME,
         u.USR$PHONE as USER_PHONE,
         u.USR$EMAIL as USER_EMAIL,
-        ps.USR$AVATAR
+        ps.USR$AVATAR,
+
+        REPLACE(
+          TRIM(
+            COALESCE(gp.FIRSTNAME, '') || ' ' ||
+            COALESCE(gp.SURNAME, '') || ' ' ||
+            COALESCE(gp.MIDDLENAME, '')
+          ),
+          '  ', ' '
+        ) AS PERFORMER_FULLNAME,
+        gc.EMAIL as PERFORMER_EMAIL,
+        gc.PHONE as PERFORMER_PHONE,
+        gups.USR$AVATAR as PERFORMER_AVATAR_BLOB
       FROM USR$CRM_TICKET t
         JOIN USR$CRM_TICKET_STATE s ON s.ID = t.USR$STATE
         JOIN USR$CRM_USER u ON u.ID = t.USR$USERKEY
         JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = t.USR$USERKEY
+
+        LEFT JOIN GD_USER gu ON gu.ID = USR$PERFORMERKEY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
+        LEFT JOIN GD_CONTACT gc ON gc.id = gu.contactkey
+        LEFT JOIN GD_PEOPLE gp ON gp.contactkey = gu.contactkey
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
     const result = await fetchAsObject<any>(sql, params);
+
+    const customers = await customersService.find(sessionID, { ticketSystem: 'true' });
+
+    let sortedCustomers = {};
+
+    for (const customer of customers) {
+      sortedCustomers = { ...sortedCustomers, [customer.ID]: customer };
+    }
 
     const tickets: ITicket[] = await Promise.all(result.map(async (data) => {
       const avatarBlob = await getStringFromBlob(attachment, transaction, data['USR$AVATAR']);
       const avatar = bin2String(avatarBlob.split(','));
 
+      const performerAvatarBlob = await getStringFromBlob(attachment, transaction, data['PERFORMER_AVATAR_BLOB']);
+      const performerAvatar = bin2String(performerAvatarBlob.split(','));
+
       return {
         ID: data['ID'],
         title: data['USR$TITLE'],
-        companyKey: data['USR$COMPANYKEY'],
+        company: sortedCustomers[data['USR$COMPANYKEY']],
         openAt: data['USR$OPENAT'],
         closeAt: data['USR$CLOSEAT'],
         state: {
@@ -79,6 +110,13 @@ const find: FindHandler<ITicket> = async (
           phone: data['USER_PHONE'],
           email: data['USER_EMAIL'],
           avatar
+        },
+        performer: {
+          ID: data['USER_ID'],
+          fullName: data['PERFORMER_FULLNAME'],
+          phone: data['PERFORMER_PHONE'],
+          email: data['PERFORMER_EMAIL'],
+          avatar: performerAvatar
         },
         needCall: data['USR$NEEDCALL'] === 1
       };
@@ -111,11 +149,11 @@ const save: SaveHandler<ITicketSave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { title, companyKey, userId, openAt } = metadata;
+  const { title, company, userId, openAt } = metadata;
 
   const ticketStates = await ticketsStateRepository.find(sessionID);
 
-  const openState = ticketStates.find(state => state.code === 0);
+  const openState = ticketStates.find(state => state.code === 1);
 
   try {
     const ticket = await fetchAsSingletonObject<ITicketSave>(
@@ -124,7 +162,7 @@ const save: SaveHandler<ITicketSave> = async (
       RETURNING ID`,
       {
         TITLE: title,
-        COMPANYKEY: companyKey,
+        COMPANYKEY: company.ID,
         USERKEY: userId,
         OPENAT: new Date(openAt),
         STATEID: openState.ID

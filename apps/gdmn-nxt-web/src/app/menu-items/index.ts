@@ -23,6 +23,7 @@ export interface IMenuItem {
     name: keyof Permissions;
     method: ActionMethod;
   };
+  adminOnly?: boolean;
 }
 
 const menuItems = {

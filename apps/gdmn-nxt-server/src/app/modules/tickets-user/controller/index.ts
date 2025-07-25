@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { IRequestResult } from '@gsbelarus/util-api-types';
+import { ForbiddenException, IRequestResult, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from '@gsbelarus/util-helpers';
 import { ticketsUserService } from '../service';
 
@@ -7,12 +7,16 @@ const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const ticketsUser = req.user['type'];
+    const type = req.user['type'];
 
     const response = await ticketsUserService.findAll(
       sessionID,
-      req.query,
-      ticketsUser,
+      {
+        ...req.query,
+        ...(type === UserType.Tickets ? { companyKey: req.user['companyKey'] } : {}),
+        ...(type === UserType.Tickets ? { isAdmin: 'false' } : {}),
+      },
+      type,
     );
 
     const result: IRequestResult = {
@@ -28,6 +32,12 @@ const findAll: RequestHandler = async (req, res) => {
 
 const create: RequestHandler = async (req, res) => {
   try {
+    const type = req.user['type'];
+
+    if (type === UserType.Tickets && req.body.company.ID !== req.user['companyKey']) {
+      throw ForbiddenException('Организация создаваемого ответственного лица отличается от вашей');
+    }
+
     const users = await ticketsUserService.create(req.sessionID, req.body);
 
     const result: IRequestResult = {
@@ -76,7 +86,7 @@ const removeById: RequestHandler = async (req, res) => {
   }
 
   try {
-    await ticketsUserService.removeById(req.sessionID, id, req.user['type']);
+    await ticketsUserService.removeById(req.sessionID, id, req.user['type'], req.user['companyKey']);
     res.sendStatus(200);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));

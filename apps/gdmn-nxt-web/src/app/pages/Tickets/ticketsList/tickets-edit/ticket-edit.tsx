@@ -1,5 +1,5 @@
-import { Stack, TextField } from '@mui/material';
-import { useCallback, useEffect, } from 'react';
+import { Box, Chip, Divider, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { useCallback, useEffect, useState, } from 'react';
 import { ITicket } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -8,7 +8,12 @@ import { useSelector } from 'react-redux';
 import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
-import { useGetAllTicketsStatesQuery } from '../../../features/tickets/ticketsApi';
+import { useGetAllTicketsStatesQuery } from '../../../../features/tickets/ticketsApi';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import styles from './tickets-edit.module.less';
+import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import ReactMarkdown from 'react-markdown';
+import InfoIcon from '@mui/icons-material/Info';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -25,10 +30,12 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const { onSubmit, onCancelClick } = props;
   const user = useSelector<RootState, UserState>(state => state.user);
 
+  const [tabIndex, setTabIndex] = useState('1');
+
   const initValue: ITicket = {
     ID: ticket?.ID ?? -1,
     title: ticket?.title ?? '',
-    companyKey: ticket?.companyKey ?? user.userProfile?.companyKey ?? -1,
+    company: ticket?.company ?? { ID: -1, NAME: '' },
     openAt: ticket?.openAt ? new Date(ticket?.openAt) : new Date(),
     state: {
       ID: ticket?.state?.ID ?? -1,
@@ -38,6 +45,10 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     sender: {
       ID: ticket?.sender?.ID ?? user.userProfile?.id ?? -1,
       fullName: ticket?.sender?.fullName ?? user.userProfile?.fullName ?? ''
+    },
+    performer: {
+      ID: -1,
+      fullName: ''
     },
     needCall: ticket?.needCall ?? false,
     message: '',
@@ -98,12 +109,19 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     formik.setFieldValue('files', attachments);
   }, [formik]);
 
+  const handleTabsChange = useCallback((event: any, newindex: string) => {
+    setTabIndex(newindex);
+  }, []);
+
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <EditDialog
       open={open}
       onClose={handleOnClose}
       confirmation={formik.dirty}
-      title={ticket ? `Редактирование тикета: ${ticket.title}` : 'Создание тикета'}
+      title={(ticket && ticket?.ID) ? `Редактирование тикета: ${ticket.title}` : 'Создание тикета'}
       form="mainForm"
       onDeleteClick={handleDelete}
       deleteConfirmTitle={'Удаление тикета'}
@@ -133,19 +151,63 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
               error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
               helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
             />
-            <TextField
-              style={{ width: '100%' }}
-              label="Сообщение"
-              type="message"
-              required
-              multiline
-              rows={12}
-              name="message"
-              onChange={formik.handleChange}
-              value={formik.values.message}
-              error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
-              helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
-            />
+            <TabContext value={tabIndex}>
+              <Box>
+                <TabList onChange={handleTabsChange}>
+                  <Tab label="Изменение" value="1" />
+                  <Tab label="Просмотр" value="2" />
+                </TabList>
+                <Divider />
+              </Box>
+              <TabPanel
+                value="1"
+                className={styles.tabPanel}
+              >
+                <TextField
+                  className={styles.inputTextField}
+                  label="Описание"
+                  type="text"
+                  fullWidth
+                  required
+                  multiline
+                  rows={1}
+                  name="message"
+                  onChange={formik.handleChange}
+                  value={formik.values.message}
+                  error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
+                  helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
+                />
+
+              </TabPanel>
+              <TabPanel
+                value="2"
+                className={styles.tabPanel}
+              >
+                <div className={styles.preview}>
+                  <CustomizedScrollBox>
+                    <ReactMarkdown components={{ p: 'div' }}>
+                      {formik.values.message ?? ''}
+                    </ReactMarkdown>
+                  </CustomizedScrollBox>
+                </div>
+              </TabPanel>
+              <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
+                <a
+                  href="https://www.markdownguide.org/basic-syntax/"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Chip
+                    icon={<InfoIcon />}
+                    label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
+                    variant="outlined"
+                    className={styles.info}
+                    style={{ border: 'none', cursor: 'pointer' }}
+                  />
+                </a>
+              </Tooltip>
+            </TabContext>
             {/* <Dropzone
               maxFileSize={maxFileSize}
               filesLimit={maxFilesCount}

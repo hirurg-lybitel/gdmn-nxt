@@ -250,6 +250,7 @@ export interface IContactPerson extends IContactWithID {
   COMPANY?: IContactWithID | null;
   isFavorite?: boolean;
   nameInfo?: IContactName;
+  ISGEDEMINUSER?: boolean;
 };
 
 export interface IContract extends IWithID {
@@ -681,7 +682,7 @@ export interface IRevenue {
 
 export enum UserType {
   Tickets = 'tickets',
-  Gedemin = 'crm',
+  Gedemin = 'gedemin',
   Customer = 'customer'
 };
 
@@ -699,11 +700,12 @@ export interface ITicketState extends IWithID {
 
 export interface ITicket extends IWithID {
   title: string;
-  companyKey: number,
+  company: ICustomer,
   openAt: Date;
   closeAt?: Date;
   state: ITicketState,
   sender: ICRMTicketUser;
+  performer?: ICRMTicketUser;
   needCall: boolean;
   message?: string;
   files?: File[];

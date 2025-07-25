@@ -2,15 +2,17 @@ import { Avatar, Tooltip, TooltipProps } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import styles from './user-tooltip.module.less';
+import { CSSProperties } from 'react';
 
 interface IUserTooltipProps extends Omit<TooltipProps, 'title'> {
   name: string;
   phone?: string,
   email?: string,
   avatar?: string;
+  customAvatar?: React.ReactNode;
 }
 
-export default function UserTooltip({ name, phone, email, avatar, ...rest }: Readonly<IUserTooltipProps>) {
+export default function UserTooltip({ name, phone, email, avatar, customAvatar, ...rest }: Readonly<IUserTooltipProps>) {
   return (
     <Tooltip
       {...rest}
@@ -18,9 +20,9 @@ export default function UserTooltip({ name, phone, email, avatar, ...rest }: Rea
       title={
         <div style={{ padding: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <Avatar
+            {customAvatar ? customAvatar : <Avatar
               src={avatar}
-            />
+            />}
             <div style={{ fontSize: '14px' }}>
               {name}
             </div>

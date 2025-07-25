@@ -5,10 +5,11 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { emailValidation, passwordValidation } from '@gdmn-nxt/helpers/validators';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import * as yup from 'yup';
-import { IconButton, InputAdornment, Stack, TextField } from '@mui/material';
+import { Chip, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import InfoIcon from '@mui/icons-material/Info';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -94,44 +95,6 @@ export function TicketsUserEdit({
             <TextField
               required
               fullWidth
-              label="Логин"
-              type="text"
-              name="userName"
-              onChange={formik.handleChange}
-              value={formik.values.userName}
-              error={!!formik.errors.userName}
-              helperText={formik.errors.userName}
-            />
-            <TextField
-              required
-              fullWidth
-              label="Пароль"
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      sx={{
-                        opacity: 0.7,
-                        '&:hover': { opacity: 1 }
-                      }}
-                    >
-                      {showPassword ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              error={!!formik.errors.password}
-              helperText={formik.errors.password}
-            />
-            <TextField
-              required
-              fullWidth
               label="ФИО"
               type="text"
               name="fullName"
@@ -162,6 +125,66 @@ export function TicketsUserEdit({
               error={!!formik.errors.phone}
               helperText={formik.errors.phone}
             />
+            <div>
+              <div
+                style={{
+                  display: 'flex', gap: '16px', border: '1px solid var(--color-borders)',
+                  padding: '16px', position: 'relative', borderRadius: 'var(--border-radius)',
+                  flexDirection: 'column', minHeight: '130px'
+                }}
+              >
+                <div style={{ position: 'absolute', top: '-14px', left: '10px', background: 'var(--color-paper-bg)', padding: '0px 5px' }}>
+                  <Typography variant="caption">
+                    Данные для входа
+                  </Typography>
+                </div>
+                <TextField
+                  required
+                  fullWidth
+                  label="Логин"
+                  type="text"
+                  name="userName"
+                  onChange={formik.handleChange}
+                  value={formik.values.userName}
+                  error={!!formik.errors.userName}
+                  helperText={formik.errors.userName}
+                />
+                <TextField
+                  required
+                  fullWidth
+                  label="Пароль"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  onChange={formik.handleChange}
+                  value={formik.values.password}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          sx={{
+                            opacity: 0.7,
+                            '&:hover': { opacity: 1 }
+                          }}
+                        >
+                          {showPassword ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  error={!!formik.errors.password}
+                  helperText={formik.errors.password}
+                />
+              </div>
+              <Chip
+                icon={<InfoIcon />}
+                label={'После создания, изменение и просмотр данных буду недоступны'}
+                variant="outlined"
+                className={styles.info}
+                style={{ border: 'none', cursor: 'pointer' }}
+              />
+            </div>
           </Stack>
         </Form>
       </FormikProvider>

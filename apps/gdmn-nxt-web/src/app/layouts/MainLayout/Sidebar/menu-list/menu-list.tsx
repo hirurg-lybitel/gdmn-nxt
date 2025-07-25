@@ -38,6 +38,7 @@ export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
   const theme = useTheme();
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+  const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const [searchText, setSearchText] = useState('');
 
@@ -87,7 +88,10 @@ export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
           return (
             <PermissionsGate
               key={item.id}
-              actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck}
+              actionAllowed={
+                (userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck) &&
+                (item.adminOnly ? isAdmin : true)
+              }
             >
               <MenuItem
                 onClick={handleClick}
@@ -109,7 +113,7 @@ export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
             </Typography>
           );
       }
-    }), [filterMenuItems, handleClick, searchText, userPermissions]);
+    }), [filterMenuItems, handleClick, searchText, ticketsUser, userPermissions]);
 
   const searchOnChange = (value: string) => {
     setSearchText(value);

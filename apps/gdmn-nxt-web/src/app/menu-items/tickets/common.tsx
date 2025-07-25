@@ -20,12 +20,13 @@ const common: IMenuItem = {
       selectedIcon: <AssignmentIcon color="secondary" />,
     },
     {
-      id: 'tickets',
-      title: 'Отвественные',
+      id: 'respondent',
+      title: 'Ответственные',
       type: 'item',
       url: 'users',
       icon: <PeopleAltOutlinedIcon color="secondary" />,
       selectedIcon: <PeopleAltIcon color="secondary" />,
+      adminOnly: true
     }
   ]
 };

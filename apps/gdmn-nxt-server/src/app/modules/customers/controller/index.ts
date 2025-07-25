@@ -1,4 +1,4 @@
-import { IBusinessProcess, IContactPerson, IRequestResult, SortMode } from '@gsbelarus/util-api-types';
+import { ForbiddenException, IBusinessProcess, IContactPerson, IRequestResult, SortMode, UserType } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
@@ -9,6 +9,8 @@ import { customersService } from '../service';
 export const getContacts: RequestHandler = async (req, res) => {
   const customerId = parseInt(req.params.customerId);
   const userId = req.user['id'];
+
+  const type = req.user['type'];
 
   const { pageSize, pageNo } = req.query;
   const {
@@ -39,6 +41,10 @@ export const getContacts: RequestHandler = async (req, res) => {
   };
 
   try {
+    if (customerId && type === UserType.Tickets && customerId !== req.user['companyKey']) {
+      throw ForbiddenException('Запрошенная организация не является вашей');
+    }
+
     const contacts = await customersService.find(
       req.sessionID,
       {
@@ -64,7 +70,7 @@ export const getContacts: RequestHandler = async (req, res) => {
 
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).send(resultError(error.message));
+    return res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 

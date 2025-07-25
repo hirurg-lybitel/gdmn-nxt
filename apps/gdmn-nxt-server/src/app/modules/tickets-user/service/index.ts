@@ -1,4 +1,4 @@
-import { InternalServerErrorException, UserType, NotFoundException, ITicketUser } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, ITicketUser, ForbiddenException } from '@gsbelarus/util-api-types';
 import { ticketsUserRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 
@@ -10,24 +10,78 @@ const findAll = async (
   const {
     userName,
     companyKey,
-    isAdmin
+    isAdmin,
+    name,
+    pageSize,
+    pageNo,
+    sortField,
+    sortMode
   } = filter;
 
   try {
-    const users = await ticketsUserRepository.find(
+    let fromRecord = 0;
+    let toRecord: number;
+
+    if (pageNo && pageSize) {
+      fromRecord = Number(pageNo) * Number(pageSize);
+      toRecord = fromRecord + Number(pageSize);
+    };
+
+    const result = await ticketsUserRepository.find(
       sessionID,
       {
         ...(userName ? { USR$USERNAME: userName } : {}),
         ...(companyKey ? { USR$COMPANYKEY: Number(companyKey) } : {}),
-        ...(isAdmin ? { USR$ISADMIN: isAdmin === 'true' ? 1 : 0 } : {})
+        ...(isAdmin ? { USR$ISADMIN: isAdmin === 'true' ? 1 : 0 } : {}),
       },
       undefined,
       type
     );
 
+    const users = result.reduce<ITicketUser[]>((filteredArray, user) => {
+      let checkConditions = true;
+
+      if (name) {
+        const lowerName = String(name).toLowerCase();
+        checkConditions = checkConditions && user.fullName.toLowerCase().includes(lowerName);
+      }
+
+      if (checkConditions) {
+        filteredArray.push({
+          ...user
+        });
+      }
+      return filteredArray;
+    }, []).sort((a, b) => {
+      const dataType = typeof (a[String(sortField)] ?? b[String(sortField)]);
+
+      const nameA = (() => {
+        const fieldValue = a[String(sortField)];
+        if (dataType === 'string') {
+          return fieldValue?.toLowerCase() || '';
+        }
+        return fieldValue;
+      })();
+
+      const nameB = (() => {
+        const fieldValue = b[String(sortField)];
+        if (typeof fieldValue === 'string') {
+          return fieldValue?.toLowerCase() || '';
+        }
+        return fieldValue;
+      })();
+
+      return String(sortMode).toUpperCase() === 'ASC'
+        ? nameA?.localeCompare(nameB)
+        : nameB?.localeCompare(nameA);
+    });
+
+    const usersWithPagination = users.slice(fromRecord, toRecord);
+    const rowCount = users.length;
+
     return {
-      users: users,
-      count: users.length
+      users: usersWithPagination,
+      count: rowCount
     };
   } catch (error) {
     throw InternalServerErrorException(error.message);
@@ -86,12 +140,17 @@ const updateById = async (
 const removeById = async (
   sessionID: string,
   id: number,
-  type: UserType
+  type: UserType,
+  editorCompanuKey: number
 ) => {
   try {
     const checkUser = await ticketsUserRepository.findOne(sessionID, { ID: id }, type);
     if (!checkUser?.ID) {
       throw NotFoundException(ERROR_MESSAGES.DATA_NOT_FOUND);
+    }
+
+    if (type === UserType.Tickets && editorCompanuKey !== checkUser.company.ID) {
+      throw ForbiddenException('Организация удаляемого ответственного лица отличается от вашей');
     }
 
     return await ticketsUserRepository.remove(sessionID, id, type);

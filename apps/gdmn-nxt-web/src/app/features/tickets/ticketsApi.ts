@@ -2,7 +2,7 @@ import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITi
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
-export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[]; }>;
+export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[], count: number, closed: number, open: number; }>;
 export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicketState[]; }>;
 export type ITicketMessagesRequestResult = IRequestResult<{ messages: ITicketMessage[]; }>;
 export type ITicketUsersRequestResult = IRequestResult<{ users: ITicketUser[], count: number; }>;
@@ -13,7 +13,7 @@ export const ticketsApi = createApi({
   tagTypes: ['tickets', 'ticketsStates', 'users'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
-    getAllTickets: builder.query<ITicket[], Partial<{ active: boolean; } & IQueryOptions> | void>({
+    getAllTickets: builder.query<{ tickets: ITicket[], count: number, closed: number, open: number; }, Partial<{ active: boolean; } & IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
@@ -22,7 +22,7 @@ export const ticketsApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: ITicketsRequestResult) => response.queries?.tickets || null,
+      transformResponse: (response: ITicketsRequestResult) => response.queries || null,
       providesTags: ['tickets']
     }),
     getTicketById: builder.query<ITicket, string>({

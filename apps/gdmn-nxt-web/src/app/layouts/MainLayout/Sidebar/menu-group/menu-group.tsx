@@ -10,13 +10,14 @@ import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
 
 export interface MenuGroupProps {
   item: any,
-  onClick: (item: IMenuItem, lavel: number) => void
+  onClick: (item: IMenuItem, lavel: number) => void;
 }
 
 export function MenuGroup(props: MenuGroupProps) {
   const { item, onClick } = props;
 
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
+  const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const items = item.children?.map((menu: IMenuItem) => {
     switch (menu.type) {
@@ -42,7 +43,11 @@ export function MenuGroup(props: MenuGroupProps) {
       case 'item':
         return <PermissionsGate
           key={menu.id}
-          actionAllowed={userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? ''] ?? !menu.actionCheck}
+          actionAllowed={
+            (userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? ''] ?? !menu.actionCheck) &&
+            (menu.adminOnly ? isAdmin : true)
+
+          }
         >
           <MenuItem
             onClick={onClick}
@@ -59,7 +64,7 @@ export function MenuGroup(props: MenuGroupProps) {
             color="error"
             align="center"
           >
-              Ошибка отображения
+            Ошибка отображения
           </Typography>
         );
     }

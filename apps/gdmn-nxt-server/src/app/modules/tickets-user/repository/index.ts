@@ -163,6 +163,18 @@ const save: Save = async (
       }
     );
 
+    const profile = await fetchAsSingletonObject(
+      `INSERT INTO USR$CRM_T_USER_PROFILE_SETTINGS(USR$USERKEY, USR$SEND_EMAIL_NOTIFICATION, USR$PUSH_NOTIFICATIONS, USR$SAVEFILTERS)
+      VALUES(:USERKEY, :SEND_EMAIL_NOTIFICATION, :PUSH_NOTIFICATIONS, :SAVEFILTERS)
+      RETURNING ID`,
+      {
+        USERKEY: user.ID,
+        SEND_EMAIL_NOTIFICATION: true,
+        PUSH_NOTIFICATIONS: true,
+        SAVEFILTERS: true
+      }
+    );
+
     await releaseTransaction();
 
     return user;
