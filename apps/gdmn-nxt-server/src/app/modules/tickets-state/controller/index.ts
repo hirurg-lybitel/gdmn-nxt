@@ -22,7 +22,6 @@ const findAll: RequestHandler = async (req, res) => {
 
 const findOne: RequestHandler = async (req, res) => {
   try {
-    console.log('2');
     const id = req.params.id;
     const ticketState = await ticketsStateService.findOne(req.sessionID, id);
     return res.status(200).json(ticketState);
