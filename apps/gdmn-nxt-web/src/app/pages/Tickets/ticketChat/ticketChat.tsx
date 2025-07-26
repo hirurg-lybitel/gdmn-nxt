@@ -366,7 +366,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
   const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
-  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: !isAdmin });
+  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
   const [tabIndex, setTabIndex] = useState('1');
 
@@ -403,7 +403,7 @@ export default function TicketChat(props: ITicketChatProps) {
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
             {(ticket?.needCall && !ticketsUser && !closed) && <div style={{ background: 'var(--color-card-bg)', width: '100%', padding: '5px', display: 'flex' }}>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', }}>
-                <span>Представитель клиента запросил звонок, вы можете позвонить ему по номеру:</span>
+                <span>Представитель клиента запросил звонок{ticket?.sender.phone ? ', вы можете позвонить ему по номеру:' : ''}</span>
                 <a className={classes.link} href={`tel:${ticket?.sender.phone}`}>{ticket?.sender.phone}</a>
               </div>
               <Confirmation
