@@ -120,6 +120,7 @@ const createTicket = async (
 const updateById = async (
   sessionID: string,
   id: number,
+  userId: number,
   body: Omit<ITicket, 'ID'>,
   type: UserType
 ) => {
@@ -130,10 +131,34 @@ const updateById = async (
       throw new Error('Тикет завершен');
     }
 
-    const updatedTicket = await ticketsRepository.update(sessionID, id, body, type);
+    const oldTicketIsOpen = !oldTicket.closeAt;
+    const newTicketIsOpen = !body.closeAt;
+
+
+
+    const closeBy = (() => {
+      if (oldTicketIsOpen) {
+        if (!newTicketIsOpen) return userId;
+        return undefined;
+      }
+      if (newTicketIsOpen) return undefined;
+      return oldTicket?.closeBy?.ID;
+    })();
+
+    const closeAt = (() => {
+      if (oldTicketIsOpen) {
+        if (!newTicketIsOpen) return new Date();
+        return undefined;
+      }
+      if (newTicketIsOpen) return undefined;
+      return oldTicket.closeAt;
+    })();
+
+    const updatedTicket = await ticketsRepository.update(sessionID, id, { ...body, closeAt, closeBy: { ID: closeBy, fullName: '' } }, type);
     if (!updatedTicket?.ID) {
       throw NotFoundException(`Не найден тикет с id=${id}`);
     }
+
     const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.ID }, type);
 
     return ticket;

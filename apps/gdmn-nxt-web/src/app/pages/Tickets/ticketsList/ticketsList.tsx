@@ -398,7 +398,7 @@ export function TicketsList(props: ticketsListProps) {
 interface IItemProps extends ITicket {
 }
 
-const Item = ({ ID, title, sender, openAt, closeAt }: IItemProps) => {
+const Item = ({ ID, title, sender, openAt, closeAt, closeBy }: IItemProps) => {
   const classes = useStyles();
 
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -472,18 +472,18 @@ const Item = ({ ID, title, sender, openAt, closeAt }: IItemProps) => {
           color="text.secondary"
           style={{ display: 'flex', gap: '5px' }}
         >
-          Открыт
+          {closeAt ? 'Закрыт' : 'Открыт'}
           <UserTooltip
-            name={sender.fullName}
-            phone={sender.phone}
-            email={sender.email}
-            avatar={sender.avatar}
+            name={closeBy ? closeBy.fullName : sender.fullName}
+            phone={closeBy ? closeBy.phone : sender.phone}
+            email={closeBy ? closeBy.email : sender.email}
+            avatar={closeBy ? closeBy.avatar : sender.avatar}
           >
-            <div className={classes.openBy}>{sender.fullName}</div>
+            <div className={classes.openBy}>{closeBy ? closeBy.fullName : sender.fullName}</div>
           </UserTooltip>
-          <Tooltip arrow title={formatDate(openAt)}>
+          <Tooltip arrow title={formatDate(closeAt ?? openAt)}>
             <div>
-              {timeAgo(openAt)}
+              {timeAgo(closeAt ?? openAt)}
             </div>
           </Tooltip>
         </Typography>

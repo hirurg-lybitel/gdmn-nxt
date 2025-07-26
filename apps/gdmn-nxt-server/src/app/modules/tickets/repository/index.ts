@@ -54,6 +54,19 @@ const find: FindHandler<ITicket> = async (
         u.USR$EMAIL as USER_EMAIL,
         ps.USR$AVATAR,
 
+        cgu.ID as CLOSER_ID,
+        REPLACE(
+          TRIM(
+            COALESCE(cgp.FIRSTNAME, '') || ' ' ||
+            COALESCE(cgp.SURNAME, '') || ' ' ||
+            COALESCE(cgp.MIDDLENAME, '')
+          ),
+          '  ', ' '
+        ) AS CLOSER_FULLNAME,
+        cgc.EMAIL as CLOSER_EMAIL,
+        cgc.PHONE as CLOSER_PHONE,
+        cgups.USR$AVATAR as CLOSER_AVATAR_BLOB,
+
         gu.ID as PERFORMER_ID,
         REPLACE(
           TRIM(
@@ -68,6 +81,7 @@ const find: FindHandler<ITicket> = async (
         gups.USR$AVATAR as PERFORMER_AVATAR_BLOB
       FROM USR$CRM_TICKET t
         JOIN USR$CRM_TICKET_STATE s ON s.ID = t.USR$STATE
+
         JOIN USR$CRM_USER u ON u.ID = t.USR$USERKEY
         JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = t.USR$USERKEY
 
@@ -75,6 +89,11 @@ const find: FindHandler<ITicket> = async (
         LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
         LEFT JOIN GD_CONTACT gc ON gc.id = gu.contactkey
         LEFT JOIN GD_PEOPLE gp ON gp.contactkey = gu.contactkey
+
+        LEFT JOIN GD_USER cgu ON cgu.ID = USR$CLOSEDBY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS cgups ON cgups.USR$USERKEY = cgu.ID
+        LEFT JOIN GD_CONTACT cgc ON cgc.id = cgu.contactkey
+        LEFT JOIN GD_PEOPLE cgp ON cgp.contactkey = cgu.contactkey
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
     const result = await fetchAsObject<any>(sql, params);
@@ -93,6 +112,9 @@ const find: FindHandler<ITicket> = async (
 
       const performerAvatarBlob = await getStringFromBlob(attachment, transaction, data['PERFORMER_AVATAR_BLOB']);
       const performerAvatar = bin2String(performerAvatarBlob.split(','));
+
+      const closerAvatarBlob = await getStringFromBlob(attachment, transaction, data['CLOSER_AVATAR_BLOB']);
+      const closerAvatar = bin2String(closerAvatarBlob.split(','));
 
       return {
         ID: data['ID'],
@@ -119,6 +141,13 @@ const find: FindHandler<ITicket> = async (
           email: data['PERFORMER_EMAIL'],
           avatar: performerAvatar
         },
+        closeBy: data['CLOSER_ID'] ? {
+          ID: data['CLOSER_ID'],
+          fullName: data['CLOSER_FULLNAME'],
+          phone: data['CLOSER_PHONE'],
+          email: data['CLOSER_EMAIL'],
+          avatar: closerAvatar
+        } : undefined,
         needCall: data['USR$NEEDCALL'] === 1
       };
     }));
@@ -196,7 +225,8 @@ const update: UpdateHandler<ITicket> = async (
       closeAt,
       needCall,
       state,
-      performer
+      performer,
+      closeBy
     } = metadata;
 
     const updatedTicket = await fetchAsSingletonObject<ITicket>(
@@ -206,7 +236,8 @@ const update: UpdateHandler<ITicket> = async (
           USR$NEEDCALL = :NEEDCALL,
           USR$CLOSEAT = :CLOSEAT,
           USR$STATE = :STATE,
-          USR$PERFORMERKEY = :PERFORMERKEY
+          USR$PERFORMERKEY = :PERFORMERKEY,
+          USR$CLOSEDBY = :CLOSEDBY
         WHERE
           ID = :ID
         RETURNING ID`,
@@ -216,7 +247,8 @@ const update: UpdateHandler<ITicket> = async (
         CLOSEAT: closeAt ? new Date(closeAt) : undefined,
         ID,
         STATE: state.ID,
-        PERFORMERKEY: performer.ID
+        PERFORMERKEY: performer.ID,
+        CLOSEDBY: closeBy.ID
       }
     );
 

@@ -706,6 +706,7 @@ export interface ITicket extends IWithID {
   company: ICustomer,
   openAt: Date;
   closeAt?: Date;
+  closeBy?: ICRMTicketUser,
   state: ITicketState,
   sender: ICRMTicketUser;
   performer?: ICRMTicketUser;

@@ -73,10 +73,13 @@ const updateById: RequestHandler = async (req, res) => {
       .send(resultError('Field ID is not defined or is not numeric'));
   }
 
+  const userId = req.user['id'];
+
   try {
     const updatedTicket = await ticketsService.updateById(
       req.sessionID,
       id,
+      userId,
       req.body,
       req.user['type']
     );
