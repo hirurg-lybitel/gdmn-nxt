@@ -1,4 +1,4 @@
-import { IBusinessProcess, ILabel, IPhone } from '@gsbelarus/util-api-types';
+import { IBusinessProcess, ILabel, IPhone, IUser } from '@gsbelarus/util-api-types';
 
 export interface CustomerInfo {
   ID: number;
@@ -31,6 +31,8 @@ export interface Customer {
   ticketSystem?: boolean,
   openTickets?: number,
   closedTickets?: number;
+  performer: IUser;
+  PERFORMERKEY: number;
 }
 
 export interface Phone extends IPhone { }

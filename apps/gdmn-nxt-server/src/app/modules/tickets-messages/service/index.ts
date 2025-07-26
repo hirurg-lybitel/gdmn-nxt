@@ -39,6 +39,11 @@ const createMessage = async (
       throw new Error('Тикет завершен');
     }
 
+    if (body.state) {
+      const ticket = await ticketsRepository.update(sessionID, oldTicket.ID, { ...oldTicket, state: body.state }, type);
+    }
+
+
     const newMessage = await ticketsMessagesRepository.save(sessionID, { ...body, userId }, type);
     const message = await ticketsMessagesRepository.findOne(sessionID, { id: newMessage.ID }, type);
 

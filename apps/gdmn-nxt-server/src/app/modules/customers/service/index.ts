@@ -1,3 +1,4 @@
+import { baseUrl } from './../../../../../../gdmn-nxt-web/src/app/constants/index';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 import { FindHandler, IBusinessProcess, ICustomer, ICustomerFeedback, ICustomerTickets, IFavoriteContact, ILabel, ILabelsContact, ITimeTrackTask, LessThanOrEqual, RemoveOneHandler } from '@gsbelarus/util-api-types';
 import { cachedRequets, ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
@@ -7,9 +8,12 @@ import { contractsService } from '@gdmn-nxt/modules/contracts/service';
 import { debtsRepository } from '../repository/debts';
 import dayjs from '@gdmn-nxt/dayjs';
 import { customerRepository } from '../repository';
-import { commitTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
+import { acquireReadTransaction, commitTransaction, rollbackTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { feedbackService } from '@gdmn-nxt/modules/customer-feedback/service';
 import { ticketsUserService } from '@gdmn-nxt/modules/tickets-user/service';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { config } from '@gdmn-nxt/config';
 
 type CustomerDto = Omit<ICustomer, 'ID'>;
 
@@ -38,6 +42,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     const labels = new Map();
     const businessProcesses = new Map();
     const customerInfo = new Map();
+    const users = new Map();
 
     (await cacheManager.getKey<ContactLabel[]>('customerLabels'))
       ?.forEach(l => {
@@ -82,6 +87,25 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
           };
         };
       });
+
+    const { fetchAsObject } = await acquireReadTransaction(sessionID);
+    const usersRes = await fetchAsObject<any>(
+      `
+        SELECT
+          u.ID,
+          u.NAME,
+          u.FULLNAME,
+          u.DISABLED,
+          con.ID AS CONTACT_ID,
+          con.NAME AS CONTACT_NAME
+        FROM GD_USER u
+        JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+        WHERE u.disabled = 0`,
+    );
+
+    usersRes.forEach((user) => {
+      users[user['ID']] = user;
+    });
 
     const tasks = new Map<number, ITimeTrackTask[]>();
     const withTasksBool = (withTasks as string)?.toLowerCase() === 'true';
@@ -227,6 +251,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             LABELS: customerLabels,
             BUSINESSPROCESSES,
             isFavorite,
+            performer: users[c.PERFORMERKEY],
             ...(withTasksBool ? {
               taskCount: tasks.get(c.ID)?.length ?? 0,
             } : {}),
@@ -351,6 +376,51 @@ const addToTickets = async (
       true
     );
 
+    const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne('mailer');
+
+    const smtpOpt: SmtpOptions = {
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      password: smtpPassword
+    };
+
+    const messageText = `
+        <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+          <div style="font-size:16px;margin-bottom:24px">Добрый день!</div>
+          <div style="font-size:20px;font-weight:bold;color:#1976d2">Для вас был создан аккаунт в тикет системе.</div>
+          <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+            <div style="color:#666">Логин: ${body.admin.name}</div>
+            <div style="color:#666">Пароль: ${body.admin.password}</div>
+          </div>
+          <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+            <a href="${config.origin}/tickets/login" style="color:#1976d2">Войти в тикет систему</a>
+            <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+          </div>
+        </div>`;
+
+    await sendEmail({
+      from: 'Тикет система',
+      to: body.email,
+      subject: 'Учетная запись',
+      html: messageText,
+      options: { ...smtpOpt }
+    });
+
+    return newCustomer;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateTicketsCustomer = async (
+  sessionID: string,
+  id: number,
+  body: Partial<ICustomer>
+) => {
+  try {
+    const newCustomer = await customerRepository.updateTickets(sessionID, id, body);
+
     return newCustomer;
   } catch (error) {
     throw error;
@@ -378,7 +448,8 @@ export const customersService = {
   updateCustomer,
   deleteCustomer,
   addToTickets,
-  removeFromTickets
+  removeFromTickets,
+  updateTicketsCustomer
 };
 
 

@@ -1,6 +1,9 @@
 import { InternalServerErrorException, UserType, NotFoundException, ITicketUser, ForbiddenException } from '@gsbelarus/util-api-types';
 import { ticketsUserRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
+import { config } from '@gdmn-nxt/config';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 
 const findAll = async (
   sessionID: string,
@@ -112,6 +115,37 @@ const create = async (
     if (oldUser) throw new Error(isAdmin ? 'Для клиента уже создана учетная запись администратора' : 'Логин должен быть уникальным');
     const newFilter = await ticketsUserRepository.save(sessionID, { ...body }, isAdmin);
     const user = await ticketsUserRepository.findOne(sessionID, { id: newFilter.ID });
+
+    // const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne('mailer');
+
+    // const smtpOpt: SmtpOptions = {
+    //   host: smtpHost,
+    //   port: smtpPort,
+    //   user: smtpUser,
+    //   password: smtpPassword
+    // };
+
+    // const messageText = `
+    //     <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+    //       <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${body.fullName}</strong>!</div>
+    //       <div style="font-size:20px;font-weight:bold;color:#1976d2">Для вас был создан аккаунт в тикет системе.</div>
+    //       <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+    //         <div style="color:#666">Логин: ${body.userName}</div>
+    //         <div style="color:#666">Пароль: ${body.password}</div>
+    //       </div>
+    //       <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+    //         <a href="${config.origin}/tickets/login" style="color:#1976d2">Войти в тикет систему</a>
+    //         <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+    //       </div>
+    //     </div>`;
+
+    // await sendEmail({
+    //   from: 'Тикет система',
+    //   to: body.email,
+    //   subject: 'Учетная запись',
+    //   html: messageText,
+    //   options: { ...smtpOpt }
+    // });
 
     return user;
   } catch (error) {

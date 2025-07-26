@@ -6,10 +6,11 @@ import { emailValidation, passwordValidation } from '@gdmn-nxt/helpers/validator
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import * as yup from 'yup';
 import { Chip, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import InfoIcon from '@mui/icons-material/Info';
+import { generatePassword } from '@gsbelarus/util-useful';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -24,18 +25,18 @@ export function TicketsUserEdit({
   onSubmit,
   onCancel
 }: Readonly<CustomerEditProps>) {
-  const initValue: ITicketUser = {
+  const initValue: ITicketUser = useMemo(() => ({
     ID: -1,
     company: user?.company ?? {
       ID: -1,
       NAME: ''
     },
     fullName: '',
-    password: '',
+    password: generatePassword(10),
     userName: '',
     email: '',
     phone: '',
-  };
+  }), [user?.company, open]);
 
   const formik = useFormik<ITicketUser>({
     enableReinitialize: true,
@@ -72,7 +73,7 @@ export function TicketsUserEdit({
     formik.resetForm();
   };
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
 
   const handlePhoneChange = (value: string) => {
     formik.setFieldValue('phone', value);
@@ -152,27 +153,28 @@ export function TicketsUserEdit({
                 <TextField
                   required
                   fullWidth
+                  disabled
                   label="Пароль"
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   onChange={formik.handleChange}
                   value={formik.values.password}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          sx={{
-                            opacity: 0.7,
-                            '&:hover': { opacity: 1 }
-                          }}
-                        >
-                          {showPassword ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
+                  // InputProps={{
+                  //   endAdornment: (
+                  //     <InputAdornment position="end">
+                  //       <IconButton
+                  //         onClick={() => setShowPassword(!showPassword)}
+                  //         edge="end"
+                  //         sx={{
+                  //           opacity: 0.7,
+                  //           '&:hover': { opacity: 1 }
+                  //         }}
+                  //       >
+                  //         {showPassword ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
+                  //       </IconButton>
+                  //     </InputAdornment>
+                  //   ),
+                  // }}
                   error={!!formik.errors.password}
                   helperText={formik.errors.password}
                 />

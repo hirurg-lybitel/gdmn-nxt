@@ -2,7 +2,7 @@ import { GridColDef, GridSortModel, GridEventListener } from '@mui/x-data-grid-p
 import Stack from '@mui/material/Stack/Stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, useMediaQuery, Theme, Divider, CardContent, Tooltip, IconButton } from '@mui/material';
-import CustomerEdit from './customer-edit/customer-edit';
+import CustomerEdit from './tickets-customer-edit/tickets-customer-edit';
 import { useDispatch, useSelector } from 'react-redux';
 import { IContactWithID, ICustomer, ICustomerContract, IFilteringData, IPaginationData, ISortingData, IWorkType } from '@gsbelarus/util-api-types';
 import { useTheme } from '@mui/material';
@@ -13,7 +13,7 @@ import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { RootState } from '@gdmn-nxt/store';
 import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
-import { useAddCustomerTicketsMutation, useGetCustomersCrossQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import { useAddCustomerTicketsMutation, useUpdateTicketsCustomerMutation, useGetCustomersCrossQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { useGetWorkTypesQuery } from '../../../features/work-types/workTypesApi';
 import { useGetDepartmentsQuery } from '../../../features/departments/departmentsApi';
 import { useGetCustomerContractsQuery } from '../../../features/customer-contracts/customerContractsApi';
@@ -21,7 +21,7 @@ import { useGetBusinessProcessesQuery } from '../../../features/business-process
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import TicketsCustomerAdd from './tickects-customer-add/tickects-customer-add';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -172,6 +172,7 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
   ]);
 
   const [addToTicketSystem] = useAddCustomerTicketsMutation();
+  const [updateTicketCustomer] = useUpdateTicketsCustomerMutation();
 
   const dispatch = useDispatch();
 
@@ -209,13 +210,13 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
 
         return (
           <Box>
-            <Tooltip title="Просмотр">
+            <Tooltip title="Редактировать">
               <IconButton
                 onClick={handleCustomerEdit(customerId)}
                 disabled={customerFetching}
                 color={'primary'}
               >
-                <VisibilityIcon />
+                <EditIcon />
               </IconButton>
             </Tooltip>
           </Box>
@@ -278,6 +279,12 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
     setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
 
+  const handleUpdateCustomer = useCallback((value: ICustomer, isDelete: boolean) => {
+    setOpenEditForm(false);
+    if (isDelete) return;
+    updateTicketCustomer(value);
+  }, [updateTicketCustomer]);
+
   const memoEditCustomer = useMemo(
     () => (
       <CustomerEdit
@@ -287,9 +294,10 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
           null
         }
         onCancel={handleOrganiztionEditCancelClick}
+        onSubmit={handleUpdateCustomer}
       />
     ),
-    [currentOrganization, customers, openEditForm]
+    [currentOrganization, customers, handleUpdateCustomer, openEditForm]
   );
 
   const memoAddCustomer = useMemo(() => {

@@ -1,5 +1,5 @@
 import { Box, Chip, Divider, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useEffect, useState, } from 'react';
+import { useCallback, useEffect, useMemo, useState, } from 'react';
 import { ITicket } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -32,7 +32,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
 
   const [tabIndex, setTabIndex] = useState('1');
 
-  const initValue: ITicket = {
+  const initValue: ITicket = useMemo(() => ({
     ID: ticket?.ID ?? -1,
     title: ticket?.title ?? '',
     company: ticket?.company ?? { ID: -1, NAME: '' },
@@ -47,16 +47,16 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
       fullName: ticket?.sender?.fullName ?? user.userProfile?.fullName ?? ''
     },
     performer: {
-      ID: -1,
-      fullName: ''
+      ID: ticket?.company.performer?.ID ?? -1,
+      fullName: ticket?.company.performer?.FULLNAME ?? ''
     },
     needCall: ticket?.needCall ?? false,
     message: '',
     files: []
-  };
+  }), [ticket?.ID, ticket?.company, ticket?.needCall, ticket?.openAt, ticket?.sender?.ID, ticket?.sender?.fullName, ticket?.state?.ID, ticket?.state?.code, ticket?.state?.name, ticket?.title, user.userProfile?.fullName, user.userProfile?.id]);
 
   const formik = useFormik<ITicket>({
-    enableReinitialize: false,
+    enableReinitialize: true,
     validateOnBlur: false,
     initialValues: {
       ...initValue,

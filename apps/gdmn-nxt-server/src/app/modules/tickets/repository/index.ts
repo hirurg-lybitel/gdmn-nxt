@@ -54,6 +54,7 @@ const find: FindHandler<ITicket> = async (
         u.USR$EMAIL as USER_EMAIL,
         ps.USR$AVATAR,
 
+        gu.ID as PERFORMER_ID,
         REPLACE(
           TRIM(
             COALESCE(gp.FIRSTNAME, '') || ' ' ||
@@ -112,7 +113,7 @@ const find: FindHandler<ITicket> = async (
           avatar
         },
         performer: {
-          ID: data['USER_ID'],
+          ID: data['PERFORMER_ID'],
           fullName: data['PERFORMER_FULLNAME'],
           phone: data['PERFORMER_PHONE'],
           email: data['PERFORMER_EMAIL'],
@@ -149,7 +150,7 @@ const save: SaveHandler<ITicketSave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { title, company, userId, openAt } = metadata;
+  const { title, company, userId, openAt, performer } = metadata;
 
   const ticketStates = await ticketsStateRepository.find(sessionID);
 
@@ -157,15 +158,16 @@ const save: SaveHandler<ITicketSave> = async (
 
   try {
     const ticket = await fetchAsSingletonObject<ITicketSave>(
-      `INSERT INTO USR$CRM_TICKET(USR$TITLE,USR$COMPANYKEY,USR$USERKEY,USR$OPENAT,USR$STATE)
-      VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT,:STATEID)
+      `INSERT INTO USR$CRM_TICKET(USR$TITLE,USR$COMPANYKEY,USR$USERKEY,USR$OPENAT,USR$STATE,USR$PERFORMERKEY)
+      VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT,:STATEID,:PERFORMERKEY)
       RETURNING ID`,
       {
         TITLE: title,
         COMPANYKEY: company.ID,
         USERKEY: userId,
         OPENAT: new Date(openAt),
-        STATEID: openState.ID
+        STATEID: openState.ID,
+        PERFORMERKEY: performer.ID
       }
     );
 
@@ -191,27 +193,30 @@ const update: UpdateHandler<ITicket> = async (
 
     const {
       title,
-      openAt,
       closeAt,
-      needCall
+      needCall,
+      state,
+      performer
     } = metadata;
 
     const updatedTicket = await fetchAsSingletonObject<ITicket>(
       `UPDATE USR$CRM_TICKET
         SET
           USR$TITLE = :TITLE,
-          USR$OPENAT = :OPENAT,
           USR$NEEDCALL = :NEEDCALL,
-          USR$CLOSEAT = :CLOSEAT
+          USR$CLOSEAT = :CLOSEAT,
+          USR$STATE = :STATE,
+          USR$PERFORMERKEY = :PERFORMERKEY
         WHERE
           ID = :ID
         RETURNING ID`,
       {
         TITLE: title,
-        OPENAT: new Date(openAt),
         NEEDCALL: needCall,
         CLOSEAT: closeAt ? new Date(closeAt) : undefined,
-        ID
+        ID,
+        STATE: state.ID,
+        PERFORMERKEY: performer.ID
       }
     );
 

@@ -95,7 +95,7 @@ export function TicketsUsers(props: TicketsCustomersProps) {
   const { data, isFetching: usersIsFetching, isLoading: usersIsLoading, refetch: usersRefetch } = useGetAllTicketUserQuery(
     {
       pagination: paginationData,
-      ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
+      ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData, isAdmin: false } : {}),
       ...(sortingData ? { sort: sortingData } : {})
     }
   );

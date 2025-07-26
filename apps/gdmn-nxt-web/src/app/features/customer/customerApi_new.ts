@@ -239,6 +239,34 @@ export const customerApi = createApi({
       },
       invalidatesTags: [{ type: 'Customers', id: 'LIST' }]
     }),
+    updateTicketsCustomer: builder.mutation<ICustomerTickets, ICustomer>({
+      query: (body) => ({
+        url: `contacts/tickets/${body.ID}`,
+        body,
+        method: 'PUT'
+      }),
+      async onQueryStarted(body, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data?.findIndex(c => c.ID === body.ID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], performer: body.performer };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
+      invalidatesTags: [{ type: 'Customers', id: 'LIST' }]
+    }),
     deleteCustomerTickets: builder.mutation<void, number>({
       query: (contactID) => ({
         url: `contacts/tickets/${contactID}`,
@@ -279,5 +307,6 @@ export const {
   useAddFavoriteMutation,
   useDeleteFavoriteMutation,
   useAddCustomerTicketsMutation,
-  useDeleteCustomerTicketsMutation
+  useDeleteCustomerTicketsMutation,
+  useUpdateTicketsCustomerMutation
 } = customerApi;

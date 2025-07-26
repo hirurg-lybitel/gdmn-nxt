@@ -1,7 +1,7 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import { Autocomplete, Avatar, Button, CardContent, Chip, Divider, Skeleton, TextField, Theme, Tooltip, Typography } from '@mui/material';
+import { Avatar, Button, CardContent, Chip, Divider, Theme, Tooltip, Typography } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
@@ -18,29 +18,14 @@ import { RootState } from '@gdmn-nxt/store';
 import { useDispatch, useSelector } from 'react-redux';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { GridColDef, GridRenderCellParams, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
-import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import SortSelect from './sortSelect';
 import { useGetCustomerQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
-import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
-import { useGetContactPersonsQuery } from '../../../features/contact/contactApi';
+import { useGetUsersQuery } from '../../../features/systemUsers';
+import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
-
-const openTickets = Array.from({ length: 25 }, (_, i) => ({
-  id: crypto.randomUUID(), // Генерация уникального идентификатора
-  title: `Запрос на поддержку №${i + 1}`,
-  opened: true,
-  state: i % 5 === 0 ? 2 : 1,
-}));
-
-const closedTickets = Array.from({ length: 19 }, (_, i) => ({
-  id: crypto.randomUUID(),
-  title: `Закрытый тикет по проблеме №${i + 31}`,
-  opened: false,
-  state: 3,
-}));
 
 const useStyles = makeStyles((theme: Theme) => ({
   itemTitle: {
@@ -66,8 +51,6 @@ export function TicketsList(props: ticketsListProps) {
   const [addTicket] = useAddTicketMutation();
 
   const [openEdit, setOpenEdit] = useState(false);
-  const [openFilters, setOpenFilters] = useState(false);
-
   const filterEntityName = 'ticketsUsers';
   const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { 'active': true });
   const filtersStorage = useSelector(
@@ -85,12 +68,9 @@ export function TicketsList(props: ticketsListProps) {
     pageSize: 20
   });
 
-  const [sortingData, setSortingData] = useState<ISortingData | null>();
-
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
     ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
-    ...(sortingData ? { sort: sortingData } : {})
   });
 
   const handleRequestSearch = (value: string) => {
@@ -146,23 +126,23 @@ export function TicketsList(props: ticketsListProps) {
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
-  const { data: persons, isFetching: personsIsFetching } = useGetContactPersonsQuery({ filter: { gedeminUser: true } }, { skip: ticketsUser });
+  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
   const performerSelect = useMemo(() => {
     return (
       <SortSelect
-        isLoading={personsIsFetching}
-        options={persons?.records}
+        isLoading={systemUsersIsLoading || systemUsersIsFetching}
+        options={systemUsers}
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
         field={'performerKey'}
         label={'Исполнитель'}
         fullWidth
-        getOptionLabel={(option) => option.nameInfo?.nickName ?? option.NAME}
+        getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
         getReturnedValue={(value) => value?.ID}
       />
     );
-  }, [filteringData, handleOnFilterChange, persons?.records, personsIsFetching]);
+  }, [filteringData, handleOnFilterChange, systemUsers, systemUsersIsFetching, systemUsersIsLoading]);
 
   const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
 
@@ -200,7 +180,7 @@ export function TicketsList(props: ticketsListProps) {
     );
   }, [filteringData, handleOnFilterChange, states, statesIsFetching, statesIsLoading]);
 
-  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
+  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: !isAdmin });
 
   const openerSelect = useMemo(() => {
     return (
@@ -326,7 +306,7 @@ export function TicketsList(props: ticketsListProps) {
       },
       renderHeader: () => CustomerSelect
     }]),
-    ...(ticketsUser ? [] : [{
+    {
       field: 'performer',
       headerName: 'Исполнитель',
       width: 200,
@@ -347,7 +327,7 @@ export function TicketsList(props: ticketsListProps) {
         </div>;
       },
       renderHeader: () => <div style={{ paddingRight: '8px', width: '100%' }}>{performerSelect}</div>
-    }]),
+    }
   ];
 
   return (

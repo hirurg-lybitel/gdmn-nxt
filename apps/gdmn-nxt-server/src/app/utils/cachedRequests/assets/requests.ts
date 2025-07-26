@@ -16,7 +16,8 @@ export const requests = {
       c.USR$CRM_POSTADDRESS AS POSTADDRESS,
       com.USR$CRM_TICKETSYSTEM as TICKETSYSTEM,
       com.USR$CRM_OPENTICKETS as OPENTICKETS,
-      com.USR$CRM_CLOSEDTICKETS as CLOSEDTICKETS
+      com.USR$CRM_CLOSEDTICKETS as CLOSEDTICKETS,
+      com.USR$CRM_PERFORMER as PERFORMERKEY
     FROM
       gd_contact c
       join gd_companycode comp on comp.COMPANYKEY = c.id

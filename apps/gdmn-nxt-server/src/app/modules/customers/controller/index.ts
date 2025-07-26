@@ -338,6 +338,30 @@ export const addToTickets: RequestHandler = async (req, res) => {
   }
 };
 
+export const updateTicketsContact: RequestHandler = async (req, res) => {
+  const { id } = req.params;
+
+  if (id && !parseInt(id)) {
+    return res.status(422).send(resultError('Field ID is not defined or is not numeric'));
+  };
+
+  try {
+    const newCustomer = await customersService.updateTicketsCustomer(req.sessionID, parseInt(id), req.body);
+
+    cachedRequets.cacheRequest('customers');
+
+    const result = {
+      queries: { contact: newCustomer },
+      _schema: {}
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[ update customer ]', error);
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const removeFromTickets: RequestHandler = async (req, res) => {
   const { id } = req.params;
 
@@ -371,5 +395,6 @@ export const customerController = {
   createContact,
   updateContact,
   addToTickets,
-  removeFromTickets
+  removeFromTickets,
+  updateTicketsContact
 };

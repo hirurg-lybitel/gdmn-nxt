@@ -15,13 +15,14 @@ const ticketsUserRoutes = [
   'filters/menu',
   'ticketSystem/tickets',
   'ticketSystem/states',
-  'ticketSystem/messages'
+  'ticketSystem/messages',
+  'system/users',
+  'contacts/customerId'
 ];
 
 const ticketsAdminRoutes = [
   ...ticketsUserRoutes,
-  'ticketSystem/users',
-  'contacts/customerId'
+  'ticketSystem/users'
 ];
 
 export const checkPermissions: RequestHandler = (req, res, next) => {

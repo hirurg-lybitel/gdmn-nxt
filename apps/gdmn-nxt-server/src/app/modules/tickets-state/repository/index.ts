@@ -32,8 +32,10 @@ const find: FindHandler<ITicketState> = async (
       SELECT
         ts.ID,
         ts.USR$NAME,
-        ts.USR$CODE
+        ts.USR$CODE,
+        ts.USR$SORT
       FROM USR$CRM_TICKET_STATE ts
+      ORDER BY USR$SORT ASC
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
     const result = await fetchAsObject<any>(sql, params);

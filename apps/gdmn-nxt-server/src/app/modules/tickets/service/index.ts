@@ -126,7 +126,7 @@ const updateById = async (
   try {
     const oldTicket = await ticketsRepository.findOne(sessionID, { id }, type);
 
-    if (oldTicket.closeAt) {
+    if (type === UserType.Tickets && oldTicket.closeAt) {
       throw new Error('Тикет завершен');
     }
 

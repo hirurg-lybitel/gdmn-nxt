@@ -1,5 +1,6 @@
 import styles from './tickects-customer-add.module.less';
 import {
+  Autocomplete,
   TextField,
   Typography
 } from '@mui/material';
@@ -10,6 +11,7 @@ import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { generatePassword } from '@gsbelarus/util-useful';
+import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
 
 export interface TicketsCustomerAddProps {
   open: boolean;
@@ -66,6 +68,8 @@ export function TicketsCustomerAdd({
     formik.resetForm();
   };
 
+  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+
   return (
     <EditDialog
       open={open}
@@ -81,11 +85,31 @@ export function TicketsCustomerAdd({
           onSubmit={formik.handleSubmit}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Autocomplete
+              fullWidth
+              loading={systemUsersIsLoading || systemUsersIsFetching}
+              loadingText="Загрузка данных..."
+              options={systemUsers ?? []}
+              value={formik.values.performer ?? null}
+              getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
+              onChange={(e, value) => {
+                formik.setFieldValue('performer', value ?? null);
+              }}
+              renderInput={(params) => (
+                <div>
+                  <TextField
+                    {...params}
+                    label={'Исполнитель'}
+                  />
+                </div>
+              )}
+            />
             <CustomerSelect
               required
               disableClear
               value={formik.values.customer ?? null}
               onChange={handleCustomerChange}
+              ticketSystem={false}
             />
             {formik.values.customer && <>
               <TextField

@@ -14,7 +14,6 @@ const findAll: RequestHandler = async (req, res) => {
       {
         ...req.query,
         ...(type === UserType.Tickets ? { companyKey: req.user['companyKey'] } : {}),
-        ...(type === UserType.Tickets ? { isAdmin: 'false' } : {}),
       },
       type,
     );

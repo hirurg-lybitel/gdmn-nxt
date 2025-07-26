@@ -44,6 +44,7 @@ export interface ICustomer extends IContactWithID {
   ticketSystem?: boolean,
   openTickets?: number,
   closedTickets?: number;
+  performer?: IUser;
 };
 
 interface IMapOfArrays {
@@ -726,6 +727,7 @@ export interface ICustomerTickets {
     fullName: string,
     password: string;
   };
+  performer?: IUser;
 }
 
 export interface ITicketUser extends IWithID {

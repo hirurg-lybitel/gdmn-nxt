@@ -1,9 +1,9 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Avatar, Button, CardContent, Dialog, Divider, IconButton, Skeleton, Stack, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, Divider, IconButton, Skeleton, Stack, Tab, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -12,13 +12,17 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ITicketMessage, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ITicketMessage, UserType } from '@gsbelarus/util-api-types';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
+import { useGetUsersQuery } from '../../../features/systemUsers';
+import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import ReactMarkdown from 'react-markdown';
+import { TabContext, TabList } from '@mui/lab';
 
 interface ITicketChatProps {
 
@@ -158,7 +162,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
-  const stateChange = useMemo(() => states?.find(state => state.code === (ticketsUser ? 3 : 2)), [states, ticketsUser]);
+  const stateChange = useMemo(() => states?.find(state => state.code === (ticketsUser ? -1 : 2)), [states, ticketsUser]);
 
   const [shiftHold, setShiftHold] = useState(false);
 
@@ -181,7 +185,7 @@ export default function TicketChat(props: ITicketChatProps) {
       if (e.key === 'Shift' && !shiftHold) {
         setShiftHold(true);
       }
-      if (e.key === 'Enter' && !shiftHold) {
+      if (e.key === 'Enter' && shiftHold) {
         handleSend();
         e.preventDefault();
       }
@@ -327,6 +331,7 @@ export default function TicketChat(props: ITicketChatProps) {
         </Tooltip>
       );
     }
+    return;
     return (
       <MenuBurger
         disabled={isLoading}
@@ -356,6 +361,18 @@ export default function TicketChat(props: ITicketChatProps) {
       />
     );
   }, [closed, handleClose, handleRequestCall, isLoading, ticket?.needCall, ticketsUser]);
+
+  const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
+
+  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+  const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
+  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: !isAdmin });
+
+  const [tabIndex, setTabIndex] = useState('1');
+
+  const handleTabsChange = (event: any, newindex: string) => {
+    setTabIndex(newindex);
+  };
 
   return (
     <>
@@ -401,8 +418,8 @@ export default function TicketChat(props: ITicketChatProps) {
                 </IconButton>
               </Confirmation>
             </div>}
-            <div style={{ flex: 1, padding: '16px', overflow: 'auto', position: 'relative' }}>
-              <div style={{ position: 'absolute', inset: '16px', display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content' }}>
+            <div style={{ flex: 1, padding: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content' }}>
                 {(isLoading ? fakeMessages : messages).map((data, index) => <UserMessage
                   isLoading={isLoading}
                   {...data}
@@ -410,47 +427,166 @@ export default function TicketChat(props: ITicketChatProps) {
                 />)}
               </div>
             </div>
-            {!closed && <>
+            {!closed && <div>
               <Divider />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px' }}>
-                <div>
-                  <input
-                    style={{ display: 'none' }}
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleUpload}
+              <TabContext value={tabIndex}>
+                <TabList
+                  style={{ paddingLeft: '24px' }}
+                  onChange={handleTabsChange}
+                >
+                  <Tab
+                    label="Изменение"
+                    value="1"
                   />
-                  <Tooltip title={'Прикрепить файл'}>
-                    <IconButton
+                  <Tab
+                    label="Просмотр"
+                    value="2"
+                  />
+                </TabList>
+              </TabContext>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0 }}>
+                <div style={{ width: '100%', position: 'relative' }}>
+                  <TextField
+                    disabled={isLoading}
+                    value={(tabIndex === '2' || files.length > 0) ? '' : message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    multiline
+                    minRows={8}
+                    maxRows={20}
+                    fullWidth
+                  />
+                  <Box
+                    sx={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.1)', position: 'absolute',
+                      inset: 0, opacity: tabIndex === '2' ? '1' : '0',
+                      visibility: tabIndex === '2' ? 'visible' : 'hidden',
+                      padding: '8.5px 14px', lineHeight: 1.3
+                    }}
+                  >
+                    <ReactMarkdown>
+                      {message}
+                    </ReactMarkdown>
+                  </Box>
+                </div>
+                <div style={{ display: 'flex', width: '100%' }}>
+                  {/* <div>
+                    <input
+                      style={{ display: 'none' }}
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleUpload}
+                    />
+                    <Tooltip title={'Прикрепить файл'}>
+                      <IconButton
+                        color="primary"
+                        disabled
+                        onClick={uploadClick}
+                      >
+                        <AttachFileIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </div> */}
+                  <div style={{ flex: 1 }} />
+                  <Tooltip title={'Отправить'}>
+                    <Button
                       color="primary"
-                      disabled
-                      onClick={uploadClick}
+                      variant="contained"
+                      disabled={!message || isLoading}
+                      onClick={handleSend}
                     >
-                      <AttachFileIcon />
-                    </IconButton>
+                      Отправить
+                    </Button>
                   </Tooltip>
                 </div>
-                <TextField
-                  value={files.length > 0 ? '' : message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  multiline
-                  maxRows={6}
-                  fullWidth
-                />
-                <Tooltip title={'Отправить'}>
-                  <IconButton
-                    color="primary"
-                    disabled={!message || isLoading}
-                    onClick={handleSend}
-                  >
-                    <SendIcon />
-                  </IconButton>
-                </Tooltip>
               </div>
-            </>}
+            </div>
+            }
           </div>
         </CardContent>
       </CustomizedCard >
+      <div style={{ width: '280px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: 0 }}>
+        <Autocomplete
+          fullWidth
+          readOnly={ticketsUser}
+          size="small"
+          loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+          loadingText="Загрузка данных..."
+          options={systemUsers ?? []}
+          value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
+          getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
+          onChange={(e, value) => {
+            updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
+          }}
+          renderInput={(params) => (
+            <TextField
+              variant="standard"
+              {...params}
+              label={'Исполнитель'}
+            />
+          )}
+        />
+        <Autocomplete
+          fullWidth
+          readOnly={ticketsUser}
+          size="small"
+          loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+          loadingText="Загрузка данных..."
+          options={states ?? []}
+          value={ticket?.state ?? null}
+          getOptionLabel={(option) => option.name}
+          onChange={(e, value) => {
+            if (!value) return;
+
+            updateTicket({ ...ticket, state: value, closeAt: value.code === 0 ? new Date() : undefined });
+          }}
+          sx={{
+            '& .MuiAutocomplete-clearIndicator': {
+              display: 'none'
+            },
+          }}
+          renderInput={(params) => (
+            <TextField
+              variant="standard"
+              {...params}
+              label={'Статус'}
+            />
+          )}
+        />
+        {!ticketsUser && <Autocomplete
+          fullWidth
+          readOnly
+          size="small"
+          loading={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching || true}
+          loadingText="Загрузка данных..."
+          options={customersResponse?.data ?? []}
+          value={ticket?.company ?? null}
+          getOptionLabel={(option) => option?.FULLNAME ?? option?.NAME}
+          renderInput={(params) => (
+            <TextField
+              variant="standard"
+              {...params}
+              label={'Клиент'}
+            />
+          )}
+        />}
+        {(!ticketsUser || isAdmin) && <Autocomplete
+          fullWidth
+          readOnly
+          size="small"
+          loading={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
+          loadingText="Загрузка данных..."
+          options={users?.users ?? []}
+          value={users?.users?.find(user => user.ID === ticket?.sender.ID) ?? null}
+          getOptionLabel={(option) => option.fullName}
+          renderInput={(params) => (
+            <TextField
+              variant="standard"
+              {...params}
+              label={'Поставновщик'}
+            />
+          )}
+        />}
+      </div>
     </>
   );
 };
@@ -460,8 +596,6 @@ interface IUserMessage extends ITicketMessage {
 }
 
 const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
-  const senderMessage = user.type === 'user';
-
   const files: any = [];
 
   const avatar = useMemo(() => {
@@ -494,27 +628,30 @@ const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
   return (
     <div
       style={{
-        display: 'flex', position: 'relative', alignItems: 'end',
-        justifyContent: senderMessage ? 'flex-start' : 'flex-end'
+        display: 'flex', position: 'relative', alignItems: 'start',
+        justifyContent: 'flex-start',
       }}
     >
-      {senderMessage && avatar}
+      {avatar}
       <div
         style={{
           background: 'var(--color-card-bg)', borderRadius: '14px',
-          zIndex: 1, maxWidth: '45%', minWidth: files.length ? '300px' : undefined, overflow: 'hidden',
-          ...(senderMessage ? { borderEndStartRadius: 0, marginLeft: '10px' } : { borderEndEndRadius: 0, marginRight: '10px' })
+          zIndex: 1, width: '100%', overflow: 'hidden',
+          marginLeft: '10px'
         }}
       >
         <div style={{ background: 'var(--color-card-bg)' }}>
           {memoFiles}
         </div>
         {message && <div style={{ padding: '5px 10px' }}>
-          <span style={{ opacity: isLoading ? 0 : 1 }}>{message}</span>
+          <div style={{ opacity: isLoading ? 0 : 1, wordBreak: 'break-word' }}>
+            <ReactMarkdown>
+              {message}
+            </ReactMarkdown>
+          </div>
         </div>}
       </div>
-      {!senderMessage && avatar}
-      {message && <>
+      {/* {message && <>
         <div
           style={{
             height: '20px', width: '20px', position: 'absolute',
@@ -528,7 +665,7 @@ const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
             ...(senderMessage ? { left: '32px' } : { right: '32px' })
           }}
         />
-      </>}
+      </>} */}
     </div>
   );
 };

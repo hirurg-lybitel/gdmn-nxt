@@ -192,6 +192,12 @@ const remove: RemoveOneHandler = async (
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   try {
+    const deletedProfile = await fetchAsSingletonObject<{ ID: number; }>(
+      `DELETE FROM USR$CRM_T_USER_PROFILE_SETTINGS WHERE USR$USERKEY = :id
+      RETURNING ID`,
+      { id }
+    );
+
     const deletedUser = await fetchAsSingletonObject<{ ID: number; }>(
       `DELETE FROM USR$CRM_USER WHERE ID = :id
       RETURNING ID`,

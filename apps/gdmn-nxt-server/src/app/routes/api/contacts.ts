@@ -15,6 +15,7 @@ router.put('/:id', customerController.updateContact);
 router.post('/', customerController.createContact);
 
 router.post('/tickets', customerController.addToTickets);
+router.put('/tickets/:id', customerController.updateTicketsContact);
 router.delete('/tickets/:customerId', customerController.removeFromTickets);
 
 router.delete('/:id', customerController.deleteContact);
