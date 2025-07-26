@@ -30,7 +30,7 @@ const ticketSystem: IMenuItem = {
       url: 'tickets/customers',
       actionCheck: {
         name: 'contacts/tickets',
-        method: 'GET'
+        method: 'POST'
       }
     }
   ]
