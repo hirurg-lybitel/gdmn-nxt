@@ -16,6 +16,10 @@ const ticketSystem: IMenuItem = {
       url: 'tickets/list',
       icon: <SettingsOutlinedIcon color="secondary" />,
       selectedIcon: <Settings color="secondary" />,
+      actionCheck: {
+        name: 'ticketSystem/tickets',
+        method: 'GET'
+      }
     },
     {
       id: 'customers',
@@ -23,7 +27,11 @@ const ticketSystem: IMenuItem = {
       type: 'item',
       icon: <PeopleAltOutlinedIcon color="secondary" />,
       selectedIcon: <PeopleAltIcon color="secondary" />,
-      url: 'tickets/customers'
+      url: 'tickets/customers',
+      actionCheck: {
+        name: 'contacts/tickets',
+        method: 'GET'
+      }
     }
   ]
 };

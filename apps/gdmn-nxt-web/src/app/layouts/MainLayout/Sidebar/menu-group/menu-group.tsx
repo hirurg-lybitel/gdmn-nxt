@@ -19,7 +19,11 @@ export function MenuGroup(props: MenuGroupProps) {
   const userPermissions = useSelector<RootState, Permissions | undefined>(state => state.user.userProfile?.permissions);
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
-  const items = item.children?.map((menu: IMenuItem) => {
+  const filteredItems = item.children.filter((item: IMenuItem) =>
+    (userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck) &&
+    (item.adminOnly ? isAdmin : true));
+
+  const items = filteredItems?.map((menu: IMenuItem) => {
     switch (menu.type) {
       case 'collapse': {
         const itemsPermission = menu.children?.findIndex(children => {
@@ -46,7 +50,6 @@ export function MenuGroup(props: MenuGroupProps) {
           actionAllowed={
             (userPermissions?.[menu.actionCheck?.name ?? '']?.[menu.actionCheck?.method ?? ''] ?? !menu.actionCheck) &&
             (menu.adminOnly ? isAdmin : true)
-
           }
         >
           <MenuItem
@@ -69,6 +72,8 @@ export function MenuGroup(props: MenuGroupProps) {
         );
     }
   });
+
+  if (filteredItems.length === 0) return;
 
   return (
     <List

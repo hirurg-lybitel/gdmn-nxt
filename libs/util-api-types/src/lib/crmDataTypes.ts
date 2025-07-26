@@ -386,6 +386,8 @@ export type ActionName =
   'reports/reconciliation-statement' |
   'reports/debts' |
   'reports/revenue' |
+  'ticketSystem/tickets' |
+  'contacts/tickets' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
