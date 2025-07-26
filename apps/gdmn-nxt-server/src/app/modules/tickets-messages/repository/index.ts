@@ -67,7 +67,7 @@ const find: FindHandler<ITicketMessage> = async (
         LEFT JOIN GD_CONTACT c ON c.ID = SUPPORT.CONTACTKEY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS sps ON sps.USR$USERKEY = SUPPORT.ID
 
-        JOIN USR$CRM_TICKET_STATE s ON s.ID = r.USR$STATE
+        LEFT JOIN USR$CRM_TICKET_STATE s ON s.ID = r.USR$STATE
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
     const result = await fetchAsObject<any>(sql, params);
