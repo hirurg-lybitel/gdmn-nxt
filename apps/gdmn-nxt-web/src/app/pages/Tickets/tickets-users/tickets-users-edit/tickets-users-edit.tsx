@@ -49,11 +49,11 @@ export function TicketsUserEdit({
       userName: yup
         .string()
         .required('')
-        .max(80, 'Слишком длинный логин'),
+        .max(20, 'Слишком длинный логин'),
       fullName: yup
         .string()
         .required('')
-        .max(80, 'Слишком длинный логин'),
+        .max(80, 'Слишком длинное имя'),
       password: passwordValidation(),
       email: emailValidation().required(''),
       phone: yup

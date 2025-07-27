@@ -138,7 +138,7 @@ export function TicketsList(props: ticketsListProps) {
         field={'performerKey'}
         label={'Исполнитель'}
         fullWidth
-        getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
+        getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
         getReturnedValue={(value) => value?.ID}
       />
     );

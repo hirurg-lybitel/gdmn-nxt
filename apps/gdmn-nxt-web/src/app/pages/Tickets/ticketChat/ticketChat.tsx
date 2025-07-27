@@ -513,7 +513,7 @@ export default function TicketChat(props: ITicketChatProps) {
           loadingText="Загрузка данных..."
           options={systemUsers ?? []}
           value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
-          getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
+          getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
           onChange={(e, value) => {
             updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
           }}

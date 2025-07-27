@@ -1,4 +1,4 @@
-import { InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket, ForbiddenException } from '@gsbelarus/util-api-types';
 import { ticketsRepository } from '../repository';
 import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
 
@@ -97,6 +97,10 @@ const createTicket = async (
   type: UserType
 ) => {
   try {
+    if (!body.company.ID) {
+      throw new Error('Не указана организация создателя тикета');
+    }
+
     const newTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
     const ticket = await ticketsRepository.findOne(sessionID, { ID: newTicket.ID }, type);
 
@@ -108,7 +112,8 @@ const createTicket = async (
         ticketKey: ticket.ID,
         state: ticket.state
       },
-      type
+      type,
+      true
     );
 
     return ticket;
@@ -127,14 +132,12 @@ const updateById = async (
   try {
     const oldTicket = await ticketsRepository.findOne(sessionID, { id }, type);
 
-    if (type === UserType.Tickets && oldTicket.closeAt) {
-      throw new Error('Тикет завершен');
-    }
-
     const oldTicketIsOpen = !oldTicket.closeAt;
     const newTicketIsOpen = !body.closeAt;
 
-
+    if (type === UserType.Tickets && !oldTicketIsOpen) {
+      throw ForbiddenException('Тикет завершен');
+    }
 
     const closeBy = (() => {
       if (oldTicketIsOpen) {
@@ -155,6 +158,7 @@ const updateById = async (
     })();
 
     const updatedTicket = await ticketsRepository.update(sessionID, id, { ...body, closeAt, closeBy: { ID: closeBy, fullName: '' } }, type);
+
     if (!updatedTicket?.ID) {
       throw NotFoundException(`Не найден тикет с id=${id}`);
     }

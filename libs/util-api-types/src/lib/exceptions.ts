@@ -26,3 +26,13 @@ export const ForbiddenException = (message = ''): Exception => ({
   code: 403,
   message
 });
+
+export const ConflictException = (message = ''): Exception => ({
+  code: 409,
+  message
+});
+
+export const BadRequest = (message = ''): Exception => ({
+  code: 400,
+  message
+});

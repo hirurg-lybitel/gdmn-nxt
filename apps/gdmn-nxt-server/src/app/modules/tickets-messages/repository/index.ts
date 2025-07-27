@@ -138,7 +138,7 @@ const save: SaveHandler<ITicketMessageSave> = async (
       {
         TICKETKEY: ticketKey,
         BODY: blobBody,
-        STATE: state.ID,
+        STATE: state?.ID,
         SENDER: userId
       }
     );

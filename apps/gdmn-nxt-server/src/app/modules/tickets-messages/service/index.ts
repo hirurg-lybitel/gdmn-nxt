@@ -1,4 +1,4 @@
-import { InternalServerErrorException, ITicketMessage, UserType } from '@gsbelarus/util-api-types';
+import { ForbiddenException, InternalServerErrorException, ITicketMessage, NotFoundException, UserType } from '@gsbelarus/util-api-types';
 import { ticketsMessagesRepository } from '../repository';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 
@@ -30,22 +30,31 @@ const createMessage = async (
   sessionID: string,
   userId: number,
   body: Omit<ITicketMessage, 'ID' | 'user'>,
-  type: UserType
+  type: UserType,
+  fromTicketEP?: boolean
 ) => {
   try {
     const oldTicket = await ticketsRepository.findOne(sessionID, { id: body.ticketKey }, type);
 
-    if (oldTicket.closeAt) {
-      throw new Error('Тикет завершен');
+    if (oldTicket?.closeAt) {
+      throw ForbiddenException('Тикет завершен');
     }
 
-    if (body.state) {
+    if (!oldTicket?.ID) {
+      throw NotFoundException(`Не найден тикет с id=${body.ticketKey}`);
+    }
+
+    if (body.state && !fromTicketEP) {
       const ticket = await ticketsRepository.update(sessionID, oldTicket.ID, { ...oldTicket, state: body.state }, type);
     }
 
-
     const newMessage = await ticketsMessagesRepository.save(sessionID, { ...body, userId }, type);
-    const message = await ticketsMessagesRepository.findOne(sessionID, { id: newMessage.ID }, type);
+
+    const message = await ticketsMessagesRepository.findOne(sessionID, { id: newMessage?.ID }, type);
+
+    if (!message?.ID) {
+      throw NotFoundException(`Не найдено сообщение с id=${newMessage?.ID}`);
+    }
 
     return message;
   } catch (error) {

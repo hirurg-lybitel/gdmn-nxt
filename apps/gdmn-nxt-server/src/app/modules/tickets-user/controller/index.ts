@@ -62,7 +62,7 @@ const updateById: RequestHandler = async (req, res) => {
     const updatedUser = await ticketsUserService.updateById(
       req.sessionID,
       id,
-      req.body
+      { ...req.body, password: undefined }
     );
 
     const result: IRequestResult = {

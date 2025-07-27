@@ -94,7 +94,6 @@ const update: UpdateHandler<ITicketUser> = async (
     const ID = id;
 
     const {
-      company,
       password,
       fullName,
       email,
@@ -104,7 +103,6 @@ const update: UpdateHandler<ITicketUser> = async (
     const updatedFilter = await fetchAsSingletonObject<ITicketUser>(
       `UPDATE USR$CRM_USER
       SET
-        USR$COMPANYKEY = :COMPANYKEY,
         ${password ? 'USR$PASSWORD = :PASSWORD' : ''},
         USR$FULLNAME = :FULLNAME,
         USR$EMAIL = :EMAIL,
@@ -115,7 +113,6 @@ const update: UpdateHandler<ITicketUser> = async (
       RETURNING ID`,
       {
         ID,
-        COMPANYKEY: company.ID,
         ...(password ? { PASSWORD: await hash(password, 12) } : {}),
         FULLNAME: fullName,
         EMAIL: email,

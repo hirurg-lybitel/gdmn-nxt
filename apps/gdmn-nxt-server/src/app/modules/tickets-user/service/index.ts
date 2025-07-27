@@ -1,4 +1,4 @@
-import { InternalServerErrorException, UserType, NotFoundException, ITicketUser, ForbiddenException } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, ITicketUser, ForbiddenException, ConflictException, BadRequest } from '@gsbelarus/util-api-types';
 import { ticketsUserRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { config } from '@gdmn-nxt/config';
@@ -111,10 +111,29 @@ const create = async (
   isAdmin?: boolean
 ) => {
   try {
+    if (!body?.company?.ID) {
+      throw BadRequest('У создаваемого пользователя не указана организация к которой он принадлежит');
+    }
+
+    if (!body?.password) {
+      throw BadRequest('У создаваемого пользователя не указан пароль');
+    }
+
+    if (!body?.userName) {
+      throw BadRequest('У создаваемого пользователя не указан логин');
+    }
+
     const oldUser = await ticketsUserRepository.findOne(sessionID, { USR$USERNAME: body.userName });
-    if (oldUser) throw new Error(isAdmin ? 'Для клиента уже создана учетная запись администратора' : 'Логин должен быть уникальным');
-    const newFilter = await ticketsUserRepository.save(sessionID, { ...body }, isAdmin);
-    const user = await ticketsUserRepository.findOne(sessionID, { id: newFilter.ID });
+    if (oldUser?.ID) {
+      throw ConflictException(isAdmin ? 'Для клиента уже создана учетная запись администратора' : 'Логин должен быть уникальным');
+    }
+
+    const newUser = await ticketsUserRepository.save(sessionID, { ...body }, isAdmin);
+    const user = await ticketsUserRepository.findOne(sessionID, { id: newUser?.ID });
+
+    if (!user?.ID) {
+      throw NotFoundException(`Не найден пользователь с id=${newUser?.ID}`);
+    }
 
     // const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne('mailer');
 
@@ -184,7 +203,7 @@ const removeById = async (
     }
 
     if (type === UserType.Tickets && editorCompanuKey !== checkUser.company.ID) {
-      throw ForbiddenException('Организация удаляемого ответственного лица отличается от вашей');
+      throw ForbiddenException('Организация удаляемого пользователя отличается от вашей');
     }
 
     return await ticketsUserRepository.remove(sessionID, id, type);

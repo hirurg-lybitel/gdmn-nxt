@@ -1,3 +1,4 @@
+import { UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
@@ -194,9 +195,9 @@ const save: SaveHandler<ITicketSave> = async (
         TITLE: title,
         COMPANYKEY: company.ID,
         USERKEY: userId,
-        OPENAT: new Date(openAt),
+        OPENAT: openAt ? new Date(openAt) : new Date(),
         STATEID: openState.ID,
-        PERFORMERKEY: performer.ID
+        PERFORMERKEY: performer?.ID
       }
     );
 
@@ -229,15 +230,24 @@ const update: UpdateHandler<ITicket> = async (
       closeBy
     } = metadata;
 
+    const ticketsUserField = `
+        USR$TITLE = :TITLE,
+        USR$NEEDCALL = :NEEDCALL
+      `;
+
+    const gedeminUserFields = `
+      USR$TITLE = :TITLE,
+      USR$NEEDCALL = :NEEDCALL,
+      USR$CLOSEAT = :CLOSEAT,
+      USR$STATE = :STATE,
+      USR$PERFORMERKEY = :PERFORMERKEY,
+      USR$CLOSEDBY = :CLOSEDBY
+    `;
+
     const updatedTicket = await fetchAsSingletonObject<ITicket>(
       `UPDATE USR$CRM_TICKET
         SET
-          USR$TITLE = :TITLE,
-          USR$NEEDCALL = :NEEDCALL,
-          USR$CLOSEAT = :CLOSEAT,
-          USR$STATE = :STATE,
-          USR$PERFORMERKEY = :PERFORMERKEY,
-          USR$CLOSEDBY = :CLOSEDBY
+          ${type === UserType.Tickets ? ticketsUserField : gedeminUserFields}
         WHERE
           ID = :ID
         RETURNING ID`,
@@ -246,9 +256,9 @@ const update: UpdateHandler<ITicket> = async (
         NEEDCALL: needCall,
         CLOSEAT: closeAt ? new Date(closeAt) : undefined,
         ID,
-        STATE: state.ID,
-        PERFORMERKEY: performer.ID,
-        CLOSEDBY: closeBy.ID
+        STATE: state?.ID,
+        PERFORMERKEY: performer?.ID,
+        CLOSEDBY: closeBy?.ID
       }
     );
 

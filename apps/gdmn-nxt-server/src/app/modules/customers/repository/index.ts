@@ -170,7 +170,7 @@ const addToTickets: UpdateHandler<ICustomerTickets> = async (
       `,
       {
         TICKETSYSTEM: true,
-        PERFORMER: performer.ID,
+        PERFORMER: performer?.ID,
         ID: id
       }
     );

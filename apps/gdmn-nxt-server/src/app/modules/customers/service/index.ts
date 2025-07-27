@@ -1,6 +1,6 @@
 import { baseUrl } from './../../../../../../gdmn-nxt-web/src/app/constants/index';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
-import { FindHandler, IBusinessProcess, ICustomer, ICustomerFeedback, ICustomerTickets, IFavoriteContact, ILabel, ILabelsContact, ITimeTrackTask, LessThanOrEqual, RemoveOneHandler } from '@gsbelarus/util-api-types';
+import { BadRequest, FindHandler, IBusinessProcess, ICustomer, ICustomerFeedback, ICustomerTickets, IFavoriteContact, ILabel, ILabelsContact, ITimeTrackTask, LessThanOrEqual, NotFoundException, RemoveOneHandler } from '@gsbelarus/util-api-types';
 import { cachedRequets, ContactBusiness, ContactLabel, Customer, CustomerInfo } from '@gdmn-nxt/server/utils/cachedRequests';
 import { timeTrackerTasksService } from '@gdmn-nxt/modules/time-tracker-tasks/service';
 import task from '@gdmn-nxt/controllers/kanban/task';
@@ -364,6 +364,9 @@ const addToTickets = async (
   body: ICustomerTickets
 ) => {
   try {
+    if (!body?.customer?.ID) {
+      throw BadRequest('Не указана организация');
+    }
     const newCustomer = await customerRepository.addToTickets(sessionID, body.customer.ID, body);
     const newUser = await ticketsUserService.create(
       sessionID,
