@@ -27,7 +27,7 @@ export type LoginStage =
 
 export interface UserState {
   loginStage: LoginStage;
-  userType?: 'CUSTOMER' | 'EMPLOYEE' | 'TISCKETS';
+  userType?: 'CUSTOMER' | 'EMPLOYEE' | 'TICKETS';
   userProfile?: IUserProfile;
 };
 
