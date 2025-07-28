@@ -518,6 +518,7 @@ export default function TicketChat(props: ITicketChatProps) {
           fullWidth
           readOnly={ticketsUser}
           size="small"
+          disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
           loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
           loadingText="Загрузка данных..."
           options={systemUsers ?? []}
@@ -538,6 +539,7 @@ export default function TicketChat(props: ITicketChatProps) {
           fullWidth
           readOnly={ticketsUser}
           size="small"
+          disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
           loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
           loadingText="Загрузка данных..."
           options={states ?? []}
@@ -561,7 +563,8 @@ export default function TicketChat(props: ITicketChatProps) {
           fullWidth
           readOnly
           size="small"
-          loading={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching || true}
+          disabled={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
+          loading={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
           loadingText="Загрузка данных..."
           options={customersResponse?.data ?? []}
           value={ticket?.company ?? null}
@@ -578,6 +581,7 @@ export default function TicketChat(props: ITicketChatProps) {
           fullWidth
           readOnly
           size="small"
+          disabled={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
           loading={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
           loadingText="Загрузка данных..."
           options={users?.users ?? []}
