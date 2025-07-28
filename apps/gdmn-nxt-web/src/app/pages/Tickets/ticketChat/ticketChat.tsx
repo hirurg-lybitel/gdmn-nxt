@@ -582,7 +582,7 @@ export default function TicketChat(props: ITicketChatProps) {
             <TextField
               variant="standard"
               {...params}
-              label={'Поставновщик'}
+              label={'Постановщик'}
             />
           )}
         />}
