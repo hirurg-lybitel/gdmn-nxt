@@ -272,7 +272,7 @@ export default function TicketChat(props: ITicketChatProps) {
               disabled={files.length === maxFilesCount}
               onClick={uploadClick}
             >
-              Добаить
+              Добавить
             </Button>
             <div style={{ flex: 1 }} />
             <Button style={{ height: '100%' }} onClick={() => setFiles([])}>
