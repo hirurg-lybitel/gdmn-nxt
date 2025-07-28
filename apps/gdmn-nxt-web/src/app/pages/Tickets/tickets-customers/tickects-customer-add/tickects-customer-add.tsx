@@ -5,7 +5,7 @@ import {
   Typography
 } from '@mui/material';
 import { ICustomer, ICustomerTickets } from '@gsbelarus/util-api-types';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
@@ -120,8 +120,8 @@ export function TicketsCustomerAdd({
                 name="email"
                 onChange={formik.handleChange}
                 value={formik.values.email}
-                error={!!formik.errors.email}
-                helperText={formik.errors.email}
+                error={getIn(formik.touched, 'email') && getIn(formik.errors, 'email')}
+                helperText={getIn(formik.touched, 'email') && getIn(formik.errors, 'email')}
               />
               <div
                 style={{
