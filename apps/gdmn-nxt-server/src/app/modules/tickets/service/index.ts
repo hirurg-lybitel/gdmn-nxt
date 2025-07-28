@@ -11,7 +11,7 @@ const findAll = async (
   try {
     const {
       active,
-      conpanyKey,
+      companyKey,
       userId,
       state,
       performerKey,
@@ -32,7 +32,7 @@ const findAll = async (
       sessionID,
       {
         // ...(active ? { USR$CLOSEAT: (active === 'true' ? IsNull : IsNotNull)() } : {}),
-        ...(conpanyKey ? { USR$COMPANYKEY: conpanyKey ?? -1 } : {}),
+        ...(companyKey ? { USR$COMPANYKEY: companyKey ?? -1 } : {}),
         ...(userId ? { USR$USERKEY: userId } : {}),
         ...(state ? { USR$STATE: state } : {}),
         ...(performerKey ? { USR$PERFORMERKEY: performerKey } : {})
