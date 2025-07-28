@@ -12,6 +12,7 @@ import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { generatePassword } from '@gsbelarus/util-useful';
 import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
+import { emailValidation } from '@gdmn-nxt/helpers/validators';
 
 export interface TicketsCustomerAddProps {
   open: boolean;
@@ -38,7 +39,7 @@ export function TicketsCustomerAdd({
     },
     validationSchema: yup.object().shape({
       customer: yup.object().required(),
-      email: yup.string().required(),
+      email: emailValidation().required(),
       admin: yup.object().shape({
         name: yup.string().required(),
         fullName: yup.string().required(),
@@ -119,6 +120,8 @@ export function TicketsCustomerAdd({
                 name="email"
                 onChange={formik.handleChange}
                 value={formik.values.email}
+                error={!!formik.errors.email}
+                helperText={formik.errors.email}
               />
               <div
                 style={{
