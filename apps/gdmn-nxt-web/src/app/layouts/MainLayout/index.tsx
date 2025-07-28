@@ -16,8 +16,9 @@ import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { saveFilterData } from '../../store/filtersSlice';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import ContentContainer from '@gdmn-nxt/components/content-container/content-container';
+import { UserType } from '@gsbelarus/util-api-types';
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{menuOpened: boolean}>(({ theme, menuOpened }) => ({
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'menuOpened' })<{ menuOpened: boolean; }>(({ theme, menuOpened }) => ({
   ...theme.mainContent,
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
@@ -70,12 +71,12 @@ interface IMenuItem {
 };
 
 interface IMenuDivider {
-  type: 'divider'
+  type: 'divider';
 };
 
 export type MenuItem = IMenuItem | IMenuDivider;
 
-interface MainLayoutProps{
+interface MainLayoutProps {
 }
 
 export const MainLayout = (props: MainLayoutProps) => {
@@ -85,6 +86,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   const { errorMessage, errorStatus } = useSelector((state: RootState) => state.error);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const menuOpened = useSelector((state: RootState) => state.settings.menuOpened);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   const dispatch = useDispatch<AppDispatch>();
   const onIdleHandler = () => {
@@ -178,7 +180,7 @@ export const MainLayout = (props: MainLayoutProps) => {
 
   return (
     <>
-      <UpdatesInfo />
+      {!ticketsUser && <UpdatesInfo />}
       <Box sx={{ display: 'flex', backgroundColor: theme.menu?.backgroundColor }}>
         <Sidebar
           open={menuOpened}

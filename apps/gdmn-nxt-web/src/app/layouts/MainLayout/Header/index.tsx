@@ -10,7 +10,7 @@ import { IMenuItem } from '../../../menu-items';
 interface IHeaderProps {
   onDrawerToggle: () => void;
   mobile?: boolean,
-  menuItemClick: (item: IMenuItem, level: number) => void
+  menuItemClick: (item: IMenuItem, level: number) => void;
 };
 
 export const Header = (props: IHeaderProps) => {
@@ -38,7 +38,7 @@ export const Header = (props: IHeaderProps) => {
       <Notification menuItemClick={menuItemClick} />
       <ToggleTheme />
       {mobile && <IconButton size="large" onClick={onDrawerToggle}>
-        <CloseIcon color="secondary"/>
+        <CloseIcon color="secondary" />
       </IconButton>}
     </div>
   );

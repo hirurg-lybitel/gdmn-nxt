@@ -62,9 +62,12 @@ import ExpectedReceiptsDev from './app/pages/Analytics/UserReports/expected-rece
 import Expenses from './app/pages/Analytics/UserReports/expenses/expenses';
 import Debts from './app/pages/Analytics/UserReports/debts/debts';
 import Revenue from './app/pages/Analytics/UserReports/revenue/revenue';
+import TicketsList from './app/pages/Tickets/ticketsList/ticketsList';
+import TicketChat from './app/pages/Tickets/ticketChat/ticketChat';
+import TicketsCustomers from './app/pages/Tickets/tickets-customers/tickets-customers';
+import TicketsUsers from './app/pages/Tickets/tickets-users/tickets-users';
 
 registerMUI();
-
 
 const Main = () => {
   const customization = useSelector(
@@ -118,107 +121,143 @@ const Main = () => {
               <SnackbarProvider maxSnack={3}>
                 {
                   <>
-                    {loginStage === 'EMPLOYEE' ? (
-                      <Routes>
-                        <Route path="/employee" element={<MainLayout />}>
-                          <Route path="" element={<Navigate to="dashboard/overview" />} />
-                          <Route path="dashboard">
-                            <Route path="" element={<Navigate to="overview" />} />
-                            <Route path="overview" element={<Dashboard />} />
-                            <Route path="analytics" element={<Analytics />} />
-                          </Route>
-                          <Route path="managment">
-                            <Route path="" element={<Navigate to="contacts" />} />
-                            <Route path="time-tracker" element={<TimeTracker />} />
-                            <Route path="contacts" element={<Contacts />} />
-                            <Route path="ourContacts" element={<OurContacts />} />
-                            <Route path="deals">
+                    {(() => {
+                      if (loginStage === 'TICKETS') {
+                        return (
+                          <Routes>
+                            <Route path="" element={<Navigate to="tickets" />} />
+                            <Route path="tickets" element={<MainLayout />}>
                               <Route path="" element={<Navigate to="list" />} />
-                              <Route path="list" element={<Deals />} />
-                              <Route path="dealSources" element={<DealSources />} />
-                              <Route path="denyReasons" element={<DenyReasons />} />
+                              <Route path="list" element={<TicketsList />} />
+                              <Route path="list/:id" element={<TicketChat />} />
+                              <Route path="users" element={<TicketsUsers />} />
+                              <Route path="settings">
+                                <Route path="" element={<Navigate to="account" />} />
+                                {TABS.map((tab) => (
+                                  <Route
+                                    key={tab}
+                                    path={tab}
+                                    element={<Profile baseUrl={'/tickets'} />}
+                                  />
+                                ))}
+                              </Route>
                             </Route>
-                            <Route path="tasks">
-                              <Route path="list" element={<Tasks />} />
-                              <Route path="taskTypes" element={<TaskTypes />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        );
+                      }
+                      if (loginStage === 'EMPLOYEE') {
+                        return (
+                          <Routes>
+                            <Route path="/employee" element={<MainLayout />}>
+                              <Route path="" element={<Navigate to="dashboard/overview" />} />
+                              <Route path="dashboard">
+                                <Route path="" element={<Navigate to="overview" />} />
+                                <Route path="overview" element={<Dashboard />} />
+                                <Route path="analytics" element={<Analytics />} />
+                              </Route>
+                              <Route path="managment">
+                                <Route path="" element={<Navigate to="contacts" />} />
+                                <Route path="time-tracker" element={<TimeTracker />} />
+                                <Route path="contacts" element={<Contacts />} />
+                                <Route path="ourContacts" element={<OurContacts />} />
+                                <Route path="deals">
+                                  <Route path="" element={<Navigate to="list" />} />
+                                  <Route path="list" element={<Deals />} />
+                                  <Route path="dealSources" element={<DealSources />} />
+                                  <Route path="denyReasons" element={<DenyReasons />} />
+                                </Route>
+                                <Route path="tasks">
+                                  <Route path="list" element={<Tasks />} />
+                                  <Route path="taskTypes" element={<TaskTypes />} />
+                                </Route>
+                                <Route path="customers">
+                                  <Route path="" element={<Navigate to="list" />} />
+                                  <Route path="orders/list" element={<OrderList />} />
+                                  <Route path="list" element={<CustomersList />} />
+                                  {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
+                                </Route>
+                                <Route path="contracts" element={<Contracts />} />
+                                <Route path="labels" element={<Labels />} />
+                                <Route path="projects" element={<Projects />} />
+                              </Route>
+                              <Route path="marketing">
+                                <Route path="" element={<Navigate to="mailing" />} />
+                                <Route path="mailing" element={<Mailing />} />
+                                <Route path="segments" element={<CustomersSegments />} />
+                                <Route path="templates" element={<Templates />} />
+                              </Route>
+                              <Route path="analytics">
+                                <Route path="" element={<Navigate to="reports/reconciliation" />} />
+                                <Route path="reports">
+                                  <Route path="" element={<Navigate to="reconciliation" />} />
+                                  <Route path="reconciliation" element={<ReconciliationAct />} />
+                                  <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
+                                  <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
+                                  <Route path="topEarning" element={<TopEarningPage />} />
+                                  <Route path="expectedreceipts" element={<ExpectedReceipts />} />
+                                  <Route path="expectedreceiptsdev" element={<ExpectedReceiptsDev />} />
+                                  <Route path="expenses" element={<Expenses />} />
+                                  <Route path="debts" element={<Debts />} />
+                                  <Route path="revenue" element={<Revenue />} />
+                                </Route>
+                                <Route path="salesfunnel" element={<SalesFunnel />} />
+                              </Route>
+                              <Route path="tickets">
+                                <Route path="" element={<Navigate to="list" />} />
+                                <Route path="list" element={<TicketsList />} />
+                                <Route path="list/:id" element={<TicketChat />} />
+                                <Route path="customers" element={<TicketsCustomers />} />
+                              </Route>
+                              <Route path="system">
+                                <Route path="settings">
+                                  <Route path="" element={<Navigate to="account" />} />
+                                  {TABS.map((tab) => (
+                                    <Route
+                                      key={tab}
+                                      path={tab}
+                                      element={<Profile />}
+                                    />
+                                  ))}
+                                </Route>
+                                <Route path="permissions">
+                                  <Route path="" element={<Navigate to="list" />} />
+                                  <Route path="list" element={<PermissionsList />} />
+                                  <Route path="usergroups" element={<UserGroups />} />
+                                </Route>
+                                <Route path="notifications" element={<NotificationCenter />} />
+                                <Route path="faq" element={<FAQ />} />
+                                <Route path="updates-history" element={<UpdatesHistory />} />
+                              </Route>
                             </Route>
-                            <Route path="customers">
-                              <Route path="" element={<Navigate to="list" />} />
-                              <Route path="orders/list" element={<OrderList />} />
-                              <Route path="list" element={<CustomersList />} />
-                              {/* <Route path="list/details/:id" element={<CustomerDetails />} /> */}
+                            <Route path="/platform" element={<BaseForm />}>
+                              <Route path="" element={<Navigate to="er-model-domains" />} />
+                              <Route path="er-model-domains" element={<ErModelDomains />} />
+                              <Route path="er-model" element={<ErModel />} />
+                              <Route path="nlp-main" element={<NlpMain />} />
+                              <Route path="sql-editor" element={<SqlEditor />} />
+                              <Route path="*" element={<NotFound />} />
                             </Route>
-                            <Route path="contracts" element={<Contracts />} />
-                            <Route path="labels" element={<Labels />} />
-                            <Route path="projects" element={<Projects />} />
-                          </Route>
-                          <Route path="marketing">
-                            <Route path="" element={<Navigate to="mailing" />} />
-                            <Route path="mailing" element={<Mailing/>}/>
-                            <Route path="segments" element={<CustomersSegments/>}/>
-                            <Route path="templates" element={<Templates/>} />
-                          </Route>
-                          <Route path="analytics">
-                            <Route path="" element={<Navigate to="reports/reconciliation" />} />
-                            <Route path="reports">
-                              <Route path="" element={<Navigate to="reconciliation" />} />
-                              <Route path="reconciliation" element={<ReconciliationAct />} />
-                              <Route path="reconciliation/:customerId" element={<ReconciliationAct />} />
-                              <Route path="remainbyinvoices" element={<RemainsByInvoices />} />
-                              <Route path="topEarning" element={<TopEarningPage />} />
-                              <Route path="expectedreceipts" element={<ExpectedReceipts/>}/>
-                              <Route path="expectedreceiptsdev" element={<ExpectedReceiptsDev/>}/>
-                              <Route path="expenses" element={<Expenses/>}/>
-                              <Route path="debts" element={<Debts/>}/>
-                              <Route path="revenue" element={<Revenue/>}/>
+                            <Route path="/" element={<Navigate to="/employee/dashboard" />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        );
+                      }
+                      if (loginStage === 'CUSTOMER') {
+                        return (
+                          <Routes>
+                            <Route path="/customer" element={<CustomerHomePage />} >
+                              <Route path="" element={<Navigate to="standard-order" />} />
+                              <Route path="standard-order" element={<StandardOrder />} />
+                              <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
                             </Route>
-                            <Route path="salesfunnel" element={<SalesFunnel />} />
-                          </Route>
-                          <Route path="system">
-                            <Route path="settings">
-                              <Route path="" element={<Navigate to="account" />} />
-                              {TABS.map((tab) => (
-                                <Route
-                                  key={tab}
-                                  path={tab}
-                                  element={<Profile />}
-                                />
-                              ))}
-                            </Route>
-                            <Route path="permissions">
-                              <Route path="" element={<Navigate to="list" />} />
-                              <Route path="list" element={<PermissionsList />} />
-                              <Route path="usergroups" element={<UserGroups />} />
-                            </Route>
-                            <Route path="notifications" element={<NotificationCenter />} />
-                            <Route path="faq" element={<FAQ />} />
-                            <Route path="updates-history" element={<UpdatesHistory />} />
-                          </Route>
-                        </Route>
-                        <Route path="/platform" element={<BaseForm />}>
-                          <Route path="" element={<Navigate to="er-model-domains" />} />
-                          <Route path="er-model-domains" element={<ErModelDomains />} />
-                          <Route path="er-model" element={<ErModel />} />
-                          <Route path="nlp-main" element={<NlpMain />} />
-                          <Route path="sql-editor" element={<SqlEditor />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Route>
-                        <Route path="/" element={<Navigate to="/employee/dashboard" />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    ) : loginStage === 'CUSTOMER' ? (
-                      <Routes>
-                        <Route path="/customer" element={<CustomerHomePage />} >
-                          <Route path="" element={<Navigate to="standard-order" />} />
-                          <Route path="standard-order" element={<StandardOrder />} />
-                          <Route path="reconciliation-statement" element={<ReconciliationStatement custId={148333193} />} />
-                        </Route>
-                        <Route path="/" element={<Navigate to="/customer" />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    ) : (
-                      <App />
-                    )}
+                            <Route path="/" element={<Navigate to="/customer" />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        );
+                      }
+                      return <App />;
+                    })()}
                   </>
                 }
               </SnackbarProvider>

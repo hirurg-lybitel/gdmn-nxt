@@ -13,7 +13,7 @@ export type SmtpOptions = {
   port?: number;
   user?: string;
   password?: string;
-}
+};
 
 type SendEmailOpt = {
   from: string,
@@ -22,8 +22,8 @@ type SendEmailOpt = {
   text?: string,
   html?: string,
   attachments?: IAttachment[],
-  options?: SmtpOptions
-}
+  options?: SmtpOptions;
+};
 
 export const sendEmail = async ({
   from,
@@ -66,9 +66,11 @@ export const sendEmail = async ({
       subject,
       text,
       html,
-      attachments });
+      attachments
+    });
   } catch (error) {
     console.error('sendEmail_error', error);
+    throw error;
   }
 };
 

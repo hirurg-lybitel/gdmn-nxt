@@ -17,6 +17,9 @@ export const ERROR_MESSAGES = {
   DATA_NOT_FOUND_WITH_ID: (id: number) => `Не найдена запись с id=${id}`,
   UPDATE_FAILED: 'Ошибка при обновлении записи',
   DELETE_FAILED: 'Ошибка при удалении записи',
+  PASSWORDS_MUST_MATCH: 'Пароли не сопадают',
+  INVALID_OLD_PASSWORD: 'Неверный пароль',
+  PASSWORDS_MATCH: 'Старый и новый пароль не должны совпадать'
 };
 
 export const SUCCESS_MESSAGES = {

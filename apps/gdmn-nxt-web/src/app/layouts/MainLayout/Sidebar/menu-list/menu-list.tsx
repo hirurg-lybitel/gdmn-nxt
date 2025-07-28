@@ -8,9 +8,10 @@ import { useCallback, useMemo, useState } from 'react';
 import PermissionsGate from '@gdmn-nxt/components/Permissions/permission-gate/permission-gate';
 import MenuItem from '../menu-item/menu-item';
 import { useSelector } from 'react-redux';
-import { Permissions } from '@gsbelarus/util-api-types';
+import { Permissions, UserType } from '@gsbelarus/util-api-types';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import MenuCollapse from '../menu-collapse/menu-collapse';
+import ticketsMenuItems from 'apps/gdmn-nxt-web/src/app/menu-items/tickets';
 
 const useStyles = makeStyles(() => ({
   scroll: {
@@ -29,12 +30,15 @@ const useStyles = makeStyles(() => ({
 
 /* eslint-disable-next-line */
 export interface MenuListProps {
-  onItemClick?: (item: IMenuItem, lavel: number) => void
+  onItemClick?: (item: IMenuItem, lavel: number) => void;
 }
 
-export function MenuList({ onItemClick }: MenuListProps) {
+export function MenuList({ onItemClick }: Readonly<MenuListProps>) {
   const classes = useStyles();
   const theme = useTheme();
+
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+  const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const [searchText, setSearchText] = useState('');
 
@@ -60,7 +64,7 @@ export function MenuList({ onItemClick }: MenuListProps) {
     onItemClick && onItemClick(item, lavel);
   }, [onItemClick]);
 
-  const navItems = useMemo(() => filterMenuItems(menuItems.items, searchText)
+  const navItems = useMemo(() => filterMenuItems(ticketsUser ? ticketsMenuItems.items : menuItems.items, searchText)
     .map((item) => {
       switch (item.type) {
         case 'collapse':
@@ -84,7 +88,10 @@ export function MenuList({ onItemClick }: MenuListProps) {
           return (
             <PermissionsGate
               key={item.id}
-              actionAllowed={userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck}
+              actionAllowed={
+                (userPermissions?.[item.actionCheck?.name ?? '']?.[item.actionCheck?.method ?? ''] ?? !item.actionCheck) &&
+                (item.adminOnly ? isAdmin : true)
+              }
             >
               <MenuItem
                 onClick={handleClick}
@@ -106,7 +113,7 @@ export function MenuList({ onItemClick }: MenuListProps) {
             </Typography>
           );
       }
-    }), [filterMenuItems, handleClick, searchText, userPermissions]);
+    }), [filterMenuItems, handleClick, searchText, ticketsUser, userPermissions]);
 
   const searchOnChange = (value: string) => {
     setSearchText(value);

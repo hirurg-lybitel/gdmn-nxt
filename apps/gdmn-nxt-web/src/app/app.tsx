@@ -1,11 +1,11 @@
 import { Captcha, CheckCode, CreateCode, SignInSignUp } from '@gsbelarus/ui-common-dialogs';
 import axios from 'axios';
 import type { AxiosError, AxiosRequestConfig } from 'axios';
-import { IAuthResult, IUserProfile, ColorMode, ISessionInfo } from '@gsbelarus/util-api-types';
+import { IAuthResult, IUserProfile, ColorMode, ISessionInfo, UserType } from '@gsbelarus/util-api-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from './store';
-import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha } from './features/user/userSlice';
-import { useEffect, useMemo, useState } from 'react';
+import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmployee, createCustomerAccount, UserState, renderApp, signIn2fa, create2fa, checkCaptcha, signedInTicketsUser, changePassword } from './features/user/userSlice';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ import { baseUrlApi } from './constants';
 import { saveFilterData } from './store/filtersSlice';
 import { getPublicIP } from '@gdmn-nxt/ip-info';
 import bowser from 'bowser';
+import ChangePassword from './components/change-password/change-password';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -33,10 +34,7 @@ const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<
   }
 };
 
-const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
-const get = <T = IAuthResult>(url: string) => query<T>({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });
-
-export interface AppProps {}
+export interface AppProps { }
 
 export default function App(props: AppProps) {
   const dispatch = useDispatch<AppDispatch>();
@@ -56,6 +54,7 @@ export default function App(props: AppProps) {
 
   const pathName: string[] = window.location.pathname.split('/');
   pathName.splice(0, 1);
+
   // Поиск и установка id страницы, который соответствует url, в state
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
@@ -65,6 +64,10 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
+          if (pathName[0] === 'tickets') {
+            navigate('/tickets/login');
+            break;
+          };
           navigate('/');
           break;
         case 'LAUNCHING':
@@ -90,10 +93,13 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
+          navigate('/');
+
           /** Получение последнего url клиента */
           const res = await fetch(`${baseUrlApi}filters/menu`, { method: 'GET', credentials: 'include' });
           if (res.ok) {
             const pathnameData = await res.json();
+
 
             const pathname = Array.isArray(pathnameData.queries?.filters) ? pathnameData.queries.filters[0]?.filters?.path : '';
             dispatch(saveFilterData({ menu: { path: pathname } }));
@@ -127,25 +133,25 @@ export default function App(props: AppProps) {
   /** Wait for new color mod was applied */
   const theme = useTheme();
   useEffect(() => {
-    if (loginStage === 'QUERY_LOGIN' &&
-        theme.palette.mode === user?.colorMode &&
-        !!user) {
-      if (user.gedeminUser) {
-        dispatch(signedInEmployee({ ...user }));
-      } else {
-        dispatch(signedInCustomer({ userName: user.userName, id: user.id, contactkey: user.contactkey }));
+    if (loginStage === 'QUERY_LOGIN' && theme.palette.mode === user?.colorMode && !!user) {
+      if (user.type === UserType.Tickets) {
+        dispatch(signedInTicketsUser({ ...user }));
+        return;
       }
+      if (user.type === UserType.Gedemin) {
+        dispatch(signedInEmployee({ ...user }));
+        return;
+      }
+      dispatch(signedInCustomer({ userName: user.userName, id: user.id, contactkey: user.contactkey }));
     }
-  }, [loginStage, theme.palette.mode, user]);
+  }, [dispatch, loginStage, theme.palette.mode, user]);
 
 
   useEffect(() => {
     if (loginStage === 'SELECT_MODE') dispatch(signInEmployee());
   }, [loginStage]);
 
-  const handleSignInWithEmail = (email: string) => handleSignIn(userProfile?.userName ?? '', userProfile?.password ?? '', email);
-
-  const handleSignIn = async (userName: string, password: string, email?: string) => {
+  const handleSignIn = useCallback(async ({ type = UserType.Gedemin, userName, password, email }: { type?: UserType, userName: string, password: string, email?: string; }) => {
     const loginData: Pick<ISessionInfo, 'ip' | 'device'> = { ip: 'unknown' };
     const browser = bowser.parse(window.navigator.userAgent);
 
@@ -164,7 +170,7 @@ export default function App(props: AppProps) {
     const response = await post('user/signin', {
       userName,
       password,
-      employeeMode: true,
+      type,
       ...(email && { email }),
       ...loginData
     });
@@ -172,6 +178,10 @@ export default function App(props: AppProps) {
     if (response.result === 'SUCCESS') {
       dispatch(queryLogin());
     };
+
+    if (response.result === 'ONE_TIME_PASSWORD') {
+      dispatch(changePassword({ ...userProfile, userName, password }));
+    }
 
     if (response.result === 'REQUIRED_2FA') {
       const dataCreate2fa = await get('user/create-2fa');
@@ -193,26 +203,31 @@ export default function App(props: AppProps) {
     };
 
     return response;
-  };
+  }, [dispatch, userProfile]);
 
-  const backToMain = async () => {
+  const handleSignInWithEmail = useCallback(
+    (email: string) => handleSignIn({ userName: userProfile?.userName ?? '', password: userProfile?.password ?? '', email }),
+    [handleSignIn, userProfile?.password, userProfile?.userName]
+  );
+
+  const backToMain = useCallback(async () => {
     dispatch(selectMode());
-  };
+  }, [dispatch]);
 
-  const create2FAOnSubmit = async (authCode: string, emailCode: string): Promise<IAuthResult> => {
+  const create2FAOnSubmit = useCallback(async (authCode: string, emailCode: string): Promise<IAuthResult> => {
     const response = await post('user/create-2fa', { authCode, emailCode });
 
     if (response.result === 'SUCCESS') {
-      handleSignIn(
-        userProfile?.userName ?? '',
-        userProfile?.password ?? '',
-      );
+      handleSignIn({
+        userName: userProfile?.userName ?? '',
+        password: userProfile?.password ?? '',
+      });
     };
 
     return response;
-  };
+  }, [handleSignIn, userProfile?.password, userProfile?.userName]);
 
-  const check2FAOnSubmit = async (authCode: string): Promise<IAuthResult> => {
+  const check2FAOnSubmit = useCallback(async (authCode: string): Promise<IAuthResult> => {
     const response = await post('user/signin-2fa', {
       authCode,
       userName: userProfile?.userName ?? '',
@@ -225,27 +240,44 @@ export default function App(props: AppProps) {
     };
 
     return response;
-  };
+  }, [dispatch, userProfile?.password, userProfile?.userName]);
 
-  const captchaSubmit = async (value: string): Promise<boolean> => {
+  const handleChangePassword = useCallback(async (newPassword: string, repeatPassword: string) => {
+    const response = await post('user/change-password', {
+      password: userProfile?.password ?? '',
+      newPassword,
+      repeatPassword
+    });
+    if (response.result === 'SUCCESS') {
+      handleSignIn({
+        type: UserType.Tickets,
+        userName: userProfile?.userName ?? '',
+        password: newPassword ?? ''
+      });
+      return { result: true };
+    };
+    return { result: false, message: response.message };
+  }, [handleSignIn, userProfile?.password, userProfile?.userName]);
+
+  const captchaSubmit = useCallback(async (value: string): Promise<boolean> => {
     const response = await post('captcha/verify', { value });
 
     if (response.result === 'SUCCESS') {
       setCaptchaImage('');
-      handleSignIn(
-        userProfile?.userName ?? '',
-        userProfile?.password ?? ''
-      );
+      handleSignIn({
+        userName: userProfile?.userName ?? '',
+        password: userProfile?.password ?? ''
+      });
       return true;
     };
     return false;
-  };
+  }, [handleSignIn, userProfile?.password, userProfile?.userName]);
 
-  const captchaCancel = () => {
+  const captchaCancel = useCallback(() => {
     setCaptchaImage('');
 
     dispatch(signInEmployee());
-  };
+  }, [dispatch]);
 
   const loadingPage = useMemo(() => {
     return (
@@ -274,6 +306,9 @@ export default function App(props: AppProps) {
         return <Navigate to="/customer" />;
       case 'EMPLOYEE':
         return <Navigate to="/employee/dashboard" />;
+      case 'TICKETS': {
+        return <Navigate to="/tickets/tickets" />;
+      }
       case 'CREATE_CUSTOMER_ACCOUNT':
         return <CreateCustomerAccount onCancel={() => dispatch(selectMode())} />;
       case 'SIGN_IN_EMPLOYEE':
@@ -296,7 +331,7 @@ export default function App(props: AppProps) {
       case 'CAPTCHA':
         return (
           <SignInSignUp
-            onSignIn={(userName, password) => post('user/signin', { userName, password })}
+            onSignIn={({ userName, password }) => post('user/signin', { userName, password })}
             newPassword={(email) => post('user/forgot-password', { email })}
             // onSignIn={handleSignIn}
             bottomDecorator={() =>
@@ -331,10 +366,12 @@ export default function App(props: AppProps) {
           onSubmit={check2FAOnSubmit}
           onCancel={backToMain}
         />;
+      case 'ONE_TIME_PASSWORD':
+        return <ChangePassword onSubmit={handleChangePassword} />;
       default:
         return loadingPage;
     }
-  }, [loginStage, captchaImage]);
+  }, [loginStage, loadingPage, handleSignIn, captchaImage, captchaSubmit, captchaCancel, userProfile, create2FAOnSubmit, backToMain, handleSignInWithEmail, check2FAOnSubmit, handleChangePassword, dispatch]);
 
   const result =
     <div
@@ -353,3 +390,6 @@ export default function App(props: AppProps) {
     </div>;
   return result;
 };
+
+const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
+const get = <T = IAuthResult>(url: string) => query<T>({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });

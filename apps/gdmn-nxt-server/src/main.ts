@@ -1,10 +1,10 @@
-import express, { Request } from 'express';
+import express from 'express';
 import session from 'express-session';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import { resultError, validPassword } from '@gsbelarus/util-helpers';
-import { ISessionInfo, IsNotNull, MailingStatus, Permissions } from '@gsbelarus/util-api-types';
-import { checkGedeminUser, getAccount, getGedeminUser } from './app/controllers/app';
+import { ISessionInfo, IsNotNull, MailingStatus, Permissions, UserType } from '@gsbelarus/util-api-types';
+import { checkTicketsUser, checkGedeminUser, getAccount, getTicketsUser, getGedeminUser } from './app/controllers/app';
 import { upsertAccount, getAccounts } from './app/controllers/accounts';
 import contactGroups from './app/controllers/contactGrops';
 import departments from './app/controllers/departments';
@@ -54,6 +54,7 @@ import RedisStore from 'connect-redis';
 import IORedis from 'ioredis';
 import { securityRouter } from './app/routes/security';
 import { dealFeedbackRouter } from './app/routes/dealFeedbackRouter';
+import { ticketsRouter } from './app/routes/ticketsRouter';
 
 const COOKIE_AGE = 24 * 60 * 60 * 1000;
 
@@ -68,6 +69,7 @@ declare module 'express-session' {
     email: string;
     userName: string;
     captcha: string;
+    type: UserType;
   }
 }
 
@@ -76,7 +78,7 @@ interface IBaseUser {
 };
 
 interface IGedeminUser extends IBaseUser {
-  gedeminUser: true;
+  type: UserType.Gedemin;
 };
 
 interface ICustomerUser extends IBaseUser {
@@ -84,9 +86,13 @@ interface ICustomerUser extends IBaseUser {
   hash: string;
   salt: string;
   expireOn?: number;
+  type: UserType.Customer;
 };
+interface ITicketsUser extends IBaseUser {
+  type: UserType.Tickets;
+}
 
-type IUser = IGedeminUser | ICustomerUser;
+type IUser = IGedeminUser | ICustomerUser | ITicketsUser;
 
 /** Local cache initialization */
 cacheManager.init({ useClones: false });
@@ -111,7 +117,7 @@ setTimeout(
         });
         const tasks = mailings.mailings.map(m => ({
           startDate: m.LAUNCHDATE,
-          action: async() => {
+          action: async () => {
             try {
               await mailingService.launchMailing('scheduler', m.ID);
             } catch (error) {
@@ -167,44 +173,73 @@ function isIGedeminUser(u: IUser): u is IGedeminUser {
 
 const userName2Key = (userName: string) => userName.toLowerCase();
 
-passport.use(new Strategy({
-  usernameField: 'userName',
-  passwordField: 'password',
-  passReqToCallback: true
-},
-async (req, userName, password, done) => {
-  const { employeeMode } = req.body;
-  try {
-    if (employeeMode) {
-      const res = await checkGedeminUser(userName, password);
+passport.use(new Strategy(
+  {
+    usernameField: 'userName',
+    passwordField: 'password',
+    passReqToCallback: true
+  },
+  async (req, userName, password, done) => {
+    const { type } = req.body;
 
-      if (res.result === 'UNKNOWN_USER') {
-        console.log('Unknown gedemin user', { userName, password });
-        return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
-      }
+    try {
+      if (type === UserType.Tickets) {
+        const res = await checkTicketsUser(userName, password);
 
-      if (res.result === 'SUCCESS') {
-        console.log('valid gedemin user');
-
-        const permissions = await cacheManager.getKey('permissions') ?? {};
-        const userPermissions: Permissions = permissions?.[res.userProfile.id];
-
-        if (!userPermissions) {
-          return done(null, false, { message: 'Пользователю ограничен доступ к приложению.' });
+        if (res.result === 'UNKNOWN_USER') {
+          console.log('Unknown tickets user', { userName, password });
+          return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
         }
 
-        return done(null, {
-          userName,
-          gedeminUser: true,
-          id: res.userProfile.id,
-          email: res.userProfile.email,
-          permissions: userPermissions
-        });
-      } else {
+        if (res.result === 'SUCCESS') {
+          console.log('valid tickets user');
+
+          const permissions = await cacheManager.getKey('permissions') ?? {};
+          const userPermissions: Permissions = permissions?.[res.userProfile.id];
+
+          return done(null, {
+            userName,
+            id: res.userProfile.id,
+            email: res.userProfile.email,
+            permissions: userPermissions,
+            type: UserType.Tickets,
+            companyKey: res.userProfile.companyKey,
+            isAdmin: res.userProfile.isAdmin
+          });
+        }
+        console.log('Invalid tickets user', { userName, password });
+        return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
+      }
+      if (type === UserType.Gedemin) {
+        const res = await checkGedeminUser(userName, password);
+
+        if (res.result === 'UNKNOWN_USER') {
+          console.log('Unknown gedemin user', { userName, password });
+          return done(null, false, { message: `Неизвестный пользователь: ${userName}` });
+        }
+
+        if (res.result === 'SUCCESS') {
+          console.log('valid gedemin user');
+
+          const permissions = await cacheManager.getKey('permissions') ?? {};
+          const userPermissions: Permissions = permissions?.[res.userProfile.id];
+
+          if (!userPermissions) {
+            return done(null, false, { message: 'Пользователю ограничен доступ к приложению.' });
+          }
+
+          return done(null, {
+            userName,
+            type: UserType.Gedemin,
+            id: res.userProfile.id,
+            email: res.userProfile.email,
+            permissions: userPermissions,
+          });
+        }
         console.log('Invalid gedemin user', { userName, password });
         return done(null, false, { message: 'Неверное имя пользователя или пароль.' });
       }
-    } else {
+
       const account = await getAccount(req.sessionID, userName);
 
       if (!account || !account.USR$APPROVED || (account.USR$EXPIREON && account.USR$EXPIREON < new Date())) {
@@ -218,12 +253,11 @@ async (req, userName, password, done) => {
         console.log('Invalid user', { userName, password });
         return done(null, false);
       }
+    } catch (err) {
+      console.error('Passport error:', err);
+      done(err);
     }
-  } catch (err) {
-    console.error('Passport error:', err);
-    done(err);
   }
-}
 ));
 
 passport.serializeUser((user: IUser, done) => {
@@ -235,27 +269,35 @@ passport.serializeUser((user: IUser, done) => {
 passport.deserializeUser(async (user: IUser, done) => {
   // console.log('passport deserialize');
 
-  const { userName: name } = user;
+  const { userName: name, type } = user;
 
-  const userType = name.slice(0, 1);
   const userName = name.slice(1);
 
-  if (userType === 'U') {
+  if (type === UserType.Tickets) {
+    const res = await getTicketsUser(userName);
+
+    if (res) {
+      return done(null, { ...user, ...res });
+    }
+    return done(`Unknown user userName: ${userName}`);
+  }
+
+  if (type === UserType.Customer) {
     const account = await getAccount('passport', userName);
 
     if (account) {
-      done(null, { userName });
+      return done(null, { userName });
     } else {
-      done(`Unknown user userName: ${userName}`);
+      return done(`Unknown user userName: ${userName}`);
     }
-  } else {
-    const res = await getGedeminUser(userName);
+  }
 
-    if (res) {
-      done(null, { ...user, ...res, gedeminUser: true });
-    } else {
-      done(`Unknown user userName: ${userName}`);
-    }
+  const res = await getGedeminUser(userName);
+
+  if (res) {
+    return done(null, { ...user, ...res, type });
+  } else {
+    return done(`Unknown user userName: ${userName}`);
   }
 });
 
@@ -395,6 +437,7 @@ router.use(filtersRouter);
 router.use(customerFeedbackRouter);
 router.use(dealFeedbackRouter);
 router.use(timeTrackingRouter);
+router.use(ticketsRouter);
 
 router.get('/er-model', async (_, res) => {
   const { erModelNoAdapters } = await importedModels;

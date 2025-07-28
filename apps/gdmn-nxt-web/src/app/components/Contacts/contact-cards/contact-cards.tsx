@@ -1,5 +1,3 @@
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EditIcon from '@mui/icons-material/Edit';
@@ -8,7 +6,7 @@ import styles from './contact-cards.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { ButtonBaseProps, Avatar, Box, Divider, IconButton, List, ListItemButton, Stack, Tooltip, TooltipProps, Typography, tooltipClasses, useMediaQuery, useTheme } from '@mui/material';
 import { socialMedia } from '@gdmn-nxt/components/social-media-input';
-import { CSSProperties, ChangeEvent, HTMLAttributes, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation } from '../../../features/contact/contactApi';
 import CustomNoData from '@gdmn-nxt/components/Styled/Icons/CustomNoData';
@@ -24,7 +22,7 @@ import CustomTablePagination from '@gdmn-nxt/components/CustomTablePagination/Cu
 
 interface CardLabelsProps {
   labels: ILabel[];
-  handleLabelClick: (label: ILabel) => (e: any) => void
+  handleLabelClick: (label: ILabel) => (e: any) => void;
 }
 
 const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
@@ -52,7 +50,7 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
       pt="8px"
       pr={'25px'}
       height={'24px'}
-      paddingRight = {'32px'}
+      paddingRight={'32px'}
     >
       <List
         style={{
@@ -73,7 +71,8 @@ const CardLabels = ({ labels, handleLabelClick }: CardLabelsProps) => {
             <div
               key={label.ID}
               style={{
-                maxWidth: '100%', ...((index === 1 && viewLabelsCount === 1) ? { visibility: 'hidden', pointerEvents: 'none' } : {}) }}
+                maxWidth: '100%', ...((index === 1 && viewLabelsCount === 1) ? { visibility: 'hidden', pointerEvents: 'none' } : {})
+              }}
             >
               <Tooltip
                 arrow
@@ -349,7 +348,7 @@ const CardItem = ({ contact, onEditClick }: CardItemProps) => {
         >
           <div
             className={styles.actions}
-            // hidden
+          // hidden
           >
             <IconButton
               size="small"

@@ -53,6 +53,8 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   /** Отображать информацию по договорам */
   agreement?: boolean;
   showTasks?: boolean;
+  disableClear?: boolean;
+  ticketSystem?: boolean;
 };
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: Readonly<CustomerSelectProps<Multiple>>) {
@@ -73,6 +75,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     required,
     debt = false,
     agreement = false,
+    disableClear,
+    ticketSystem,
     ...rest
   } = props;
 
@@ -80,7 +84,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     filter: {
       withTasks,
       withAgreements: agreement,
-      withDebt: debt
+      withDebt: debt,
+      ticketSystem: ticketSystem
     }
   });
   const customers: ICustomer[] = useMemo(
@@ -146,7 +151,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
           Создать клиента
         </Button>}
     </div>,
-  [disableCreation]);
+    [disableCreation]);
 
   const memoCustomerUpsert = useMemo(() =>
     <CustomerEdit
@@ -264,12 +269,13 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             <Box width={34} />
           </Stack>
           <CustomerTasks
-            sx={{ '& .MuiInputBase-input': {
-              marginRight: '16px'
-            },
-            '& .MuiAutocomplete-endAdornment': {
-              top: '40%'
-            }
+            sx={{
+              '& .MuiInputBase-input': {
+                marginRight: '16px'
+              },
+              '& .MuiAutocomplete-endAdornment': {
+                top: '40%'
+              }
             }}
             projects={projects}
             task={selectedTask}
@@ -287,16 +293,18 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
         getOptionLabel={useCallback((option: ICustomer) => option.NAME, [])}
         filterOptions={filterOptions}
-        sx={withTasks ? {
+        sx={{
           '& .MuiInputBase-root': {
-            paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 74) : '39') + 'px !important'
-          }
-        } : {}}
-        {
-          ...(!disableFavorite && {
-            groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
-          })
-        }
+            ...(withTasks ? { paddingRight: (taskSelectAreaWidth ? (taskSelectAreaWidth + 74) : '39') + 'px !important' } : {}),
+            ...(disableClear ? { paddingRight: '40px !important' } : {})
+          },
+          '& .MuiAutocomplete-clearIndicator': disableClear ? {
+            display: 'none'
+          } : {}
+        }}
+        {...(!disableFavorite && {
+          groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
+        })}
         loading={customersIsFetching || insertCustomerIsLoading}
         {...(insertCustomerIsLoading
           ? {
@@ -357,7 +365,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
               />
             </ListItem>
           );
-        }, [disableCaption, disableEdition, handleEditCustomer, multiple, disableFavorite, withTasks, handleTaskSelect, handleFavoriteClick])}
+        }, [mobile, multiple, withTasks, disableCaption, disableEdition, disableFavorite, debt, agreement, handleEditCustomer, handleFavoriteClick, onTaskSelected])}
         renderInput={useCallback((params) => (
           <TextField
             label="Клиент"
@@ -477,8 +485,10 @@ const CustomerItem = ({
           />}
         <div style={{ display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0 }}>
           <span
-            style={{ overflow: 'hidden',
-              textOverflow: 'ellipsis' }}
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
           >{customer.NAME}</span>
           {!disableCaption && customer.TAXID
             ? <Typography variant="caption">{`УНП: ${customer.TAXID}`}</Typography>
@@ -500,42 +510,42 @@ const CustomerItem = ({
           }
           <Box flex={1} display={{ xs: 'block', sm: 'none' }} />
           {!(disableEdition && !agreement && !debt && disableFavorite) &&
-          <Stack
-            className="action"
-            direction="row"
-            spacing={0.5}
-            alignItems="center"
-            sx={{
-              display: 'flex',
-            }}
-          >
-            {!disableEdition &&
-              <ItemButtonEdit
-                style={{ flex: 0 }}
-                button
-                onClick={editCustomer(customer)}
-              />
-            }
-            {agreement && (customer.agreementCount ?? 0) > 0 && (
-              <Tooltip title="Действует договор">
-                <IconButton onClick={agreementClick}>
-                  <ContentPasteIcon fontSize="small" color="primary" />
-                </IconButton>
-              </Tooltip>
-            )}
-            {debt && (customer.debt ?? 0) > 0 && (
-              <Tooltip
-                title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
-                onClick={preventAction<HTMLDivElement>}
-              >
-                <WarningIcon fontSize="small" color="warning" />
-              </Tooltip>
-            )}
-            {!disableFavorite &&
-              <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />
-            }
+            <Stack
+              className="action"
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              sx={{
+                display: 'flex',
+              }}
+            >
+              {!disableEdition &&
+                <ItemButtonEdit
+                  style={{ flex: 0 }}
+                  button
+                  onClick={editCustomer(customer)}
+                />
+              }
+              {agreement && (customer.agreementCount ?? 0) > 0 && (
+                <Tooltip title="Действует договор">
+                  <IconButton onClick={agreementClick}>
+                    <ContentPasteIcon fontSize="small" color="primary" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {debt && (customer.debt ?? 0) > 0 && (
+                <Tooltip
+                  title={`Есть задолженность ${Intl.NumberFormat('ru-BE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(customer.debt ?? 0)} руб.`}
+                  onClick={preventAction<HTMLDivElement>}
+                >
+                  <WarningIcon fontSize="small" color="warning" />
+                </Tooltip>
+              )}
+              {!disableFavorite &&
+                <SwitchStar selected={!!customer.isFavorite} onClick={favoriteClick(customer)} />
+              }
 
-          </Stack>
+            </Stack>
           }
         </Stack>
       </Stack>

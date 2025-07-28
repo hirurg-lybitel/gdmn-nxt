@@ -11,11 +11,14 @@ import { useGetFiltersDeadlineQuery, useGetLastUsedFilterDeadlineQuery } from '.
 import { useGetSystemSettingsQuery } from '../features/systemSettings';
 import { useGetAllFiltersQuery } from '../features/filters/filtersApi';
 import { useGetAllSegmentsQuery } from '../features/Marketing/segments/segmentsApi';
+import { UserType } from '@gsbelarus/util-api-types';
 
 /** Загрузка данных на фоне во время авторизации  */
 export function InitData() {
   const userId = useSelector<RootState, number>(state => state.user.userProfile?.id ?? -1);
-  const skip = userId < 0;
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+  const skip = userId < 0 || ticketsUser;
+
   const { } = useGetSystemSettingsQuery(undefined, { skip });
   const { } = useGetAllUpdatesQuery(undefined, { skip });
   const { } = useGetFiltersDeadlineQuery(undefined, { skip });

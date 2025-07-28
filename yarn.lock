@@ -6221,6 +6221,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bcryptjs@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "bcryptjs@npm:3.0.2"
+  bin:
+    bcrypt: bin/bcrypt
+  checksum: 91f878f184e8b627678bd13bd1d4fb576f9d95da98955a973436c949f68056953f131f4cced64adaa73f4c4946d6a69096368a29bd7252b4eb120b3e592d661d
+  languageName: node
+  linkType: hard
+
 "big.js@npm:^5.2.2":
   version: 5.2.2
   resolution: "big.js@npm:5.2.2"
@@ -9854,6 +9863,7 @@ __metadata:
     apexcharts: 3.33.1
     axios: ^1.7.4
     babel-jest: 28.1.3
+    bcryptjs: ^3.0.2
     bowser: ^2.11.0
     clsx: ^1.1.1
     connect-flash: ^0.1.1

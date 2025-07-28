@@ -2,19 +2,17 @@ import Button from '@mui/material/Button/Button';
 import Stack from '@mui/material/Stack/Stack';
 import TextField from '@mui/material/TextField/TextField';
 import Typography from '@mui/material/Typography/Typography';
-import { useReducer, useState } from 'react';
+import { useCallback, useMemo, useReducer, useState } from 'react';
 import './sign-in-sign-up.module.less';
-import type { IAuthResult } from '@gsbelarus/util-api-types';
+import { IAuthResult, UserType } from '@gsbelarus/util-api-types';
 import { checkEmailAddress } from '@gsbelarus/util-useful';
 import { MathCaptcha } from '../math-captcha/math-captcha';
-import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton, Box, alpha } from '@mui/material';
+import { Alert, LinearProgress, Dialog, InputAdornment, Theme, IconButton, Box, Link } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import VisibilityOnIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
-import { BelgissLogo } from '@gdmn-nxt/ui-assets';
 
 const useStyles = makeStyles((theme: Theme) => ({
   input: {
@@ -31,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Stage = 'SIGNIN' | 'SIGNUP' | 'FORGOT_PASSWORD';
 
 export interface SignInSignUpProps {
-  onSignIn: (userName: string, password: string) => Promise<IAuthResult>;
+  onSignIn: (params: { type: UserType, userName: string, password: string; }) => Promise<IAuthResult>;
   /**
    * Если call-back для создания пользователя не задан, то в окне будет отключен
    * функционал создания новой учетной записи.
@@ -64,15 +62,15 @@ const initialState: State = {
   captchaPassed: false
 };
 
-type Action = { type: 'SET_USERNAME', userName: string }
-  | { type: 'SET_PASSWORD', password: string }
-  | { type: 'SET_EMAIL', email: string }
-  | { type: 'SET_EMAIL2', email2: string }
-  | { type: 'SET_AUTHRESULT', authResult: IAuthResult }
-  | { type: 'CLEAR_AUTHRESULT' }
-  | { type: 'SET_STAGE', stage: State['stage'] }
-  | { type: 'SET_WAITING' }
-  | { type: 'SET_CAPTCHAPASSED', captchaPassed: boolean };
+type Action = { type: 'SET_USERNAME', userName: string; }
+  | { type: 'SET_PASSWORD', password: string; }
+  | { type: 'SET_EMAIL', email: string; }
+  | { type: 'SET_EMAIL2', email2: string; }
+  | { type: 'SET_AUTHRESULT', authResult: IAuthResult; }
+  | { type: 'CLEAR_AUTHRESULT'; }
+  | { type: 'SET_STAGE', stage: State['stage']; }
+  | { type: 'SET_WAITING'; }
+  | { type: 'SET_CAPTCHAPASSED', captchaPassed: boolean; };
 
 function reducer(state: State, action: Action): State {
   if (state.waiting && action.type !== 'SET_AUTHRESULT') {
@@ -108,7 +106,7 @@ export function SignInSignUp({
   topDecorator,
   bottomDecorator,
   onSignIn
-}: SignInSignUpProps) {
+}: Readonly<SignInSignUpProps>) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
   const classes = useStyles();
@@ -121,56 +119,59 @@ export function SignInSignUp({
     fn().then(r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }));
   };
 
-  const doSignIn = async () => {
+  const doSignIn = useCallback(async () => {
     setLaunching(true);
-    const res = await onSignIn(userName, password);
+    const type = window.location.pathname === '/tickets/login' ? UserType.Tickets : UserType.Gedemin;
+    const res = await onSignIn({ type, userName, password });
     dispatch({ type: 'SET_AUTHRESULT', authResult: res });
     setLaunching(false);
-  };
+  }, [onSignIn, password, userName]);
 
-  const keyPress = async (e: any) => {
+  const keyPress = useCallback(async (e: any) => {
     if (e.keyCode === 13) {
       await doSignIn();
     }
-  };
+  }, [doSignIn]);
 
-  const result =
-    stage === 'FORGOT_PASSWORD'
-      ?
-      <Stack direction="column" spacing={2}>
-        {topDecorator?.(stage)}
-        <TextField
-          label="Email"
-          value={email}
-          error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
-          helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-          disabled={waiting}
-          autoFocus
-          onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value.replace(/\s/g, '') })}
-        />
-        <Button
-          variant="contained"
-          disabled={waiting || !!authResult || !checkEmailAddress(email)}
-          onClick={newPassword && waitAndDispatch(() => newPassword(email))}
-        >
-          Request new Password
-        </Button>
-        <Button
-          variant="outlined"
-          disabled={waiting}
-          onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}
-        >
-          Return to sign in
-        </Button>
-        {bottomDecorator?.(stage)}
-      </Stack>
-      :
-      stage === 'SIGNUP'
-        ?
+  const result = useMemo(() => {
+    if (stage === 'FORGOT_PASSWORD') {
+      return (
         <Stack direction="column" spacing={2}>
           {topDecorator?.(stage)}
+          <TextField
+            label="Email"
+            value={email}
+            error={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER'}
+            helperText={authResult?.result === 'INVALID_EMAIL' || authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
+            disabled={waiting}
+            autoFocus
+            onChange={e => dispatch({ type: 'SET_EMAIL', email: e.target.value.replace(/\s/g, '') })}
+          />
+          <Button
+            variant="contained"
+            disabled={waiting || !!authResult || !checkEmailAddress(email)}
+            onClick={newPassword && waitAndDispatch(() => newPassword(email))}
+          >
+            Request new Password
+          </Button>
+          <Button
+            variant="outlined"
+            disabled={waiting}
+            onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}
+          >
+            Return to sign in
+          </Button>
+          {bottomDecorator?.(stage)}
+        </Stack>
+      );
+    }
+
+    if (stage === 'SIGNUP') {
+      return (
+        < Stack direction="column" spacing={2} >
+          {topDecorator?.(stage)}
           <Typography variant="h6">
-          New user
+            New user
           </Typography>
           <TextField
             label="Пользователь"
@@ -199,7 +200,7 @@ export function SignInSignUp({
           <MathCaptcha
             disabled={waiting}
             onEnter={captchaPassed => dispatch({ type: 'SET_CAPTCHAPASSED', captchaPassed })}
-          />
+          />;
           {
             waiting ?
               <Box sx={{ padding: 2, border: 1, borderColor: 'grey.50', borderRadius: 1 }}>
@@ -211,138 +212,153 @@ export function SignInSignUp({
                 disabled={waiting || !userName || !checkEmailAddress(email) || email !== email2 || !captchaPassed || !!authResult}
                 onClick={createUser && waitAndDispatch(() => createUser(userName, email))}
               >
-              Sign up
+                Sign up
               </Button>
           }
           <Typography>
-          Already have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}>Sign in</Button>
-          </Typography>
+            Already have an account? <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNIN' })}>Sign in</Button>
+          </Typography>;
           {bottomDecorator?.(stage)}
-        </Stack>
-        :
-        <Stack
-          direction="column"
-          spacing={3}
-          sx={{
-            width: { xs: '100%', sm: 360 },
-            maxWidth: '100%',
-            padding: { xs: 2.5, sm: 4 },
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            boxShadow: (theme) => theme.shadows[3],
-            transition: 'box-shadow 0.3s ease-in-out',
-            '&:hover': {
-              boxShadow: (theme) => theme.shadows[8]
-            }
-          }}
-        >
-          {topDecorator?.(stage)}
-          <Box textAlign="center">
-            <Typography
-              variant="h4"
-              fontWeight={700}
-              sx={{
-                color: 'primary.main',
-                mb: 1,
-                fontSize: { xs: '1.75rem', sm: '2rem' }
-              }}
-            >
-              Вход в систему
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ opacity: 0.8 }}
-            >
-              Введите свои учётные данные для входа
-            </Typography>
-          </Box>
-          <TextField
-            fullWidth
-            label="Пользователь"
-            value={userName}
-            error={authResult?.result === 'UNKNOWN_USER'}
-            helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
-            disabled={waiting}
-            autoFocus
-            onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
-            onKeyDown={keyPress}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccountCircleIcon color="action" sx={{ opacity: 0.7 }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Пароль"
-            type={passwordVisible ? 'text' : 'password'}
-            error={authResult?.result === 'INVALID_PASSWORD'}
-            helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
-            disabled={waiting}
-            onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
-            onKeyDown={keyPress}
-            autoComplete="false"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <VpnKeyIcon color="action" sx={{ opacity: 0.7 }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setPasswordVisible(!passwordVisible)}
-                    edge="end"
-                    sx={{
-                      opacity: 0.7,
-                      '&:hover': { opacity: 1 }
-                    }}
-                  >
-                    {passwordVisible ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            variant="contained"
-            size="large"
-            disabled={waiting || !userName || !password || launching}
-            onClick={doSignIn}
+        </Stack >
+      );
+    }
+
+    const loginForm = (ticketsLogin: boolean) => {
+      return (
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Stack
+            direction="column"
+            spacing={3}
             sx={{
-              py: 1.25,
-              textTransform: 'none',
-              fontSize: '1rem',
-              fontWeight: 600,
-              boxShadow: 'none',
-              transition: 'all 0.2s ease-in-out',
+              width: { xs: '100%', sm: ticketsLogin ? 400 : 360 },
+              maxWidth: '100%',
+              padding: { xs: 2.5, sm: 4 },
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
+              boxShadow: (theme) => theme.shadows[3],
+              transition: 'box-shadow 0.3s ease-in-out',
+              '&:hover': {
+                boxShadow: (theme) => theme.shadows[8]
+              }
             }}
           >
-            {launching ? 'Входим...' : 'Войти'}
-          </Button>
-          {
-            newPassword
-            &&
-            <Button
-              variant="outlined"
+            {topDecorator?.(stage)}
+            <Box textAlign="center">
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                sx={{
+                  color: 'primary.main',
+                  mb: 1,
+                  fontSize: { xs: '1.75rem', sm: '2rem' }
+                }}
+              >
+                {ticketsLogin ? 'Вход в тикет систему' : 'Вход в систему'}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ opacity: 0.8 }}
+              >
+                Введите свои учётные данные для входа
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              label="Пользователь"
+              value={userName}
+              error={authResult?.result === 'UNKNOWN_USER'}
+              helperText={authResult?.result === 'UNKNOWN_USER' ? authResult?.message : undefined}
               disabled={waiting}
-              onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}
+              autoFocus
+              onChange={e => dispatch({ type: 'SET_USERNAME', userName: e.target.value })}
+              onKeyDown={keyPress}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccountCircleIcon color="action" sx={{ opacity: 0.7 }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Пароль"
+              type={passwordVisible ? 'text' : 'password'}
+              error={authResult?.result === 'INVALID_PASSWORD'}
+              helperText={authResult?.result === 'INVALID_PASSWORD' ? authResult?.message : undefined}
+              disabled={waiting}
+              onChange={e => dispatch({ type: 'SET_PASSWORD', password: e.target.value })}
+              onKeyDown={keyPress}
+              autoComplete="false"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <VpnKeyIcon color="action" sx={{ opacity: 0.7 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setPasswordVisible(!passwordVisible)}
+                      edge="end"
+                      sx={{
+                        opacity: 0.7,
+                        '&:hover': { opacity: 1 }
+                      }}
+                    >
+                      {passwordVisible ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              variant="contained"
+              size="large"
+              disabled={waiting || !userName || !password || launching}
+              onClick={doSignIn}
+              sx={{
+                py: 1.25,
+                textTransform: 'none',
+                fontSize: '1rem',
+                fontWeight: 600,
+                boxShadow: 'none',
+                transition: 'all 0.2s ease-in-out',
+                width: '100%'
+              }}
             >
-              Забыли пароль?
+              {launching ? 'Входим...' : 'Войти'}
             </Button>
-          }
-          {
-            createUser
-            &&
-            <Typography>
-              {'Don\'t have an account?'} <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
-            </Typography>
-          }
-          {bottomDecorator?.(stage)}
-        </Stack>;
+            {
+              newPassword
+              &&
+              <Button
+                variant="outlined"
+                disabled={waiting}
+                onClick={() => dispatch({ type: 'SET_STAGE', stage: 'FORGOT_PASSWORD' })}
+              >
+                Забыли пароль?
+              </Button>
+            }
+            {
+              createUser
+              &&
+              <Typography>
+                {'Don\'t have an account?'} <Button disabled={waiting} onClick={() => dispatch({ type: 'SET_STAGE', stage: 'SIGNUP' })}>Sign up</Button>
+              </Typography>
+            }
+            {bottomDecorator?.(stage)}
+          </Stack>
+          <Link href={ticketsLogin ? '/' : 'tickets/login'} style={{ position: 'absolute', bottom: '-35px' }}>
+            {ticketsLogin ? 'Вход в CRM систему' : 'Вход в тикет систему'}
+          </Link>
+        </div>
+      );
+    };
+
+    return loginForm(window.location.pathname === '/tickets/login');
+  }, [authResult, bottomDecorator, captchaPassed, createUser, doSignIn, email, email2, keyPress, launching, newPassword, password, passwordVisible, stage, topDecorator, userName, waiting]);
 
   return (
     <>

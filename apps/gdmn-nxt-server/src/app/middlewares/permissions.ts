@@ -1,11 +1,29 @@
 import { RequestHandler } from 'express';
 import { startTransaction } from '@gdmn-nxt/db-connection';
 import { parseIntDef } from '@gsbelarus/util-useful';
-import { ActionName, Permissions } from '@gsbelarus/util-api-types';
+import { ActionName, Permissions, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
 import { config } from '@gdmn-nxt/config';
 import { ERROR_MESSAGES } from '../constants/messages';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
+
+const ticketsUserRoutes = [
+  'profile-settings/userId',
+  'security/active-sessions',
+  'security/closeSessionBySessionId',
+  'filters',
+  'filters/menu',
+  'ticketSystem/tickets',
+  'ticketSystem/states',
+  'ticketSystem/messages',
+  'system/users',
+  'contacts/customerId'
+];
+
+const ticketsAdminRoutes = [
+  ...ticketsUserRoutes,
+  'ticketSystem/users'
+];
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
   const apiAccessKey = req.headers['x-api-key'] as string;
@@ -16,11 +34,20 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
     return res.status(401).send(resultError(ERROR_MESSAGES.AUTH_FAILED));
   };
   const userId = req.user['id'];
-  const permissions = req.user['permissions'];
+
   const { url, method } = req;
+  if (req.user['type'] === UserType.Tickets) {
+    for (const name of (req.user['isAdmin'] ? ticketsAdminRoutes : ticketsUserRoutes)) {
+      const regEx = new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\w-]*$`);
+      if (regEx.test(url.split('?')[0])) return next();
+    }
+    return res.status(403).send(resultError('У вас недостаточно прав'));
+  }
+
+  const permissions = req.user['permissions'];
 
   for (const name in permissions) {
-    const methods = permissions[name as ActionName] ;
+    const methods = permissions[name as ActionName];
     const regEx = (() => 'forGroup' in methods
       ? new RegExp(`\\/[^\/]*\\b${name}\\b`)
       : new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\d-]*$`))();
@@ -93,7 +120,7 @@ export const setPermissonsCache = async () => {
       END`;
 
     const permissions = await fetchAsObject(query);
-    const permissionsMap: {[key: number]: Permissions} = {};
+    const permissionsMap: { [key: number]: Permissions; } = {};
 
     permissions.forEach(p => {
       permissionsMap[parseIntDef(p['USERID'], -1)] = {

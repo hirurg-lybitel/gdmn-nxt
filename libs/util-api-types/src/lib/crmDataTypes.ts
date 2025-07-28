@@ -20,7 +20,7 @@ export interface ILabelsContact extends IWithID {
 };
 
 export interface IContactWithLabels extends IContactWithID {
-  labels?: ILabelsContact[]
+  labels?: ILabelsContact[];
 };
 
 export interface IContractJob extends IContactWithID {
@@ -41,6 +41,11 @@ export interface ICustomer extends IContactWithID {
   agreementCount?: number;
   debt?: number;
   feedback?: ICustomerFeedback[];
+  TICKETSYSTEM?: boolean,
+  OPENTICKETS?: number,
+  CLOSEDTICKETS?: number;
+  ALLTICKETS?: number;
+  performer?: IUser;
 };
 
 interface IMapOfArrays {
@@ -203,7 +208,7 @@ export interface IChartBusinessProcesses {
 export interface IChartBusinessDirection {
   name: string;
   amount: number;
-  businessProcesses: IChartBusinessProcesses[]
+  businessProcesses: IChartBusinessProcesses[];
 };
 
 export interface IPhone extends IWithID {
@@ -217,16 +222,16 @@ export interface IEmail extends IWithID {
 }
 
 export type MessengerCode = 'facebook'
-| 'instagram'
-| 'telegram'
-| 'viber'
-| 'linkedin'
-| 'skype'
-| 'ok'
-| 'whatsApp'
-| 'github'
-| 'vk'
-| 'discord';
+  | 'instagram'
+  | 'telegram'
+  | 'viber'
+  | 'linkedin'
+  | 'skype'
+  | 'ok'
+  | 'whatsApp'
+  | 'github'
+  | 'vk'
+  | 'discord';
 
 export interface IMessenger extends IWithID {
   USR$CONTACTKEY?: number;
@@ -247,6 +252,7 @@ export interface IContactPerson extends IContactWithID {
   COMPANY?: IContactWithID | null;
   isFavorite?: boolean;
   nameInfo?: IContactName;
+  ISGEDEMINUSER?: boolean;
 };
 
 export interface IContract extends IWithID {
@@ -319,7 +325,7 @@ export interface IUserGroupLine extends IWithID {
   USERGROUP: IUserGroup;
   USER?: IUser;
   REQUIRED_2FA?: boolean;
-  STATUS?: boolean
+  STATUS?: boolean;
 };
 
 export interface IPermissionByUser {
@@ -332,7 +338,7 @@ export interface IDenyReason extends IWithID {
 };
 
 export interface IBusinessProcess extends IWithID {
-  NAME: string
+  NAME: string;
 }
 
 export interface IDealSource extends IWithID {
@@ -381,6 +387,8 @@ export type ActionName =
   'reports/reconciliation-statement' |
   'reports/debts' |
   'reports/revenue' |
+  'ticketSystem/tickets' |
+  'contacts/tickets' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -388,7 +396,7 @@ export type Permissions = {
   [key in ActionName]: {
     [key in (ActionMethod)]: boolean;
   }
-}
+};
 
 export interface IUpdateHistory extends IWithID {
   VERSION: string;
@@ -440,8 +448,8 @@ export interface ISegmnentField {
 export interface ISegment extends IWithID {
   NAME: string;
   QUANTITY: number;
-  FIELDS: ISegmnentField[]
-  CUSTOMERS?: number[]
+  FIELDS: ISegmnentField[];
+  CUSTOMERS?: number[];
 }
 
 export enum MailingStatus {
@@ -470,11 +478,11 @@ export interface IMailing extends IWithID {
   excludeSegments?: ISegment[],
   testingEmails?: string[];
   attachments?: MailAttachment[];
-  recipientsCount?: number
+  recipientsCount?: number;
 }
 
 export interface IMailingHistory {
-  id: number
+  id: number;
   date: string;
   mailingId: number;
   status: MailingStatus;
@@ -510,7 +518,7 @@ export interface ICustomerFeedback extends IWithID {
   response?: string;
   toDo?: string;
   creationDate?: Date;
-  creator?: IUser
+  creator?: IUser;
 }
 
 export enum WorkProjectStatus {
@@ -576,7 +584,7 @@ export interface ITimeTrackProject extends IWithID {
   isPrivate?: boolean,
   isDone?: boolean,
   projectType?: IProjectType,
-  creator?: IContactWithID
+  creator?: IContactWithID;
 }
 
 export interface ITimeTrackTask extends IWithID {
@@ -584,7 +592,7 @@ export interface ITimeTrackTask extends IWithID {
   isActive: boolean,
   project?: ITimeTrackProject;
   isFavorite?: boolean;
-  inUse?: boolean
+  inUse?: boolean;
 }
 
 export interface IContactName {
@@ -596,7 +604,7 @@ export interface IContactName {
 
 export interface IProjectType extends IWithID {
   name: string,
-  parent?: string
+  parent?: string;
 }
 
 export interface IExpectedReceipt {
@@ -605,21 +613,21 @@ export interface IExpectedReceipt {
   count: number,
   fixedPayment?: {
     baseValues?: number,
-    amount: number
+    amount: number;
   },
   workstationPayment?: {
     count: number,
     baseValues?: number,
-    amount: number
+    amount: number;
   },
   perTimePayment?: {
     baseValues?: number,
     perHour: number,
     hoursAvarage: number,
-    amount: number
+    amount: number;
   },
   amount: number,
-  valAmount: number
+  valAmount: number;
 }
 
 export interface IExpectedReceiptDev {
@@ -632,46 +640,106 @@ export interface IExpectedReceiptDev {
   subject: string,
   amount: {
     value: number,
-    currency: number
+    currency: number;
   },
   done?: {
     value: number,
-    currency: number
+    currency: number;
   },
   paid?: {
     value: number,
-    currency: number
+    currency: number;
   },
   rest: {
     value: number,
-    currency: number
-  }
+    currency: number;
+  };
 }
 
 export interface IExpense {
   expenseName: string,
   amount: number,
-  valAmount: number
+  valAmount: number;
 }
 
 export interface IDebt {
   customer: ICustomer,
   saldoBegin: {
     value: number,
-    currency: number
+    currency: number;
   },
   saldoEnd: {
     value: number,
-    currency: number
+    currency: number;
   },
   done: number,
   paid: number,
-  change: number
+  change: number;
 }
 
 export interface IRevenue {
   customer: ICustomer,
   date: string,
   amount: number,
-  amountCurrency: number
+  amountCurrency: number;
+}
+
+export enum UserType {
+  Tickets = 'tickets',
+  Gedemin = 'gedemin',
+  Customer = 'customer'
+};
+
+export interface ICRMTicketUser extends IWithID {
+  fullName: string;
+  phone?: string,
+  email?: string,
+  avatar?: string;
+}
+
+export interface ITicketState extends IWithID {
+  name: string,
+  code: number;
+}
+
+export interface ITicket extends IWithID {
+  title: string;
+  company: ICustomer,
+  openAt: Date;
+  closeAt?: Date;
+  closeBy?: ICRMTicketUser,
+  state: ITicketState,
+  sender: ICRMTicketUser;
+  performer?: ICRMTicketUser;
+  needCall: boolean;
+  message?: string;
+  files?: File[];
+}
+
+export interface ITicketMessage extends IWithID {
+  body: string,
+  ticketKey: number,
+  user: ICRMTicketUser & { type: 'empl' | 'user'; },
+  state: ITicketState;
+}
+
+export interface ICustomerTickets {
+  customer?: ICustomer,
+  email?: string,
+  admin?: {
+    name: string,
+    fullName: string,
+    password: string;
+  };
+  performer?: IUser;
+}
+
+export interface ITicketUser extends IWithID {
+  company: ICustomer,
+  password?: string,
+  fullName: string,
+  userName?: string,
+  email?: string,
+  phone?: string,
+  isAdmin?: boolean;
 }

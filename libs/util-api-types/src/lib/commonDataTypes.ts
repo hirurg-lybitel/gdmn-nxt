@@ -56,7 +56,7 @@ export interface IBaseContact {
   FAX?: string;
 };
 
-export interface IContactWithID extends IBaseContact, IWithID {}
+export interface IContactWithID extends IBaseContact, IWithID { }
 
 export interface ICompany extends IBaseContact {
   FULLNAME: string;
@@ -82,7 +82,7 @@ export interface IContactHierarchy {
   PARENT?: number;
   LB: number;
   RB: number;
-  NAME: string
+  NAME: string;
 }
 export interface IResultError {
   errorMessage: string,
@@ -108,10 +108,11 @@ export interface IProfileSettings {
   REQUIRED_2FA?: boolean;
   SECRETKEY?: string;
   LAST_IP?: string;
-  SAVEFILTERS?: boolean
+  SAVEFILTERS?: boolean;
+  ONE_TIME_PASSWORD?: boolean;
 }
 
-export interface ISystemSettings extends IWithID{
+export interface ISystemSettings extends IWithID {
   CONTRACTTYPE: ContractType;
   OURCOMPANY?: ICustomer;
   smtpHost?: string;
@@ -132,8 +133,17 @@ export type GedeminUser = {
   rank?: string;
   colorMode?: ColorMode;
   fullName?: string;
-  saveFilters: boolean
-}
+  saveFilters: boolean;
+};
+
+export type TicketsUser = {
+  id: number;
+  userName: string;
+  rank?: string;
+  colorMode?: ColorMode;
+  fullName?: string;
+  saveFilters: boolean;
+};
 
 export interface IChanges {
   id: number;
@@ -158,7 +168,7 @@ export interface IFilteringData {
 
 export interface IFilter extends IWithID {
   entityName: string;
-  filters: IFilteringData
+  filters: IFilteringData;
 }
 
 export interface IQueryOptions {
@@ -210,14 +220,14 @@ export function queryOptionsToParamsString(options?: IQueryOptions | void) {
 export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 type JSONValue =
-    | string
-    | number
-    | boolean
-    | JSONObject
-    | JSONArray;
+  | string
+  | number
+  | boolean
+  | JSONObject
+  | JSONArray;
 
 interface JSONObject {
-    [x: string]: JSONValue;
+  [x: string]: JSONValue;
 }
 
 export interface JSONArray extends Array<JSONValue> { }

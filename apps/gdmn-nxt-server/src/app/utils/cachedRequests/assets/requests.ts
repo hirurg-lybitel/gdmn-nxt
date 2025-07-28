@@ -1,4 +1,3 @@
-import { contractsRepository } from '@gdmn-nxt/modules/contracts/repository';
 import { contractsService } from '@gdmn-nxt/modules/contracts/service';
 import { contactPersonsRepository } from '@gdmn-nxt/repositories/contacts/contactPersons';
 import { favoriteContactsRepository } from '@gdmn-nxt/repositories/contacts/favoriteContacts';
@@ -14,7 +13,12 @@ export const requests = {
       c.ADDRESS,
       com.FULLNAME,
       c.FAX,
-      c.USR$CRM_POSTADDRESS AS POSTADDRESS
+      c.USR$CRM_POSTADDRESS AS POSTADDRESS,
+      com.USR$CRM_TICKETSYSTEM as TICKETSYSTEM,
+      com.USR$CRM_OPENTICKETS as OPENTICKETS,
+      com.USR$CRM_CLOSEDTICKETS as CLOSEDTICKETS,
+      com.USR$CRM_PERFORMER as PERFORMERKEY,
+      COALESCE(USR$CRM_CLOSEDTICKETS, 0) + COALESCE(USR$CRM_OPENTICKETS, 0) AS ALLTICKETS
     FROM
       gd_contact c
       join gd_companycode comp on comp.COMPANYKEY = c.id
