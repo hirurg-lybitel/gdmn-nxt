@@ -70,7 +70,7 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
-    ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData } : {}),
+    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: filteringData?.active ? filteringData?.state : undefined } } : {}),
   });
 
   const handleRequestSearch = (value: string) => {
@@ -170,6 +170,7 @@ export function TicketsList(props: ticketsListProps) {
       <SortSelect
         isLoading={statesIsFetching || statesIsLoading}
         options={states}
+        disabled={!filteringData?.active}
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
         field={'state'}
