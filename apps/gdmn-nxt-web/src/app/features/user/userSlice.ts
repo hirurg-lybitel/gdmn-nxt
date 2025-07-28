@@ -15,7 +15,7 @@ export type LoginStage =
   | 'OTHER_LOADINGS' // processes after getting the user id, but before rendering the app
   | 'CUSTOMER' //
   | 'EMPLOYEE' //
-  | 'TISCKETS'
+  | 'TICKETS'
   | 'SIGN_IN_EMPLOYEE' // show sign-in or sign-up screen for an employee
   | 'SIGN_IN_CUSTOMER' // show sign-in or sign-up screen for a customer
   | 'CREATE_CUSTOMER_ACCOUNT'
