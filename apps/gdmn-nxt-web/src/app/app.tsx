@@ -232,7 +232,7 @@ export default function App(props: AppProps) {
       authCode,
       userName: userProfile?.userName ?? '',
       password: userProfile?.password ?? '',
-      employeeMode: true,
+      type: UserType.Gedemin,
     });
 
     if (response.result === 'SUCCESS') {
