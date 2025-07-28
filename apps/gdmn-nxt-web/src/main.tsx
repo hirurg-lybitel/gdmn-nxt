@@ -122,7 +122,7 @@ const Main = () => {
                 {
                   <>
                     {(() => {
-                      if (loginStage === 'TISCKETS') {
+                      if (loginStage === 'TICKETS') {
                         return (
                           <Routes>
                             <Route path="" element={<Navigate to="tickets" />} />
