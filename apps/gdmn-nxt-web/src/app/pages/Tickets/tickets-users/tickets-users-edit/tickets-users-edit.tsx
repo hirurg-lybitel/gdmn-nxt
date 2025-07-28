@@ -84,7 +84,7 @@ export function TicketsUserEdit({
       open={open}
       onClose={handleCancel}
       form={'ticketsUserAddForm'}
-      title={'Добавление ответсвенного'}
+      title={'Добавление ответственного'}
       confirmation={formik.dirty}
     >
       <FormikProvider value={formik}>
