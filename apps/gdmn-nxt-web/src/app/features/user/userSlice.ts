@@ -9,25 +9,26 @@ export const logoutUser = createAsyncThunk(
 );
 
 export type LoginStage =
-  'LAUNCHING'                  // the application is launching
-  | 'QUERY_LOGIN'              // we are in the process of querying server for saved session
-  | 'SELECT_MODE'              // choose between belgiss employee and customer mode
-  | 'OTHER_LOADINGS'           // processes after getting the user id, but before rendering the app
-  | 'CUSTOMER'                 //
-  | 'EMPLOYEE'                 //
-  | 'SIGN_IN_EMPLOYEE'         // show sign-in or sign-up screen for an employee
-  | 'SIGN_IN_CUSTOMER'         // show sign-in or sign-up screen for a customer
+  'LAUNCHING' // the application is launching
+  | 'QUERY_LOGIN' // we are in the process of querying server for saved session
+  | 'SELECT_MODE' // choose between belgiss employee and customer mode
+  | 'OTHER_LOADINGS' // processes after getting the user id, but before rendering the app
+  | 'CUSTOMER' //
+  | 'EMPLOYEE' //
+  | 'TICKETS'
+  | 'SIGN_IN_EMPLOYEE' // show sign-in or sign-up screen for an employee
+  | 'SIGN_IN_CUSTOMER' // show sign-in or sign-up screen for a customer
   | 'CREATE_CUSTOMER_ACCOUNT'
   | 'CREATE_2FA'
   | 'SET_EMAIL'
   | 'SIGN_IN_2FA'
-  | 'CAPTCHA';
+  | 'CAPTCHA'
+  | 'ONE_TIME_PASSWORD';
 
 export interface UserState {
   loginStage: LoginStage;
-  userType?: 'CUSTOMER' | 'EMPLOYEE';
+  userType?: 'CUSTOMER' | 'EMPLOYEE' | 'TICKETS';
   userProfile?: IUserProfile;
-  gedeminUser?: boolean;
 };
 
 const initialState: UserState = {
@@ -45,10 +46,12 @@ export const userSlice = createSlice({
     createCustomerAccount: () => ({ loginStage: 'CREATE_CUSTOMER_ACCOUNT' } as UserState),
     signedInEmployee: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'EMPLOYEE', userProfile: action.payload, gedeminUser: true } as UserState),
     signedInCustomer: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'CUSTOMER', userProfile: action.payload } as UserState),
+    signedInTicketsUser: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'OTHER_LOADINGS', userType: 'TICKETS', userProfile: action.payload } as UserState),
     signIn2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SIGN_IN_2FA', userProfile: { ...action.payload } } as UserState),
     create2fa: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CREATE_2FA', userProfile: { ...action.payload } } as UserState),
     setEmail: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'SET_EMAIL', userProfile: { ...action.payload } } as UserState),
     checkCaptcha: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'CAPTCHA', userProfile: { ...action.payload } } as UserState),
+    changePassword: (_, action: PayloadAction<IUserProfile>) => ({ loginStage: 'ONE_TIME_PASSWORD', userProfile: { ...action.payload } } as UserState),
     renderApp: (state) => {
       state.loginStage = state.userType || 'CUSTOMER';
     }
@@ -71,7 +74,9 @@ export const {
   create2fa,
   setEmail,
   signIn2fa,
-  checkCaptcha
+  checkCaptcha,
+  signedInTicketsUser,
+  changePassword
 } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -86,7 +86,7 @@ export default function AccountTab() {
               />
             </Stack>
           </Stack>
-          <Box flex={1}/>
+          <Box flex={1} />
           <ButtonWithConfirmation
             variant="contained"
             disabled={compareObjects(formik.values, settings ?? {}) || isLoading}

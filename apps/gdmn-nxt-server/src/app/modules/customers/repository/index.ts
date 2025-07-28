@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
-import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ICustomer, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
-import { adjustRelationName } from '@gsbelarus/util-helpers';
+import { startTransaction } from '@gdmn-nxt/db-connection';
+import { ICustomer, ICustomerTickets, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
 
 const save: SaveHandler<ICustomer> = async (
   sessionID,
@@ -151,8 +150,83 @@ const update: UpdateHandler<ICustomer> = async (
   }
 };
 
+const addToTickets: UpdateHandler<ICustomerTickets> = async (
+  sessionID,
+  id,
+  metadata
+) => {
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+
+  const { performer } = metadata;
+
+  try {
+    const updatedCustomer = await fetchAsSingletonObject<ICustomerTickets>(
+      `UPDATE GD_COMPANY
+        SET
+          USR$CRM_TICKETSYSTEM = :TICKETSYSTEM,
+          USR$CRM_PERFORMER = :PERFORMER
+        WHERE CONTACTKEY = :ID
+        RETURNING CONTACTKEY
+      `,
+      {
+        TICKETSYSTEM: true,
+        PERFORMER: performer?.ID,
+        ID: id
+      }
+    );
+
+    updatedCustomer['ID'] = updatedCustomer['CONTACTKEY'];
+    delete updatedCustomer['CONTACTKEY'];
+
+    await releaseTransaction(true);
+
+    return updatedCustomer;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
+const updateTickets: UpdateHandler<ICustomer> = async (
+  sessionID,
+  id,
+  metadata
+) => {
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+
+  const { performer } = metadata;
+
+  try {
+    const updatedCustomer = await fetchAsSingletonObject<ICustomer>(
+      `UPDATE GD_COMPANY
+        SET
+          USR$CRM_PERFORMER = :PERFORMER
+        WHERE CONTACTKEY = :ID
+        RETURNING CONTACTKEY
+      `,
+      {
+        TICKETSYSTEM: true,
+        PERFORMER: performer.ID,
+        ID: id
+      }
+    );
+
+    updatedCustomer['ID'] = updatedCustomer['CONTACTKEY'];
+    delete updatedCustomer['CONTACTKEY'];
+
+    await releaseTransaction(true);
+
+    return updatedCustomer;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
 export const customerRepository = {
   save,
   remove,
-  update
+  update,
+  addToTickets,
+  updateTickets
 };

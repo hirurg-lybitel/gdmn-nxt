@@ -1,8 +1,10 @@
 import { Tooltip, TooltipProps, tooltipClasses } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const ErrorTooltip = styled(({ className, ...props }: TooltipProps) => (
+export const ErrorTooltip = styled(({ className, title, ...props }: TooltipProps) => (
   <Tooltip
+    open={!!title}
+    title={title}
     arrow
     placement="bottom-start"
     slotProps={{
@@ -24,10 +26,10 @@ export const ErrorTooltip = styled(({ className, ...props }: TooltipProps) => (
   [`& .${tooltipClasses.arrow}`]: {
     transform: 'none !important',
     left: '10px !important',
-    color: 'rgb(143, 64, 64)',
+    color: 'var(--color-error)',
   },
   [`& .${tooltipClasses.tooltip}`]: {
     fontSize: '0.75rem',
-    backgroundColor: 'rgb(143, 64, 64)',
+    backgroundColor: 'var(--color-error)',
   }
 }));

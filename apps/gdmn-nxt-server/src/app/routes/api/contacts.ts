@@ -14,6 +14,10 @@ router.get('/rootId/:rootId', customerController.getContacts);
 router.put('/:id', customerController.updateContact);
 router.post('/', customerController.createContact);
 
+router.post('/tickets', customerController.addToTickets);
+router.put('/tickets/:id', customerController.updateTicketsContact);
+router.delete('/tickets/:customerId', customerController.removeFromTickets);
+
 router.delete('/:id', customerController.deleteContact);
 router.get('/hierarchy', customerController.getContactHierarchy);
 router.get('/labels/:contactId', getLabelsContact);

@@ -124,8 +124,8 @@ export function UpdatesEdit(props: UpdatesEditProps) {
             <TabContext value={tabIndex}>
               <Box>
                 <TabList onChange={handleTabsChange}>
-                  <Tab label="Изменить" value="1" />
-                  <Tab label="Просмотреть" value="2" />
+                  <Tab label="Изменение" value="1" />
+                  <Tab label="Просмотр" value="2" />
                 </TabList>
               </Box>
               <TabPanel

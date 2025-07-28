@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import passport from 'passport';
 import { profileSettingsController } from './settings/profileSettings';
-import { IConfirmation, authResult } from '@gsbelarus/util-api-types';
+import { IConfirmation, UserType, authResult } from '@gsbelarus/util-api-types';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/messages';
 import { config } from '@gdmn-nxt/config';
 import jwt from 'jsonwebtoken';
@@ -18,6 +18,7 @@ import { resultError } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { getGeoData } from '@gdmn-nxt/ip-info';
 import dayjs from '@gdmn-nxt/dayjs';
+import { ticketsUserService } from '@gdmn-nxt/modules/tickets-user/service';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -76,22 +77,35 @@ const sendEmailConfirmation = async (userId: number, email: string, info?: Info)
 };
 
 const signIn: RequestHandler = async (req, res, next) => {
-  passport.authenticate('local', async function(err, user, info) {
+  passport.authenticate('local', async function (err, user, info) {
     if (err) {
       return next(err);
     }
 
-    const { userName, ip, device } = req.body;
+    const { userName, ip, device, type } = req.body;
 
     if (user) {
-      const result = await profileSettingsController.getSettings({ userId: user.id, sessionId: req.sessionID });
-      const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP } = result.settings;
+      const result = await profileSettingsController.getSettings({
+        userId: user.id,
+        sessionId: req.sessionID,
+        type
+      });
 
+      const { REQUIRED_2FA, ENABLED_2FA, EMAIL, SECRETKEY, LAST_IP, ONE_TIME_PASSWORD } = result.settings;
+
+      if (ONE_TIME_PASSWORD) {
+        req.session.userId = user.id;
+        return res.json(authResult(
+          'ONE_TIME_PASSWORD',
+          'Требуется сменить пароль.'
+        ));
+      }
 
       /** Require captcha for new address only */
       const IP = req.socket.remoteAddress;
-      if (IP !== LAST_IP) {
+      if (IP !== LAST_IP && type !== UserType.Tickets) {
         req.session.userId = user.id;
+        req.session.type = user.type;
         return res.json(authResult(
           'REQUIRED_CAPTCHA',
           'Требуется пройти дополнительную проверку.'
@@ -176,7 +190,7 @@ const signIn: RequestHandler = async (req, res, next) => {
 };
 
 const signIn2fa: RequestHandler = async (req, res, next) => {
-  passport.authenticate('local', async function(err, user, info) {
+  passport.authenticate('local', async function (err, user, info) {
     if (err) {
       return next(err);
     }
@@ -447,6 +461,48 @@ const verifyCaptcha: RequestHandler = async (req, res) => {
   ));
 };
 
+const changePassword: RequestHandler = async (req, res) => {
+  const {
+    password,
+    newPassword,
+    repeatPassword
+  } = req.body;
+  const { id: sessionID, userId } = req.session;
+  try {
+    if (newPassword !== repeatPassword) {
+      return res.json(authResult(
+        'ERROR',
+        ERROR_MESSAGES.PASSWORDS_MUST_MATCH
+      ));
+    }
+
+    const user = await ticketsUserService.findOne(sessionID, userId, UserType.Gedemin);
+
+    if (password !== user.password) {
+      return res.json(authResult(
+        'ERROR',
+        ERROR_MESSAGES.INVALID_OLD_PASSWORD
+      ));
+    }
+
+    if (password === newPassword) {
+      return res.json(authResult(
+        'ERROR',
+        ERROR_MESSAGES.PASSWORDS_MATCH
+      ));
+    }
+
+    const updateUser = await ticketsUserService.updateById(sessionID, userId, { ...user, password: newPassword });
+
+    res.json(authResult(
+      'SUCCESS',
+      SUCCESS_MESSAGES.UPDATED
+    ));
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const authenticationController = {
   signIn,
   signIn2fa,
@@ -457,5 +513,6 @@ export const authenticationController = {
   forgotPassword,
   disable2fa,
   generateCaptcha,
-  verifyCaptcha
+  verifyCaptcha,
+  changePassword
 };

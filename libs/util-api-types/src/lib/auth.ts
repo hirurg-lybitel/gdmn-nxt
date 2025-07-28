@@ -19,6 +19,8 @@ export type AuthResult =
   | 'INVALID_PASSWORD'
   | 'REQUIRED_2FA'
   | 'ENABLED_2FA'
+  | 'ONE_TIME_PASSWORD'
+
   /** email unknown to the system */
   | 'INVALID_EMAIL'
   | 'ACCESS_DENIED'

@@ -1,10 +1,16 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, IFilter, ISegment, RemoveOneHandler, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, IFilter, ISegment, RemoveOneHandler, SaveHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
 import { forEachAsync } from '@gsbelarus/util-helpers';
+
+const getTableName = (type: UserType) => {
+  return type === UserType.Tickets ? 'USR$CRM_T_USER_FILTERS' : 'USR$CRM_FILTERS';
+};
 
 const find: FindHandler<IFilter> = async (
   sessionID,
   clause = {},
+  _,
+  type
 ) => {
   const { fetchAsObject, releaseReadTransaction, blob2String } = await acquireReadTransaction(sessionID);
 
@@ -25,16 +31,17 @@ const find: FindHandler<IFilter> = async (
       })
       .join(' AND ');
 
+    const tableName = getTableName(type);
+
     const sql = `
       SELECT
         ID,
         USR$ENTITYNAME,
         USR$FILTERS
-      FROM
-        USR$CRM_FILTERS f
+      FROM ${tableName} f
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
-    const filters = await fetchAsObject<any> (sql, params);
+    const filters = await fetchAsObject<any>(sql, params);
 
     await forEachAsync<IFilter>(filters, async f => {
       const filter = await blob2String(f['USR$FILTERS']);
@@ -51,8 +58,8 @@ const find: FindHandler<IFilter> = async (
   }
 };
 
-const findOne: FindOneHandler<ISegment> = async (sessionID, clause = {}) => {
-  const filter = await find(sessionID, clause);
+const findOne: FindOneHandler<ISegment> = async (sessionID, clause = {}, type) => {
+  const filter = await find(sessionID, clause, undefined, type);
 
   if (filter.length === 0) {
     return Promise.resolve(undefined);
@@ -64,9 +71,12 @@ const findOne: FindOneHandler<ISegment> = async (sessionID, clause = {}) => {
 const update: UpdateHandler<IFilter> = async (
   sessionID,
   id,
-  metadata
+  metadata,
+  type
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
+
+  const tableName = getTableName(type);
 
   try {
     const ID = id;
@@ -77,7 +87,7 @@ const update: UpdateHandler<IFilter> = async (
     } = metadata;
 
     const updatedFilter = await fetchAsSingletonObject<IFilter>(
-      `UPDATE USR$CRM_FILTERS
+      `UPDATE ${tableName}
       SET
         USR$ENTITYNAME = :ENTITYNAME,
         USR$FILTERS = :FILTERS
@@ -101,20 +111,23 @@ const update: UpdateHandler<IFilter> = async (
 };
 
 interface IFilterSave extends IFilter {
-  userId: number
+  userId: number;
 }
 
 const save: SaveHandler<IFilterSave> = async (
   sessionID,
-  metadata
+  metadata,
+  type
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
 
   const { entityName, filters, userId } = metadata;
 
+  const tableName = getTableName(type);
+
   try {
     const filter = await fetchAsSingletonObject<IFilterSave>(
-      `INSERT INTO USR$CRM_FILTERS(USR$ENTITYNAME,USR$FILTERS,USR$USERKEY)
+      `INSERT INTO ${tableName}(USR$ENTITYNAME,USR$FILTERS,USR$USERKEY)
       VALUES(:ENTITYNAME,:FILTERS,:USERKEY)
       RETURNING ID`,
       {
@@ -135,13 +148,16 @@ const save: SaveHandler<IFilterSave> = async (
 
 const remove: RemoveOneHandler = async (
   sessionID,
-  id
+  id,
+  type
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
+  const tableName = getTableName(type);
+
   try {
-    const deletedFilter = await fetchAsSingletonObject<{ID: number}>(
-      `DELETE FROM USR$CRM_FILTERS WHERE ID = :id
+    const deletedFilter = await fetchAsSingletonObject<{ ID: number; }>(
+      `DELETE FROM ${tableName} WHERE ID = :id
       RETURNING ID`,
       { id }
     );

@@ -33,6 +33,7 @@ import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import { IMenuItem } from 'apps/gdmn-nxt-web/src/app/menu-items';
+import { UserType } from '@gsbelarus/util-api-types';
 
 const useStyles = makeStyles((theme: Theme) => ({
   popper: {
@@ -128,10 +129,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 /* eslint-disable-next-line */
 export interface NotificationProps {
-  menuItemClick: (item: IMenuItem, level: number) => void
+  menuItemClick: (item: IMenuItem, level: number) => void;
 }
 
-export function Notification({ menuItemClick }: NotificationProps) {
+export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [anchorProfileEl, setAnchorProfileEl] = useState(null);
@@ -140,6 +141,7 @@ export function Notification({ menuItemClick }: NotificationProps) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [showedMessages, setShowedMessages] = useState<number[]>([]);
   const [isActivePage, setIsActivePage] = useState<boolean>(true);
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   function onBlur() {
     setIsActivePage(false);
@@ -204,7 +206,7 @@ export function Notification({ menuItemClick }: NotificationProps) {
   /** Disable scrolling for main window when notifications are opened */
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
 
-  const keys: { [key: string]: number } = { 'ArrowUp': 1, 'ArrowDown': 1 };
+  const keys: { [key: string]: number; } = { 'ArrowUp': 1, 'ArrowDown': 1 };
   const preventDefaultForScrollKeys = useCallback((e: KeyboardEvent) => {
     if (keys[e.key]) {
       preventDefault(e);
@@ -260,7 +262,7 @@ export function Notification({ menuItemClick }: NotificationProps) {
   };
 
   const navigate = useNavigate();
-  const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery();
+  const { data: dealsDateFilter = [] } = useGetFiltersDeadlineQuery(undefined, { skip: ticketsUser });
 
   const dispatch = useDispatch();
 
@@ -312,10 +314,10 @@ export function Notification({ menuItemClick }: NotificationProps) {
           >
             <NotificationsOutlinedIcon color="secondary" />
             {messages.length > 0 &&
-            <>
-              <div className={classes.ring} />
-              <div className={classes.ring} style={{ animationDelay: '0.5s' }} />
-            </>}
+              <>
+                <div className={classes.ring} />
+                <div className={classes.ring} style={{ animationDelay: '0.5s' }} />
+              </>}
           </Badge>
         </IconButton>
       </Tooltip>

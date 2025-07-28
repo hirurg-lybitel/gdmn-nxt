@@ -37,12 +37,14 @@ const getAll: RequestHandler = async (req, res) => {
   const { field: sortField = 'NAME', sort: sortMode = 'ASC' } = req.query;
   /** Filtering */
   const customerId = parseInt(req.query.customerId as string);
-  const { name, LABELS, COMPANY, RESPONDENTS, isFavorite, isOur } = req.query;
+  const { name, LABELS, COMPANY, RESPONDENTS, isFavorite, isOur, gedeminUser } = req.query;
   const labelIds = LABELS ? (LABELS as string).split(',').map(Number) ?? [] : [];
   const companyIds = COMPANY ? (COMPANY as string).split(',').map(Number) ?? [] : [];
   const respondentIds = RESPONDENTS ? (RESPONDENTS as string).split(',').map(Number) ?? [] : [];
   const favoriteOnly = (isFavorite as string)?.toLowerCase() === 'true';
   const ourCompanyOnly = (isOur as string)?.toLowerCase() === 'true';
+  const gedeminUsersOnly = gedeminUser === 'true';
+
   /** Session data */
   const userId = req.user['id'];
 
@@ -74,6 +76,10 @@ const getAll: RequestHandler = async (req, res) => {
       .reduce<IContactPerson[]>((filteredArray, person) => {
         let checkConditions = true;
 
+        if (gedeminUsersOnly) {
+          checkConditions = checkConditions && person.ISGEDEMINUSER;
+        }
+
         if (customerId) {
           checkConditions = checkConditions &&
             person.COMPANY?.ID === customerId;
@@ -91,7 +97,7 @@ const getAll: RequestHandler = async (req, res) => {
 
         if (RESPONDENTS) {
           checkConditions = checkConditions &&
-          respondentIds?.includes(person.RESPONDENT?.ID);
+            respondentIds?.includes(person.RESPONDENT?.ID);
         }
 
         if (name) {

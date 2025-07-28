@@ -14,5 +14,6 @@ router.post('/user/forgot-password', authenticationController.forgotPassword);
 router.post('/user/disable-2fa', jwtMiddleware, authenticationController.disable2fa);
 router.get('/captcha', authenticationController.generateCaptcha);
 router.post('/captcha/verify', authenticationController.verifyCaptcha);
+router.post('/user/change-password', authenticationController.changePassword);
 
 export const authRouter = router;

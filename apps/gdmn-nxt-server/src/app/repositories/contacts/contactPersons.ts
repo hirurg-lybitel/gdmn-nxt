@@ -119,7 +119,15 @@ const find = async (
         p.SURNAME,
         p.MIDDLENAME,
         comp.ID AS COMP_ID,
-        comp.NAME AS COMP_NAME
+        comp.NAME AS COMP_NAME,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM GD_USER
+            WHERE GD_USER.contactkey = con.ID
+          ) THEN 1
+          ELSE 0
+        END AS ISGEDEMINUSER
       FROM GD_CONTACT con
       JOIN GD_PEOPLE p ON p.CONTACTKEY = con.ID
       LEFT JOIN GD_CONTACT comp ON comp.ID = p.WCOMPANYKEY
@@ -172,6 +180,7 @@ const find = async (
       p['EMAILS'] = emails[p['ID']];
       p['MESSENGERS'] = messengers[p['ID']];
       p['LABELS'] = labels[p['ID']];
+      p['ISGEDEMINUSER'] = p['ISGEDEMINUSER'] as any === 1;
     });
 
     return persons;
@@ -564,11 +573,11 @@ const save = async (
 const remove = async (
   sessionID: string,
   id: number
-): Promise<{ID: number}> => {
+): Promise<{ ID: number; }> => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
   try {
-    const deletedMailing = await fetchAsSingletonObject<{ID: number}>(
+    const deletedMailing = await fetchAsSingletonObject<{ ID: number; }>(
       `DELETE FROM GD_CONTACT WHERE ID = :id
       RETURNING ID`,
       { id }

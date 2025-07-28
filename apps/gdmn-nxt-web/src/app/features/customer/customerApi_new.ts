@@ -1,4 +1,4 @@
-import { ICustomer, ICustomerCross, IFavoriteContact, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { ICustomer, ICustomerCross, ICustomerTickets, IFavoriteContact, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -16,9 +16,9 @@ interface ICustomers {
 };
 
 type ICustomersRequestResult = IRequestResult<ICustomers>;
-type ICustomersWithCountRequestResult = IRequestResult<{contacts: ICustomer[], rowCount: any}>;
-type ICustomerRequestResult = IRequestResult<{ contact: ICustomer }>;
-type ICustomersCrossRequestResult = IRequestResult<{ cross: ICustomerCross[] }>;
+type ICustomersWithCountRequestResult = IRequestResult<{ contacts: ICustomer[], rowCount: any; }>;
+type ICustomerRequestResult = IRequestResult<{ contact: ICustomer; }>;
+type ICustomersCrossRequestResult = IRequestResult<{ cross: ICustomerCross[]; }>;
 
 let lastOptions: Partial<IQueryOptions>;
 const cachedOptions: Partial<IQueryOptions>[] = [];
@@ -28,7 +28,7 @@ export const customerApi = createApi({
   tagTypes: ['Customers'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
   endpoints: (builder) => ({
-    getCustomer: builder.query<ICustomer, { customerId: number }>({
+    getCustomer: builder.query<ICustomer, { customerId: number; }>({
       query({ customerId }) {
         return {
           url: `contacts/customerId/${customerId}`,
@@ -37,7 +37,7 @@ export const customerApi = createApi({
       },
       transformResponse: (response: ICustomersRequestResult) => response.queries.contacts[0]
     }),
-    getCustomers: builder.query<{data: ICustomer[], count?: number}, Partial<IQueryOptions> | void>({
+    getCustomers: builder.query<{ data: ICustomer[], count?: number; }, Partial<IQueryOptions> | void>({
       query(options) {
         lastOptions = { ...options };
 
@@ -118,7 +118,7 @@ export const customerApi = createApi({
         }
       },
     }),
-    deleteCustomer: builder.mutation<{id: number}, number>({
+    deleteCustomer: builder.mutation<{ id: number; }, number>({
       query: (id) => ({
         url: `contacts/${id}`,
         method: 'DELETE'
@@ -154,6 +154,7 @@ export const customerApi = createApi({
         };
       },
       transformResponse: (response: ICustomersCrossRequestResult) => response.queries.cross[0] || [],
+      providesTags: ['Customers']
     }),
     addFavorite: builder.mutation<IFavoriteContact, number>({
       query: (contactID) => ({
@@ -210,6 +211,89 @@ export const customerApi = createApi({
           }
         });
       },
+    }),
+    addCustomerTickets: builder.mutation<ICustomerTickets, ICustomerTickets>({
+      query: (body) => ({
+        url: 'contacts/tickets',
+        body,
+        method: 'POST'
+      }),
+      async onQueryStarted(body, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data?.findIndex(c => c.ID === body.customer?.ID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], TICKETSYSTEM: true };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
+      invalidatesTags: [{ type: 'Customers', id: 'LIST' }]
+    }),
+    updateTicketsCustomer: builder.mutation<ICustomerTickets, ICustomer>({
+      query: (body) => ({
+        url: `contacts/tickets/${body.ID}`,
+        body,
+        method: 'PUT'
+      }),
+      async onQueryStarted(body, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data?.findIndex(c => c.ID === body.ID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], performer: body.performer };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
+      invalidatesTags: [{ type: 'Customers', id: 'LIST' }]
+    }),
+    deleteCustomerTickets: builder.mutation<void, number>({
+      query: (contactID) => ({
+        url: `contacts/tickets/${contactID}`,
+        method: 'DELETE',
+      }),
+      async onQueryStarted(contactID, { dispatch, queryFulfilled }) {
+        cachedOptions?.forEach(async opt => {
+          const options = Object.keys(opt).length > 0 ? opt : undefined;
+          const patchResult = dispatch(
+            customerApi.util.updateQueryData('getCustomers', options, (draft) => {
+              if (Array.isArray(draft?.data)) {
+                const findIndex = draft?.data?.findIndex(c => c.ID === contactID);
+                if (findIndex >= 0) {
+                  draft.data[findIndex] = { ...draft.data[findIndex], TICKETSYSTEM: false };
+                }
+              }
+            })
+          );
+          try {
+            await queryFulfilled;
+          } catch {
+            patchResult.undo();
+          }
+        });
+      },
+      invalidatesTags: [{ type: 'Customers', id: 'LIST' }]
     })
   }),
 });
@@ -222,5 +306,8 @@ export const {
   useDeleteCustomerMutation,
   useGetCustomersCrossQuery,
   useAddFavoriteMutation,
-  useDeleteFavoriteMutation
+  useDeleteFavoriteMutation,
+  useAddCustomerTicketsMutation,
+  useDeleteCustomerTicketsMutation,
+  useUpdateTicketsCustomerMutation
 } = customerApi;

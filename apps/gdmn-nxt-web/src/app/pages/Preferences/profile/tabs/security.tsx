@@ -1,12 +1,12 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
-import { IAuthResult, IProfileSettings, IUserProfile } from '@gsbelarus/util-api-types';
+import { IAuthResult, IProfileSettings, IUserProfile, UserType } from '@gsbelarus/util-api-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useCreate2faMutation, useDisableOtpMutation, useGetCreate2faQuery } from 'apps/gdmn-nxt-web/src/app/features/auth/authApi';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setError } from 'apps/gdmn-nxt-web/src/app/features/error-slice/error-slice';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
 
@@ -20,6 +20,7 @@ import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import TabletIcon from '@mui/icons-material/Tablet';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { RootState } from '@gdmn-nxt/store';
 
 export default function SecurityTab() {
   const userProfile = useUserData();
@@ -31,6 +32,7 @@ export default function SecurityTab() {
     refetchOnMountOrArgChange: true,
     skip: !fetchDataCreate2fa
   });
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const [activate2fa] = useCreate2faMutation();
   const [disableOtp] = useDisableOtpMutation();
 
@@ -191,36 +193,38 @@ export default function SecurityTab() {
     <FormikProvider value={formik}>
       <Form id="securityTabForm" onSubmit={formik.handleSubmit}>
         <Stack height={'100%'}>
-          <Typography variant="subtitle1">Способы входа</Typography>
-          <Stack direction="row" spacing={1}>
-            <Icon fontSize="large" style={{ height: '100%', marginLeft: -7 }}>
-              <SystemSecurityUpdateGoodIcon fontSize="large" color="action" />
-            </Icon>
-            <Stack>
-              <Typography >Двухфакторная аутентификация</Typography>
-              <Typography variant="caption">Дополнительная защита аккаунта с паролем</Typography>
+          {!ticketsUser && <>
+            <Typography variant="subtitle1">Способы входа</Typography>
+            <Stack direction="row" spacing={1}>
+              <Icon fontSize="large" style={{ height: '100%', marginLeft: -7 }}>
+                <SystemSecurityUpdateGoodIcon fontSize="large" color="action" />
+              </Icon>
+              <Stack>
+                <Typography >Двухфакторная аутентификация</Typography>
+                <Typography variant="caption">Дополнительная защита аккаунта с паролем</Typography>
+              </Stack>
+              <Box flex={1} />
+              <Tooltip
+                style={{ cursor: 'help' }}
+                arrow
+                title={formik.values.REQUIRED_2FA ? 'Для вашего пользователя установлена обязательная двухфакторная аутентификация' : ''}
+              >
+                <FormControlLabel
+                  style={{
+                    width: matchDownSm ? undefined : '155px'
+                  }}
+                  label={matchDownSm ? undefined : <Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
+                  disabled={formik.values.REQUIRED_2FA}
+                  control={
+                    <Switch
+                      name="ENABLED_2FA"
+                      checked={formik.values.ENABLED_2FA}
+                      onChange={onEnable2FAChange}
+                    />}
+                />
+              </Tooltip>
             </Stack>
-            <Box flex={1} />
-            <Tooltip
-              style={{ cursor: 'help' }}
-              arrow
-              title={formik.values.REQUIRED_2FA ? 'Для вашего пользователя установлена обязательная двухфакторная аутентификация' : ''}
-            >
-              <FormControlLabel
-                style={{
-                  width: matchDownSm ? undefined : '155px'
-                }}
-                label={matchDownSm ? undefined : <Typography>{formik.values.ENABLED_2FA ? 'Подключено' : 'Отключено'}</Typography>}
-                disabled={formik.values.REQUIRED_2FA}
-                control={
-                  <Switch
-                    name="ENABLED_2FA"
-                    checked={formik.values.ENABLED_2FA}
-                    onChange={onEnable2FAChange}
-                  />}
-              />
-            </Tooltip>
-          </Stack>
+          </>}
           <Stack spacing={2}>
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
@@ -297,7 +301,7 @@ export default function SecurityTab() {
                                       variant="caption"
                                       sx={{ ml: 1, color: 'primary.main' }}
                                     >
-                                    (текущая сессия)
+                                      (текущая сессия)
                                     </Typography>
                                   )}
                                 </Typography>
