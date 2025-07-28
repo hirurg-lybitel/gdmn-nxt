@@ -92,7 +92,7 @@ export function TicketsCustomerAdd({
               loadingText="Загрузка данных..."
               options={systemUsers ?? []}
               value={formik.values.performer ?? null}
-              getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
+              getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
               onChange={(e, value) => {
                 formik.setFieldValue('performer', value ?? null);
               }}
