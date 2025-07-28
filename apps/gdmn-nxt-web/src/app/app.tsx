@@ -306,7 +306,7 @@ export default function App(props: AppProps) {
         return <Navigate to="/customer" />;
       case 'EMPLOYEE':
         return <Navigate to="/employee/dashboard" />;
-      case 'TISCKETS': {
+      case 'TICKETS': {
         return <Navigate to="/tickets/tickets" />;
       }
       case 'CREATE_CUSTOMER_ACCOUNT':
