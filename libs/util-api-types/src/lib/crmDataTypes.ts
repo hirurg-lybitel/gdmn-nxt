@@ -41,9 +41,9 @@ export interface ICustomer extends IContactWithID {
   agreementCount?: number;
   debt?: number;
   feedback?: ICustomerFeedback[];
-  ticketSystem?: boolean,
-  openTickets?: number,
-  closedTickets?: number;
+  TICKETSYSTEM?: boolean,
+  OPENTICKETS?: number,
+  CLOSEDTICKETS?: number;
   performer?: IUser;
 };
 

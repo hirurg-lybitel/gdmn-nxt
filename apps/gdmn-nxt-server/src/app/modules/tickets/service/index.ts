@@ -1,6 +1,7 @@
 import { InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket, ForbiddenException } from '@gsbelarus/util-api-types';
 import { ticketsRepository } from '../repository';
 import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
+import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';
 
 const findAll = async (
   sessionID: string,
@@ -116,6 +117,8 @@ const createTicket = async (
       true
     );
 
+    cachedRequets.cacheRequest('customers');
+
     return ticket;
   } catch (error) {
     throw InternalServerErrorException(error.message);
@@ -164,6 +167,8 @@ const updateById = async (
     }
 
     const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.ID }, type);
+
+    cachedRequets.cacheRequest('customers');
 
     return ticket;
   } catch (error) {

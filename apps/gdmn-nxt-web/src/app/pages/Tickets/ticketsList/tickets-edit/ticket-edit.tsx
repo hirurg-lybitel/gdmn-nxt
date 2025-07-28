@@ -18,7 +18,7 @@ import InfoIcon from '@mui/icons-material/Info';
 export interface ITicketEditProps {
   open: boolean;
   ticket?: ITicket;
-  onSubmit: (ticket: ITicket, isDelete: boolean) => void;
+  onSubmit: (ticket: ITicket, isDelete: boolean) => Promise<void>;
   onCancelClick: () => void;
 };
 

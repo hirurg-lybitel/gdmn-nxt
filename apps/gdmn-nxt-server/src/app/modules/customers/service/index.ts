@@ -245,13 +245,16 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
           const customerLabels = labels[c.ID] ?? null;
           const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
 
+          const performerKey = c.PERFORMERKEY;
+          delete c.PERFORMERKEY;
+
           filteredArray.push({
             ...c,
             NAME: c.NAME || '<не указано>',
             LABELS: customerLabels,
             BUSINESSPROCESSES,
             isFavorite,
-            performer: users[c.PERFORMERKEY],
+            performer: users[performerKey],
             ...(withTasksBool ? {
               taskCount: tasks.get(c.ID)?.length ?? 0,
             } : {}),

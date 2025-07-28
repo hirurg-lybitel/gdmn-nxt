@@ -154,6 +154,7 @@ export const customerApi = createApi({
         };
       },
       transformResponse: (response: ICustomersCrossRequestResult) => response.queries.cross[0] || [],
+      providesTags: ['Customers']
     }),
     addFavorite: builder.mutation<IFavoriteContact, number>({
       query: (contactID) => ({
@@ -225,7 +226,7 @@ export const customerApi = createApi({
               if (Array.isArray(draft?.data)) {
                 const findIndex = draft?.data?.findIndex(c => c.ID === body.customer?.ID);
                 if (findIndex >= 0) {
-                  draft.data[findIndex] = { ...draft.data[findIndex], ticketSystem: true };
+                  draft.data[findIndex] = { ...draft.data[findIndex], TICKETSYSTEM: true };
                 }
               }
             })
@@ -280,7 +281,7 @@ export const customerApi = createApi({
               if (Array.isArray(draft?.data)) {
                 const findIndex = draft?.data?.findIndex(c => c.ID === contactID);
                 if (findIndex >= 0) {
-                  draft.data[findIndex] = { ...draft.data[findIndex], ticketSystem: false };
+                  draft.data[findIndex] = { ...draft.data[findIndex], TICKETSYSTEM: false };
                 }
               }
             })

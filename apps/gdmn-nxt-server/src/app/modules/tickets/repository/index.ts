@@ -197,7 +197,7 @@ const save: SaveHandler<ITicketSave> = async (
         USERKEY: userId,
         OPENAT: openAt ? new Date(openAt) : new Date(),
         STATEID: openState.ID,
-        PERFORMERKEY: performer?.ID
+        PERFORMERKEY: (!performer?.ID || performer?.ID < 0) ? undefined : performer.ID
       }
     );
 

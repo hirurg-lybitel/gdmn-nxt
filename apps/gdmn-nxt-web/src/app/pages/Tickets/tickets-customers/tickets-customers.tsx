@@ -193,7 +193,7 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
     },
     {
       field: 'ALLTICKETS', headerName: 'Количество тикетов', width: 200, renderCell: (params) => {
-        return (params.row.openTickets ?? 0) + (params.row.closedTickets ?? 0);
+        return (params.row.OPENTICKETS ?? 0) + (params.row.CLOSEDTICKETS ?? 0);
       }
     },
     { field: 'OPENTICKETS', headerName: 'Открытые тикеты', width: 200 },

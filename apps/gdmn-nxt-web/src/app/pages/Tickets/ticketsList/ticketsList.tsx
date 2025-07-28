@@ -20,7 +20,7 @@ import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import { GridColDef, GridRenderCellParams, GridTreeNodeWithRender } from '@mui/x-data-grid-pro';
 import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import SortSelect from './sortSelect';
-import { useGetCustomerQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import { customerApi, useGetCustomerQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 
@@ -106,10 +106,11 @@ export function TicketsList(props: ticketsListProps) {
     setFilteringData({ ...newObject, ...newValue });
   }, [filteringData, setFilteringData]);
 
-  const handleSubmit = useCallback((ticket: ITicket, isDelete: boolean) => {
+  const handleSubmit = useCallback(async (ticket: ITicket, isDelete: boolean) => {
     setOpenEdit(false);
-    addTicket(ticket);
-  }, [addTicket]);
+    await addTicket(ticket);
+    dispatch(customerApi.util.invalidateTags(['Customers']));
+  }, [addTicket, dispatch]);
 
   const companyKey = useSelector<RootState, number>(state => state.user.userProfile?.companyKey ?? -1);
   const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 });

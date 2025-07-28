@@ -7,12 +7,12 @@ import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTic
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketMessage, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ITicketMessage, ITicketState, UserType } from '@gsbelarus/util-api-types';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -20,7 +20,7 @@ import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { useGetUsersQuery } from '../../../features/systemUsers';
-import { useGetCustomersQuery } from '../../../features/customer/customerApi_new';
+import { useGetCustomersQuery, customerApi } from '../../../features/customer/customerApi_new';
 import ReactMarkdown from 'react-markdown';
 import { TabContext, TabList } from '@mui/lab';
 
@@ -374,6 +374,15 @@ export default function TicketChat(props: ITicketChatProps) {
     setTabIndex(newindex);
   };
 
+  const dispatch = useDispatch();
+
+  const handleUpdateStatus = useCallback(async (value: ITicketState | null) => {
+    if (!value) return;
+
+    await updateTicket({ ...ticket, state: value, closeAt: value.code === 0 ? new Date() : undefined });
+    dispatch(customerApi.util.invalidateTags(['Customers']));
+  }, [dispatch, ticket, updateTicket]);
+
   return (
     <>
       {fileFialog}
@@ -534,11 +543,7 @@ export default function TicketChat(props: ITicketChatProps) {
           options={states ?? []}
           value={ticket?.state ?? null}
           getOptionLabel={(option) => option.name}
-          onChange={(e, value) => {
-            if (!value) return;
-
-            updateTicket({ ...ticket, state: value, closeAt: value.code === 0 ? new Date() : undefined });
-          }}
+          onChange={(e, value) => handleUpdateStatus(value)}
           sx={{
             '& .MuiAutocomplete-clearIndicator': {
               display: 'none'
