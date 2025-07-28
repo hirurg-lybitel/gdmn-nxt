@@ -108,7 +108,7 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
   } = useGetCustomersQuery(
     {
       pagination: paginationData,
-      filter: { ...filteringData, ticketSystem: true },
+      filter: { ...filteringData, ticketSystem: true, sortByFavorite: false },
       ...(sortingData ? { sort: sortingData } : {})
     },
     { refetchOnMountOrArgChange: dataChanged }
@@ -193,7 +193,7 @@ export function TicketsCustomers(props: TicketsCustomersProps) {
     },
     {
       field: 'ALLTICKETS', headerName: 'Количество тикетов', width: 200, renderCell: (params) => {
-        return (params.row.OPENTICKETS ?? 0) + (params.row.CLOSEDTICKETS ?? 0);
+        return params.row.ALLTICKETS;
       }
     },
     { field: 'OPENTICKETS', headerName: 'Открытые тикеты', width: 200 },

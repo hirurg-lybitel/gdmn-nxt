@@ -1,4 +1,4 @@
-import { InternalServerErrorException, UserType, NotFoundException, IsNull, IsNotNull, ITicket, ForbiddenException } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, ITicket, ForbiddenException } from '@gsbelarus/util-api-types';
 import { ticketsRepository } from '../repository';
 import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
 import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';

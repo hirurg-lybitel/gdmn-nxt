@@ -5,13 +5,14 @@ import {
   Typography
 } from '@mui/material';
 import { ICustomer, ICustomerTickets } from '@gsbelarus/util-api-types';
-import { Form, FormikProvider, useFormik } from 'formik';
+import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
 import { generatePassword } from '@gsbelarus/util-useful';
 import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
+import { emailValidation } from '@gdmn-nxt/helpers/validators';
 
 export interface TicketsCustomerAddProps {
   open: boolean;
@@ -38,7 +39,7 @@ export function TicketsCustomerAdd({
     },
     validationSchema: yup.object().shape({
       customer: yup.object().required(),
-      email: yup.string().required(),
+      email: emailValidation().required(),
       admin: yup.object().shape({
         name: yup.string().required(),
         fullName: yup.string().required(),
@@ -91,7 +92,7 @@ export function TicketsCustomerAdd({
               loadingText="Загрузка данных..."
               options={systemUsers ?? []}
               value={formik.values.performer ?? null}
-              getOptionLabel={(option) => option.FULLNAME ?? option.NAME}
+              getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
               onChange={(e, value) => {
                 formik.setFieldValue('performer', value ?? null);
               }}
@@ -119,6 +120,8 @@ export function TicketsCustomerAdd({
                 name="email"
                 onChange={formik.handleChange}
                 value={formik.values.email}
+                error={getIn(formik.touched, 'email') && getIn(formik.errors, 'email')}
+                helperText={getIn(formik.touched, 'email') && getIn(formik.errors, 'email')}
               />
               <div
                 style={{

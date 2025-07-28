@@ -32,7 +32,8 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     withTasks,
     withAgreements,
     withDebt,
-    ticketSystem
+    ticketSystem,
+    sortByFavorite = 'true'
   } = clause as any;
 
   const sortField = Object.keys(order)[0] ?? 'NAME';
@@ -187,6 +188,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
     const worktypeIds = WORKTYPES ? (WORKTYPES as string).split(',').map(Number) ?? [] : [];
     const buisnessProcessIds = BUSINESSPROCESSES ? (BUSINESSPROCESSES as string).split(',').map(Number) ?? [] : [];
     const favoriteOnly = (isFavorite as string)?.toLowerCase() === 'true';
+    const sortByFavoriteEnable = sortByFavorite === 'true';
 
     const cachedContacts = await (async () => {
       const customers = await cacheManager.getKey<Customer[]>('customers');
@@ -263,20 +265,48 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
             } : {}),
             ...(withDebtBool ? {
               debt: debts.get(c.ID) ?? 0
-            } : {}),
+            } : {})
           });
         }
         return filteredArray;
       }, [])
       .sort((a, b) => {
-        const nameA = a[String(sortField).toUpperCase()]?.toLowerCase() || '';
-        const nameB = b[String(sortField).toUpperCase()]?.toLowerCase() || '';
-        if (a.isFavorite === b.isFavorite) {
-          return String(sortMode).toUpperCase() === 'ASC'
-            ? nameA.localeCompare(nameB)
-            : nameB.localeCompare(nameA);
+        const dataType = typeof (a[String(sortField)] ?? b[String(sortField)]);
+
+        const nameA = (() => {
+          const fieldValue = a[String(sortField)];
+          if (dataType === 'string') {
+            return fieldValue?.toLowerCase() || '';
+          }
+          return fieldValue;
+        })();
+
+        const nameB = (() => {
+          const fieldValue = b[String(sortField)];
+          if (typeof fieldValue === 'string') {
+            return fieldValue?.toLowerCase() || '';
+          }
+          return fieldValue;
+        })();
+
+        if (a.isFavorite === b.isFavorite || !sortByFavoriteEnable) {
+          if (dataType === 'string') {
+            return String(sortMode).toUpperCase() === 'ASC'
+              ? nameA?.localeCompare(nameB)
+              : nameB?.localeCompare(nameA);
+          }
+          if (dataType === 'number') {
+            return String(sortMode).toUpperCase() === 'ASC'
+              ? nameA - nameB
+              : nameB - nameA;
+          }
         }
-        return a.isFavorite ? -1 : 1;
+
+        if (sortByFavoriteEnable) {
+          return a.isFavorite ? -1 : 1;
+        }
+
+        return 0;
       });
 
     return contacts;

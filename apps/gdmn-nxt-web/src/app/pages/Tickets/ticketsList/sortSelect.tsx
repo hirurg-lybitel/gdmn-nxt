@@ -15,13 +15,14 @@ interface ISortSelectProps<T> {
   styleTextField?: CSSProperties;
   sx?: any;
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 export default function SortSelect<T>(props: Readonly<ISortSelectProps<T>>) {
   const {
     isLoading, options = [], filteringData, handleOnFilterChange,
     field, label, width, getOptionLabel, getReturnedValue,
-    styleTextField, sx, fullWidth
+    styleTextField, sx, fullWidth, disabled = false
   } = props;
 
   const CustomPopper = (props: any) => {
@@ -32,6 +33,7 @@ export default function SortSelect<T>(props: Readonly<ISortSelectProps<T>>) {
     <Autocomplete
       fullWidth={fullWidth}
       sx={sx}
+      disabled={disabled}
       slotProps={{
         paper: {
           style: {

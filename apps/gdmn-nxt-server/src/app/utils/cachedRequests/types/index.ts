@@ -29,8 +29,9 @@ export interface Customer {
   FAX: string;
   POSTADDRESS: string;
   ticketSystem?: boolean,
-  openTickets?: number,
-  closedTickets?: number;
+  OPENTICKETS?: number,
+  CLOSEDTICKETS?: number;
+  ALLTICKETS?: number;
   performer: IUser;
   PERFORMERKEY: number;
 }

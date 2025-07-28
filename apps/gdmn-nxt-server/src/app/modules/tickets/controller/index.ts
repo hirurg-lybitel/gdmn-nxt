@@ -15,7 +15,7 @@ const findAll: RequestHandler = async (req, res) => {
       sessionID,
       {
         ...req.query,
-        ...(type === UserType.Tickets ? { conpanyKey: req.user['companyKey'] ?? -1 } : {}),
+        ...(type === UserType.Tickets ? { companyKey: req.user['companyKey'] ?? -1 } : {}),
         ...((type === UserType.Tickets && !isAdmin) ? { userId } : {})
       },
       type

@@ -44,6 +44,7 @@ export interface ICustomer extends IContactWithID {
   TICKETSYSTEM?: boolean,
   OPENTICKETS?: number,
   CLOSEDTICKETS?: number;
+  ALLTICKETS?: number;
   performer?: IUser;
 };
 
