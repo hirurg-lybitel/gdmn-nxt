@@ -24,7 +24,8 @@ export const getContacts: RequestHandler = async (req, res) => {
     withTasks,
     withAgreements,
     withDebt,
-    ticketSystem
+    ticketSystem,
+    sortByFavorite
   } = req.query;
 
   const sortField = (req.query.field ?? 'NAME') as string;
@@ -50,7 +51,7 @@ export const getContacts: RequestHandler = async (req, res) => {
       {
         DEPARTMENTS, CONTRACTS, WORKTYPES, LABELS, BUSINESSPROCESSES, NAME,
         customerId, isFavorite, userId, withTasks, withAgreements, withDebt,
-        ticketSystem
+        ticketSystem, sortByFavorite
       },
       {
         [sortField]: sortMode
@@ -348,7 +349,7 @@ export const updateTicketsContact: RequestHandler = async (req, res) => {
   try {
     const newCustomer = await customersService.updateTicketsCustomer(req.sessionID, parseInt(id), req.body);
 
-    cachedRequets.cacheRequest('customers');
+    await cachedRequets.cacheRequest('customers');
 
     const result = {
       queries: { contact: newCustomer },
