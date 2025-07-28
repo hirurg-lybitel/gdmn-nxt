@@ -168,7 +168,7 @@ const updateById = async (
 
     const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.ID }, type);
 
-    cachedRequets.cacheRequest('customers');
+    if (oldTicket.closeAt !== ticket.closeAt) cachedRequets.cacheRequest('customers');
 
     return ticket;
   } catch (error) {
