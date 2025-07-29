@@ -56,6 +56,7 @@ const find: FindHandler<ITicketMessage> = async (
         r.USR$BODY,
         r.USR$STATE,
         r.USR$TICKETKEY,
+        r.USR$SENDAT,
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE
@@ -68,7 +69,8 @@ const find: FindHandler<ITicketMessage> = async (
         LEFT JOIN USR$CRM_PROFILE_SETTINGS sps ON sps.USR$USERKEY = SUPPORT.ID
 
         LEFT JOIN USR$CRM_TICKET_STATE s ON s.ID = r.USR$STATE
-      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
+      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
+      ORDER BY USR$SENDAT`;
 
     const result = await fetchAsObject<any>(sql, params);
 
@@ -93,7 +95,8 @@ const find: FindHandler<ITicketMessage> = async (
           ID: data['STATEID'],
           name: data['STATE_NAME'],
           code: data['STATE_CODE']
-        }
+        },
+        sendAt: data['USR$SENDAT']
       };
     }));
 
@@ -124,7 +127,7 @@ const save: SaveHandler<ITicketMessageSave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
 
-  const { ticketKey, body, state, userId } = metadata;
+  const { ticketKey, body, state, userId, sendAt } = metadata;
 
   const fieldName = type === UserType.Tickets ? 'USR$CUSTOMER_AUTHORKEY' : 'USR$SUPPORT_AUTHORKEY';
 
@@ -132,14 +135,15 @@ const save: SaveHandler<ITicketMessageSave> = async (
 
   try {
     const message = await fetchAsSingletonObject<ITicketMessageSave>(
-      `INSERT INTO USR$CRM_TICKETREC(USR$TICKETKEY, USR$BODY, USR$STATE, ${fieldName})
-      VALUES(:TICKETKEY, :BODY, :STATE, :SENDER)
+      `INSERT INTO USR$CRM_TICKETREC(USR$TICKETKEY, USR$BODY, USR$STATE, USR$SENDAT, ${fieldName})
+      VALUES(:TICKETKEY, :BODY, :STATE, :SENDAT, :SENDER)
       RETURNING ID`,
       {
         TICKETKEY: ticketKey,
         BODY: blobBody,
         STATE: state?.ID,
-        SENDER: userId
+        SENDER: userId,
+        SENDAT: sendAt ? new Date(sendAt) : new Date()
       }
     );
 

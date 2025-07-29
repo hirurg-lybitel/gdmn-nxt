@@ -721,6 +721,7 @@ export interface ITicketMessage extends IWithID {
   ticketKey: number,
   user: ICRMTicketUser & { type: 'empl' | 'user'; },
   state: ITicketState;
+  sendAt: Date;
 }
 
 export interface ICustomerTickets {
