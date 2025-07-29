@@ -742,4 +742,11 @@ export interface ITicketUser extends IWithID {
   email?: string,
   phone?: string,
   isAdmin?: boolean;
+  oneTimePassword?: boolean;
+}
+
+export interface IChangePassword {
+  password?: string;
+  newPassword?: string,
+  repeatPassword?: string;
 }

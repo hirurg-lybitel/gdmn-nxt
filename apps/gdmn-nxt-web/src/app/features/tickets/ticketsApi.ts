@@ -1,4 +1,4 @@
-import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser, IChangePassword, IAuthResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -110,7 +110,7 @@ export const ticketsApi = createApi({
       }),
       invalidatesTags: ['users']
     }),
-    deleteTicketUser: builder.mutation<ITicketUserRequestResult, number>({
+    deleteTicketUser: builder.mutation<IAuthResult, number>({
       query: (id) => ({
         url: `/users/${id}`,
         method: 'DELETE'

@@ -1,6 +1,6 @@
 import InfoIcon from '@mui/icons-material/Info';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
-import { IProfileSettings } from '@gsbelarus/util-api-types';
+import { IProfileSettings, UserType } from '@gsbelarus/util-api-types';
 import { Box, Button, Checkbox, FormControlLabel, List, ListItem, ListItemIcon, Stack, Tooltip } from '@mui/material';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
@@ -10,6 +10,8 @@ import { PUSH_NOTIFICATIONS_DURATION } from '@gdmn/constants/client';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import useObjectsComparator from '@gdmn-nxt/helpers/hooks/useObjectsComparator';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import { RootState } from '@gdmn-nxt/store';
+import { useSelector } from 'react-redux';
 
 export default function NotificationsTab() {
   const userProfile = useUserData();
@@ -94,11 +96,13 @@ export default function NotificationsTab() {
     formik.submitForm();
   };
 
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+
   return (
     <FormikProvider value={formik}>
       <Form id="notificationsTabForm" onSubmit={formik.handleSubmit}>
         <Stack height={'100%'} sx={{ gap: { xs: '10px', sm: 0 } }}>
-          <Stack direction="row" alignItems="center">
+          {!ticketsUser && <Stack direction="row" alignItems="center">
             <FormControlLabel
               disabled={isLoading}
               label="Получать уведомления по почте"
@@ -118,7 +122,7 @@ export default function NotificationsTab() {
             >
               <InfoIcon color="action" />
             </Tooltip>
-          </Stack>
+          </Stack>}
           <Stack
             direction="row"
             alignItems="center"
@@ -140,13 +144,13 @@ export default function NotificationsTab() {
                   <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
                     1.
                   </ListItemIcon >
-                    Убедитесь, что на вашем компьютере включены уведомления от текущего браузера
+                  Убедитесь, что на вашем компьютере включены уведомления от текущего браузера
                 </ListItem>
                 <ListItem disableGutters alignItems="flex-start">
                   <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
                     2.
                   </ListItemIcon >
-                    Проверьте, что в вашем браузере включены уведомления, нажав кнопку Проверить
+                  Проверьте, что в вашем браузере включены уведомления, нажав кнопку Проверить
                 </ListItem>
               </List>}
             >
@@ -155,7 +159,7 @@ export default function NotificationsTab() {
             <Box flex={1} />
             <Button variant="contained" onClick={checkPushNotifications}>Проверить</Button>
           </Stack>
-          <Box flex={1}/>
+          <Box flex={1} />
           <ButtonWithConfirmation
             variant="contained"
             disabled={compareObjects(formik.values, settings ?? {}) || isLoading}

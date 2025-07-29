@@ -64,7 +64,8 @@ const getSettings = async ({
             u.USR$EMAIL as EMAIL,
             ps.USR$PUSH_NOTIFICATIONS as PUSH_NOTIFICATIONS_ENABLED,
             ps.USR$SAVEFILTERS as SAVEFILTERS,
-            u.USR$ONE_TIME_PASSWORD
+            u.USR$ONE_TIME_PASSWORD,
+            u.USR$FULLNAME as FULLNAME
           FROM USR$CRM_USER u
             LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
           WHERE u.ID = :userId`,
@@ -104,7 +105,7 @@ const getSettings = async ({
       const result = await fetchAsObject(
         `SELECT
           w.NAME as RANK, ps.USR$AVATAR as AVATAR_BLOB, ps.USR$MODE as ColorMode, ps.USR$LASTVERSION as LASTVERSION,
-          ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL,
+          ps.USR$SEND_EMAIL_NOTIFICATIONS as SEND_EMAIL_NOTIFICATIONS, c.EMAIL, c.NAME as FULLNAME,
           ps.USR$2FA_ENABLED AS ENABLED_2FA, ps.USR$SECRETKEY AS SECRETKEY,
           ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
           ps.USR$LAST_IP as LAST_IP,
@@ -196,7 +197,8 @@ const set: RequestHandler = async (req, res) => {
     SEND_EMAIL_NOTIFICATIONS,
     PUSH_NOTIFICATIONS_ENABLED,
     EMAIL,
-    SAVEFILTERS
+    SAVEFILTERS,
+    FULLNAME
   } = req.body;
 
 
@@ -210,10 +212,12 @@ const set: RequestHandler = async (req, res) => {
     if (ticketsUser) {
       const updateEmail = await fetchAsObject(
         `UPDATE USR$CRM_USER c
-          SET USR$EMAIL = :EMAIL
+          SET
+          USR$EMAIL = :EMAIL,
+          USR$FULLNAME = :FULLNAME
         WHERE c.ID = :userId
         RETURNING USR$EMAIL`,
-        { userId, EMAIL }
+        { userId, EMAIL, FULLNAME }
       );
     } else {
       const updateEmail = await fetchAsObject(

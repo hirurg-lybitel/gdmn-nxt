@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import passport from 'passport';
 import { profileSettingsController } from './settings/profileSettings';
-import { IConfirmation, UserType, authResult } from '@gsbelarus/util-api-types';
+import { ForbiddenException, IConfirmation, UserType, authResult } from '@gsbelarus/util-api-types';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/messages';
 import { config } from '@gdmn-nxt/config';
 import jwt from 'jsonwebtoken';
@@ -19,6 +19,7 @@ import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system
 import { getGeoData } from '@gdmn-nxt/ip-info';
 import dayjs from '@gdmn-nxt/dayjs';
 import { ticketsUserService } from '@gdmn-nxt/modules/tickets-user/service';
+import { compare } from 'bcryptjs';
 
 const confirmationCodeHtml = fs.readFileSync(path.join(__dirname, 'assets', 'mail.html'), { encoding: 'utf-8' });
 
@@ -95,6 +96,7 @@ const signIn: RequestHandler = async (req, res, next) => {
 
       if (ONE_TIME_PASSWORD) {
         req.session.userId = user.id;
+        req.session.type = user.type;
         return res.json(authResult(
           'ONE_TIME_PASSWORD',
           'Требуется сменить пароль.'
@@ -467,37 +469,41 @@ const changePassword: RequestHandler = async (req, res) => {
     newPassword,
     repeatPassword
   } = req.body;
-  const { id: sessionID, userId } = req.session;
+  const { id: sessionID, userId, type } = req.session;
+  const userType = req.user?.['type'] ?? type;
   try {
-    if (newPassword !== repeatPassword) {
+    if (userType === UserType.Tickets) {
+      if (newPassword !== repeatPassword) {
+        return res.json(authResult(
+          'ERROR',
+          ERROR_MESSAGES.PASSWORDS_MUST_MATCH
+        ));
+      }
+
+      const user = await ticketsUserService.findOne(sessionID, userId, UserType.Gedemin);
+
+      if (user.oneTimePassword ? password !== user.password : !(await compare(password, user.password))) {
+        return res.json(authResult(
+          'ERROR',
+          ERROR_MESSAGES.INVALID_OLD_PASSWORD
+        ));
+      }
+
+      if (password === newPassword) {
+        return res.json(authResult(
+          'ERROR',
+          ERROR_MESSAGES.PASSWORDS_MATCH
+        ));
+      }
+
+      const updateUser = await ticketsUserService.updateById(sessionID, userId, { ...user, password: newPassword });
+
       return res.json(authResult(
-        'ERROR',
-        ERROR_MESSAGES.PASSWORDS_MUST_MATCH
+        'SUCCESS',
+        SUCCESS_MESSAGES.UPDATED
       ));
     }
-
-    const user = await ticketsUserService.findOne(sessionID, userId, UserType.Gedemin);
-
-    if (password !== user.password) {
-      return res.json(authResult(
-        'ERROR',
-        ERROR_MESSAGES.INVALID_OLD_PASSWORD
-      ));
-    }
-
-    if (password === newPassword) {
-      return res.json(authResult(
-        'ERROR',
-        ERROR_MESSAGES.PASSWORDS_MATCH
-      ));
-    }
-
-    const updateUser = await ticketsUserService.updateById(sessionID, userId, { ...user, password: newPassword });
-
-    res.json(authResult(
-      'SUCCESS',
-      SUCCESS_MESSAGES.UPDATED
-    ));
+    throw ForbiddenException('У вас недостаточно прав');
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
   }
