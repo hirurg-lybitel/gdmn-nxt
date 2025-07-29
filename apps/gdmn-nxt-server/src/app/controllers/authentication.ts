@@ -482,7 +482,14 @@ const changePassword: RequestHandler = async (req, res) => {
 
       const user = await ticketsUserService.findOne(sessionID, userId, UserType.Gedemin);
 
-      if (user.oneTimePassword ? password !== user.password : !(await compare(password, user.password))) {
+      const validPassword = await (async () => {
+        if (user.oneTimePassword) {
+          return password === user.password;
+        }
+        return await compare(password, user.password);
+      })();
+
+      if (!validPassword) {
         return res.json(authResult(
           'ERROR',
           ERROR_MESSAGES.INVALID_OLD_PASSWORD
