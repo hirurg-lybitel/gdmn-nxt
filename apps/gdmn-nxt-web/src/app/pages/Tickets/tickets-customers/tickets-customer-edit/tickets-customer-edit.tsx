@@ -58,7 +58,7 @@ export function CustomerEdit({
         </>
       );
     }
-    if (!user?.password) {
+    if (!user?.oneTimePassword) {
       return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: '0.4', flex: 1, paddingBottom: '10px' }}>
           <Typography variant="h6">

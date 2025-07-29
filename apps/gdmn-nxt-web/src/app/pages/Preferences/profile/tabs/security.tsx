@@ -1,13 +1,13 @@
 import SystemSecurityUpdateGoodIcon from '@mui/icons-material/SystemSecurityUpdateGood';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
-import { IAuthResult, IProfileSettings, IUserProfile, UserType } from '@gsbelarus/util-api-types';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Dialog, FormControlLabel, Grid, Icon, IconButton, Skeleton, Stack, Switch, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { IAuthResult, IChangePassword, IProfileSettings, IUserProfile, UserType } from '@gsbelarus/util-api-types';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Dialog, FormControlLabel, Grid, Icon, IconButton, InputAdornment, Skeleton, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useCreate2faMutation, useDisableOtpMutation, useGetCreate2faQuery } from 'apps/gdmn-nxt-web/src/app/features/auth/authApi';
 import { useDispatch, useSelector } from 'react-redux';
-import { setError } from 'apps/gdmn-nxt-web/src/app/features/error-slice/error-slice';
+import { clearError, setError } from 'apps/gdmn-nxt-web/src/app/features/error-slice/error-slice';
 import { CheckCode, CreateCode } from '@gsbelarus/ui-common-dialogs';
 
 import PowerOffIcon from '@mui/icons-material/PowerOff';
@@ -21,6 +21,11 @@ import TabletIcon from '@mui/icons-material/Tablet';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { RootState } from '@gdmn-nxt/store';
+import { passwordValidation } from '@gdmn-nxt/helpers/validators';
+import * as yup from 'yup';
+import { PasswordTextField } from '@gdmn-nxt/components/Styled/password-text-field/password-Text-field';
+import { useChangePasswordMutation } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 
 export default function SecurityTab() {
   const userProfile = useUserData();
@@ -189,6 +194,82 @@ export default function SecurityTab() {
     return <ComputerIcon />;
   };
 
+  const [changePasswordData, setChangePasswordData] = useState<IChangePassword>({});
+
+  const [error, setErrors] = useState<Record<string, string>>();
+  const [isSubmit, setIsSubmit] = useState(false);
+  const [launching, setLaunching] = useState(false);
+
+  const schema = yup.object().shape({
+    password: yup.string().required('Обязательное поле'),
+    newPassword: passwordValidation().required('Обязательное поле'),
+    repeatPassword: passwordValidation().test(
+      'must-match',
+      'Пароли не совпадают',
+      (value) => value === changePasswordData.newPassword
+    )
+      .required('Обязательное поле')
+  });
+
+  useEffect(() => {
+    if (!isSubmit) {
+      return setErrors({});
+    }
+    const validate = async () => {
+      try {
+        await schema.validate(changePasswordData, { abortEarly: false });
+        return setErrors({});
+      } catch (error) {
+        if (error instanceof yup.ValidationError) {
+          const errorMap = error.inner.reduce((acc, err) => {
+            if (!err.path) return acc;
+            acc[err.path] = err.message;
+            return acc;
+          }, {} as Record<string, string>);
+
+          return setErrors(errorMap);
+        }
+        return setErrors({});
+      }
+    };
+    validate();
+  }, [JSON.stringify(changePasswordData), isSubmit, JSON.stringify(schema)]);
+
+  const passwordFieldChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setChangePasswordData({ ...changePasswordData, [e.target.name]: e.target.value });
+  }, [changePasswordData]);
+
+  const [changePassword] = useChangePasswordMutation();
+
+  const { addSnackbar } = useSnackbar();
+
+  const onClose = useCallback(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
+  const handleChangePassword = () => {
+    setIsSubmit(true);
+    const fun = async () => {
+      const isValid = await schema.isValid(changePasswordData);
+      if (!isValid) return;
+      setLaunching(true);
+      const result = await changePassword(changePasswordData);
+      if ('data' in result) {
+        if (result.data.result === 'ERROR' && result.data.message) {
+          addSnackbar(result.data.message, { variant: 'error', onClose });
+        }
+        if (result.data.result === 'SUCCESS') {
+          addSnackbar('Пароль успешно изменен', { variant: 'success', onClose });
+          setChangePasswordData({});
+          setIsSubmit(false);
+          setErrors({});
+        }
+      }
+      setLaunching(false);
+    };
+    fun();
+  };
+
   return (
     <FormikProvider value={formik}>
       <Form id="securityTabForm" onSubmit={formik.handleSubmit}>
@@ -225,6 +306,48 @@ export default function SecurityTab() {
               </Tooltip>
             </Stack>
           </>}
+          {ticketsUser && < Stack spacing={2} style={{ maxWidth: '300px' }}>
+            <Typography variant="subtitle1">Смена пароля</Typography>
+            <PasswordTextField
+              disabled={launching}
+              required
+              name={'password'}
+              onChange={passwordFieldChange}
+              value={changePasswordData.password ?? ''}
+              label={'Старый пароль'}
+              error={!!error?.password}
+              helperText={error?.password}
+            />
+            <PasswordTextField
+              disabled={launching}
+              name={'newPassword'}
+              onChange={passwordFieldChange}
+              value={changePasswordData.newPassword ?? ''}
+              required
+              label={'Новый пароль'}
+              error={!!error?.newPassword}
+              helperText={error?.newPassword}
+            />
+            <PasswordTextField
+              disabled={launching}
+              name={'repeatPassword'}
+              onChange={passwordFieldChange}
+              value={changePasswordData.repeatPassword ?? ''}
+              required
+              label={'Повторите новый пароль'}
+              error={!!error?.repeatPassword}
+              helperText={error?.repeatPassword}
+            />
+            <div>
+              <Button
+                disabled={launching}
+                variant="contained"
+                onClick={handleChangePassword}
+              >
+                Сохранить
+              </Button>
+            </div>
+          </Stack>}
           <Stack spacing={2}>
             <Accordion defaultExpanded disableGutters>
               <AccordionSummary
@@ -367,6 +490,6 @@ export default function SecurityTab() {
           {memoCreateCode}
         </Stack>
       </Form>
-    </FormikProvider>
+    </FormikProvider >
   );
 }

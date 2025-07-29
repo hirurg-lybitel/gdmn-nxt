@@ -23,6 +23,7 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import { useGetCustomersQuery, customerApi } from '../../../features/customer/customerApi_new';
 import ReactMarkdown from 'react-markdown';
 import { TabContext, TabList } from '@mui/lab';
+import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
 
 interface ITicketChatProps {
 
@@ -174,7 +175,8 @@ export default function TicketChat(props: ITicketChatProps) {
     addMessages({
       ticketKey: Number(id),
       body: message,
-      state: stateChange
+      state: stateChange,
+      sendAt: new Date()
     });
     setMessage('');
     setFiles([]);
@@ -301,7 +303,8 @@ export default function TicketChat(props: ITicketChatProps) {
         ID: -1,
         name: '',
         code: 0
-      }
+      },
+      sendAt: new Date()
     };
   });
 
@@ -456,8 +459,12 @@ export default function TicketChat(props: ITicketChatProps) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0 }}>
                 <div style={{ width: '100%', position: 'relative' }}>
                   <TextField
+                    style={{
+                      opacity: tabIndex === '2' ? 0 : 1,
+                      visibility: tabIndex === '2' ? 'hidden' : 'visible'
+                    }}
                     disabled={isLoading}
-                    value={(tabIndex === '2' || files.length > 0) ? '' : message}
+                    value={(files.length > 0) ? '' : message}
                     onChange={(e) => setMessage(e.target.value)}
                     multiline
                     minRows={8}
@@ -469,7 +476,8 @@ export default function TicketChat(props: ITicketChatProps) {
                       backgroundColor: 'rgba(0, 0, 0, 0.1)', position: 'absolute',
                       inset: 0, opacity: tabIndex === '2' ? '1' : '0',
                       visibility: tabIndex === '2' ? 'visible' : 'hidden',
-                      padding: '8.5px 14px', lineHeight: 1.3
+                      padding: '8.5px 14px', lineHeight: 1.3, overflow: 'auto',
+                      borderRadius: 'var(--border-radius)', border: '1px solid var(--color-borders)'
                     }}
                   >
                     <ReactMarkdown>
@@ -604,7 +612,7 @@ interface IUserMessage extends ITicketMessage {
   isLoading: boolean;
 }
 
-const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
+const UserMessage = ({ isLoading, user, body: message, sendAt }: IUserMessage) => {
   const files: any = [];
 
   const avatar = useMemo(() => {
@@ -649,6 +657,17 @@ const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
           marginLeft: '10px'
         }}
       >
+        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px' }}>
+          <Typography variant="body2">{user.fullName}</Typography>
+          <Typography variant={'caption'}>
+            {(sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(sendAt)}>
+              <div>
+                {timeAgo(sendAt)}
+              </div>
+            </Tooltip>}
+          </Typography>
+        </div>
+        {!isLoading && <Divider />}
         <div style={{ background: 'var(--color-card-bg)' }}>
           {memoFiles}
         </div>
@@ -660,21 +679,6 @@ const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
           </div>
         </div>}
       </div>
-      {/* {message && <>
-        <div
-          style={{
-            height: '20px', width: '20px', position: 'absolute',
-            background: theme.palette.background.paper, zIndex: 1, borderRadius: '100%', bottom: '0px',
-            ...(senderMessage ? { left: '20px' } : { right: '20px' })
-          }}
-        />
-        <div
-          style={{
-            background: 'var(--color-card-bg)', position: 'absolute', height: '10px', bottom: '0', width: '30px',
-            ...(senderMessage ? { left: '32px' } : { right: '32px' })
-          }}
-        />
-      </>} */}
     </div>
   );
 };

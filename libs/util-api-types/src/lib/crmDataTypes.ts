@@ -721,6 +721,7 @@ export interface ITicketMessage extends IWithID {
   ticketKey: number,
   user: ICRMTicketUser & { type: 'empl' | 'user'; },
   state: ITicketState;
+  sendAt: Date;
 }
 
 export interface ICustomerTickets {
@@ -742,4 +743,11 @@ export interface ITicketUser extends IWithID {
   email?: string,
   phone?: string,
   isAdmin?: boolean;
+  oneTimePassword?: boolean;
+}
+
+export interface IChangePassword {
+  password?: string;
+  newPassword?: string,
+  repeatPassword?: string;
 }

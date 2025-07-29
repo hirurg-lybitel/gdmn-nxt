@@ -13,7 +13,7 @@ const common: IMenuItem = {
   children: [
     {
       id: 'tickets',
-      title: 'Тикеты',
+      title: 'Заявки',
       type: 'item',
       url: 'list',
       icon: <AssignmentOutlinedIcon color="secondary" />,
