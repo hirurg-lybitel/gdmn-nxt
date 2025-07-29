@@ -1,4 +1,4 @@
-import { Box, Chip, Divider, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState, } from 'react';
 import { ITicket } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
@@ -14,6 +14,7 @@ import styles from './tickets-edit.module.less';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import ReactMarkdown from 'react-markdown';
 import InfoIcon from '@mui/icons-material/Info';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -117,107 +118,139 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <EditDialog
+    <Dialog
+      maxWidth={false}
+      fullWidth
+      sx={{
+        '& .MuiPaper-root': {
+          height: '100%'
+        },
+        '& .MuiDialogContent-root': {
+          overflow: 'visible'
+        }
+      }}
       open={open}
       onClose={handleOnClose}
-      confirmation={formik.dirty}
-      title={(ticket && ticket?.ID) ? `Редактирование тикета: ${ticket.title}` : 'Создание тикета'}
-      form="mainForm"
-      onDeleteClick={handleDelete}
-      deleteConfirmTitle={'Удаление тикета'}
-      showDeleteButtonHintAnyway
     >
-      <FormikProvider value={formik}>
-        <Form
-          style={{ height: '100%', minWidth: 0 }}
-          id="mainForm"
-          onSubmit={formik.handleSubmit}
-        >
-          <Stack
-            direction="row"
-            flexDirection={'column'}
-            style={{ gap: '16px' }}
-            height="100%"
+      <DialogTitle>Создание заявки</DialogTitle>
+      <DialogContent >
+        <FormikProvider value={formik}>
+          <Form
+            style={{ height: '100%', minWidth: 0 }}
+            id="ticketAddForm"
+            onSubmit={formik.handleSubmit}
           >
-            <TextField
-              style={{ width: '100%' }}
-              label="Тема"
-              type="text"
-              required
-              autoFocus
-              name="title"
-              onChange={formik.handleChange}
-              value={formik.values.title}
-              error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
-              helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
-            />
-            <TabContext value={tabIndex}>
-              <Box>
-                <TabList onChange={handleTabsChange}>
-                  <Tab label="Изменение" value="1" />
-                  <Tab label="Просмотр" value="2" />
-                </TabList>
-                <Divider />
-              </Box>
-              <TabPanel
-                value="1"
-                className={styles.tabPanel}
-              >
-                <TextField
-                  className={styles.inputTextField}
-                  label="Описание"
-                  type="text"
-                  fullWidth
-                  required
-                  multiline
-                  rows={1}
-                  name="message"
-                  onChange={formik.handleChange}
-                  value={formik.values.message}
-                  error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
-                  helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
-                />
-
-              </TabPanel>
-              <TabPanel
-                value="2"
-                className={styles.tabPanel}
-              >
-                <div className={styles.preview}>
-                  <CustomizedScrollBox>
-                    <ReactMarkdown components={{ p: 'div' }}>
-                      {formik.values.message ?? ''}
-                    </ReactMarkdown>
-                  </CustomizedScrollBox>
-                </div>
-              </TabPanel>
-              <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
-                <a
-                  href="https://www.markdownguide.org/basic-syntax/"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ textDecoration: 'none' }}
+            <Stack
+              direction="row"
+              flexDirection={'column'}
+              style={{ gap: '16px' }}
+              height="100%"
+            >
+              <TextField
+                style={{ width: '100%' }}
+                label="Тема"
+                type="text"
+                required
+                autoFocus
+                name="title"
+                onChange={formik.handleChange}
+                value={formik.values.title}
+                error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
+                helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
+              />
+              <TabContext value={tabIndex}>
+                <Box>
+                  <TabList onChange={handleTabsChange}>
+                    <Tab label="Изменение" value="1" />
+                    <Tab label="Просмотр" value="2" />
+                  </TabList>
+                  <Divider />
+                </Box>
+                <TabPanel
+                  value="1"
+                  className={styles.tabPanel}
                 >
-                  <Chip
-                    icon={<InfoIcon />}
-                    label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
-                    variant="outlined"
-                    className={styles.info}
-                    style={{ border: 'none', cursor: 'pointer' }}
+                  <TextField
+                    className={styles.inputTextField}
+                    label="Сообщение"
+                    type="text"
+                    fullWidth
+                    required
+                    multiline
+                    rows={1}
+                    name="message"
+                    onChange={formik.handleChange}
+                    value={formik.values.message}
+                    error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
+                    helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
                   />
-                </a>
-              </Tooltip>
-            </TabContext>
-            {/* <Dropzone
+
+                </TabPanel>
+                <TabPanel
+                  value="2"
+                  className={styles.tabPanel}
+                >
+                  <div className={styles.preview}>
+                    <CustomizedScrollBox>
+                      <ReactMarkdown components={{ p: 'div' }}>
+                        {formik.values.message ?? ''}
+                      </ReactMarkdown>
+                    </CustomizedScrollBox>
+                  </div>
+                </TabPanel>
+                <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
+                  <a
+                    href="https://www.markdownguide.org/basic-syntax/"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Chip
+                      icon={<InfoIcon />}
+                      label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
+                      variant="outlined"
+                      className={styles.info}
+                      style={{ border: 'none', cursor: 'pointer' }}
+                    />
+                  </a>
+                </Tooltip>
+              </TabContext>
+              {/* <Dropzone
               maxFileSize={maxFileSize}
               filesLimit={maxFilesCount}
               showPreviews
               onChange={attachmentsChange}
             /> */}
-          </Stack>
-        </Form>
-      </FormikProvider>
-    </EditDialog>
+            </Stack>
+          </Form>
+        </FormikProvider>
+      </DialogContent>
+      <Divider />
+      <DialogActions style={{ padding: '12px 24px' }}>
+        <div >
+          <ButtonWithConfirmation
+            className={styles.button}
+            variant="outlined"
+            onClick={handleOnClose}
+            title={'Внимание'}
+            text={'Изменения будут утеряны. Продолжить?'}
+            confirmation={formik.dirty}
+          >
+            Отменить
+          </ButtonWithConfirmation>
+        </div>
+        <div >
+          <Button
+            className={styles.button}
+            type="submit"
+            form={'ticketAddForm'}
+            variant="contained"
+          >
+            Сохранить
+          </Button>
+        </div>
+      </DialogActions>
+    </Dialog>
   );
 }
 

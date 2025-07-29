@@ -103,7 +103,7 @@ export function TicketsUsers(props: TicketsCustomersProps) {
   const companyKey = useSelector<RootState, number>(state => state.user.userProfile?.companyKey ?? -1);
   const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 });
 
-  const [addUser] = useAddTicketUserMutation();
+  const [addUser, { isLoading }] = useAddTicketUserMutation();
   const [deleteUser, { isLoading: deleteUserIsLoading }] = useDeleteTicketUserMutation();
 
   const users = useMemo(() => {
@@ -192,10 +192,13 @@ export function TicketsUsers(props: TicketsCustomersProps) {
     setSortingData(sortModel.length > 0 ? { ...sortModel[0] } : null);
   }, []);
 
-  const handleSubmit = useCallback((values: ITicketUser, isDelete: boolean) => {
-    setOpenEditForm(false);
-    if (isDelete) return;
-    addUser(values);
+  const handleSubmit = useCallback(async (values: ITicketUser, isDelete: boolean) => {
+    if (isDelete) return { error: {} };
+    const result = await addUser(values);
+    if ('data' in result) {
+      setOpenEditForm(false);
+    }
+    return result;
   }, [addUser]);
 
   const memoEdit = useMemo(() => {
@@ -206,9 +209,10 @@ export function TicketsUsers(props: TicketsCustomersProps) {
         user={user ?? null}
         onCancel={() => setOpenEditForm(false)}
         onSubmit={handleSubmit}
+        isLoading={isLoading}
       />
     );
-  }, [company, currentOrganization, handleSubmit, openEditForm, users]);
+  }, [company, currentOrganization, handleSubmit, isLoading, openEditForm, users]);
 
   return (
     <>
@@ -241,7 +245,7 @@ export function TicketsUsers(props: TicketsCustomersProps) {
           onRefetch={usersRefetch}
           addButton
           onAddClick={() => setOpenEditForm(true)}
-          addButtonHint="Создать клиента"
+          addButtonHint="Создать ответственного"
         />
         <Divider />
         <CardContent

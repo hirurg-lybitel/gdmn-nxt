@@ -1,11 +1,11 @@
-import { IUser, IRequestResult } from '@gsbelarus/util-api-types';
+import { IUser, IRequestResult, IChangePassword, IAuthResult } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
 type UsersResponse = IUser[];
-type IUsersRequestResult = IRequestResult<{ users: IUser[] }>;
+type IUsersRequestResult = IRequestResult<{ users: IUser[]; }>;
 
-type IUserRequestResult = IRequestResult<{ user: IUser }>;
+type IUserRequestResult = IRequestResult<{ user: IUser; }>;
 
 export const systemUsers = createApi({
   reducerPath: 'systemUsers',
@@ -31,11 +31,19 @@ export const systemUsers = createApi({
           ? [{ type: 'Users', id: result?.ID }, { type: 'Users', id: 'LIST' }]
           : [{ type: 'Users', id: 'LIST' }],
     }),
+    changePassword: builder.mutation<IAuthResult, IChangePassword>({
+      query: (body) => ({
+        url: 'user/change-password',
+        body: body,
+        method: 'POST'
+      })
+    }),
   })
 });
 
 
 export const {
   useGetUsersQuery,
-  useGetUserQuery
+  useGetUserQuery,
+  useChangePasswordMutation
 } = systemUsers;

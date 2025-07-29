@@ -99,6 +99,7 @@ export type IEmployee = IContactWithID;
 export interface IProfileSettings {
   AVATAR?: string | null;
   RANK?: string;
+  FULLNAME?: string;
   COLORMODE?: ColorMode;
   LASTVERSION?: string;
   EMAIL?: string;

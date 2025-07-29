@@ -435,13 +435,17 @@ const addToTickets = async (
           </div>
         </div>`;
 
-    await sendEmail({
-      from: 'Тикет система',
-      to: body.email,
-      subject: 'Учетная запись',
-      html: messageText,
-      options: { ...smtpOpt }
-    });
+    try {
+      await sendEmail({
+        from: 'Тикет система',
+        to: body.email,
+        subject: 'Учетная запись',
+        html: messageText,
+        options: { ...smtpOpt }
+      });
+    } catch (error) {
+      console.error(error);
+    }
 
     return newCustomer;
   } catch (error) {

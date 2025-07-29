@@ -31,16 +31,14 @@ const find: FindHandler<ITicketUser> = async (
     const sql = `
       SELECT
         f.ID,
-        CASE
-          WHEN f.USR$ONE_TIME_PASSWORD = 1 THEN f.USR$PASSWORD
-          ELSE NULL
-        END AS USR$PASSWORD,
+        f.USR$PASSWORD,
         f.USR$COMPANYKEY,
         f.USR$FULLNAME,
         f.USR$USERNAME,
         f.USR$EMAIL,
         f.USR$PHONE,
-        f.USR$ISADMIN
+        f.USR$ISADMIN,
+        USR$ONE_TIME_PASSWORD
       FROM USR$CRM_USER f
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
@@ -63,7 +61,8 @@ const find: FindHandler<ITicketUser> = async (
         ...(type === UserType.Gedemin ? { userName: data['USR$USERNAME'] } : {}),
         email: data['USR$EMAIL'],
         phone: data['USR$PHONE'],
-        isAdmin: data['USR$ISADMIN'] === 1
+        isAdmin: data['USR$ISADMIN'] === 1,
+        oneTimePassword: data['USR$ONE_TIME_PASSWORD'] === 1
       };
     }));
 

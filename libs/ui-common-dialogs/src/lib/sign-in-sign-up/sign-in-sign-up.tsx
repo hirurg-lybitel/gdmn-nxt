@@ -350,9 +350,6 @@ export function SignInSignUp({
             }
             {bottomDecorator?.(stage)}
           </Stack>
-          <Link href={ticketsLogin ? '/' : 'tickets/login'} style={{ position: 'absolute', bottom: '-35px' }}>
-            {ticketsLogin ? 'Вход в CRM систему' : 'Вход в тикет систему'}
-          </Link>
         </div>
       );
     };
