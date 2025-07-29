@@ -182,7 +182,7 @@ export function TicketsList(props: ticketsListProps) {
     );
   }, [filteringData, handleOnFilterChange, states, statesIsFetching, statesIsLoading]);
 
-  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: !isAdmin });
+  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
   const openerSelect = useMemo(() => {
     return (
@@ -192,7 +192,7 @@ export function TicketsList(props: ticketsListProps) {
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
         field={'userId'}
-        label={'Поставновщик'}
+        label={'Постановщик'}
         getOptionLabel={(option) => option.fullName}
         getReturnedValue={(value) => value?.ID}
         sx={{ width: '100%', minWidth: '200px', flex: 1, maxWidth: '300px' }}
@@ -337,16 +337,16 @@ export function TicketsList(props: ticketsListProps) {
       {memoEdit}
       <CustomizedCard style={{ width: '100%' }}>
         <CustomCardHeader
-          title={'Тикеты'}
+          title={ticketsUser ? 'Заявки' : 'Тикеты'}
           addButton={ticketsUser}
-          addButtonHint="Создать тикет"
+          addButtonHint={'Создать заявку'}
           onAddClick={() => setOpenEdit(true)}
           onRefetch={refetch}
           refetch
           isLoading={isLoading || companyIsLoading}
           isFetching={isFetching || companyIsFetching}
           search
-          searchPlaceholder="Поиск тикета"
+          searchPlaceholder={ticketsUser ? 'Поиск заявки' : 'Поиск тикета'}
           onCancelSearch={handleCancelSearch}
           onRequestSearch={handleRequestSearch}
           searchValue={filteringData?.name?.[0]}
