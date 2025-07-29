@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "prod": "set NODE_ENV=production && node dist/apps/gdmn-nxt-server/main.js",
-    "start:dev": "yarn docker:redis && dotenv -c dev -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
+    "start:dev": "yarn docker:redis && yarn docker:minio && dotenv -c dev -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web",
     "start:prod": "yarn docker:redis && dotenv -c prod -- yarn nx run-many --parallel --target=serve --projects=gdmn-nxt-server,gdmn-nxt-web --prod",
     "build": "dotenv -c prod -- yarn nx run-many --target=build --all --parallel --prod",
     "test": "yarn nx run-many --target=test --all --parallel",
@@ -16,6 +16,7 @@
     "docker:build": "docker compose -f docker-compose.build.yml --env-file .env --env-file .env.prod up -d --build",
     "docker:run": "docker compose -f docker-compose.run.yml --env-file .env --env-file .env.prod up -d",
     "docker:redis": "yarn docker:run redis",
+    "docker:minio": "yarn docker:run minio",
     "docker:network": "docker network create proxy_network",
     "prepare": "husky",
     "lint-staged": "lint-staged --relative"
@@ -77,6 +78,7 @@
     "lusca": "^1.7.0",
     "marked": "^5.1.1",
     "memorystore": "^1.6.6",
+    "minio": "^8.0.5",
     "mustache": "^4.2.0",
     "nested-sets-tree": "^2.0.0",
     "node-firebird-driver-native": "^3.2.0",

@@ -1,12 +1,27 @@
 version: '3.8'
 
 services:
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ./minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - proxy_network
+
   redis:
     image: redis
     container_name: session-store
     restart: always
     ports:
-      - "6379:6379"
+      - '6379:6379'
     networks:
       - proxy_network
 
@@ -30,9 +45,9 @@ services:
         condition: service_started
     container_name: crm_server
     ports:
-      - "${NX_SERVER_PORT}:${NX_SERVER_PORT}"
-      - "${NX_SOCKET_NOTIFICATIONS_PORT}:${NX_SOCKET_NOTIFICATIONS_PORT}"
-      - "${NX_SOCKET_STREAMING_UPDATE_PORT}:${NX_SOCKET_STREAMING_UPDATE_PORT}"
+      - '${NX_SERVER_PORT}:${NX_SERVER_PORT}'
+      - '${NX_SOCKET_NOTIFICATIONS_PORT}:${NX_SOCKET_NOTIFICATIONS_PORT}'
+      - '${NX_SOCKET_STREAMING_UPDATE_PORT}:${NX_SOCKET_STREAMING_UPDATE_PORT}'
     volumes:
       - type: bind
         source: ssl
@@ -45,7 +60,6 @@ services:
       - TZ=Europe/Minsk
     networks:
       - proxy_network
-
 networks:
   proxy_network:
     external: true
