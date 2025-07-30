@@ -1,8 +1,9 @@
+import { forEachAsync } from './../../../../../../../libs/util-helpers/src/lib/loops';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ITicketMessage, SaveHandler, UserType } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ITicketMessage, ITicketMessageFile, SaveHandler, UserType } from '@gsbelarus/util-api-types';
 import { bin2String } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-
+import { buckets, getBase64MinioFile, minioClient, putBase64MinioFile } from '@gdmn/minio';
 const find: FindHandler<ITicketMessage> = async (
   sessionID,
   clause = {},
@@ -72,10 +73,24 @@ const find: FindHandler<ITicketMessage> = async (
 
     const result = await fetchAsObject<any>(sql, params);
 
+    const getFilesById = async (id: string) => {
+      const filesNames = await fetchAsObject<any>(`
+        SELECT
+          USR$NAME
+        FROM USR$CRM_TICKETFILE
+        WHERE USR$TICKETRECKEY = ?
+        `, [id]);
+
+      const files = await Promise.all(filesNames.map(async (file) => {
+        return await getBase64MinioFile(buckets.ticketMessages, file['USR$NAME']);
+      }));
+
+      return files;
+    };
+
     const messages: ITicketMessage[] = await Promise.all(result.map(async (data) => {
       const avatarBlob = await getStringFromBlob(attachment, transaction, data['AVATAR']);
       const avatar = bin2String(avatarBlob.split(','));
-
 
       return {
         ID: data['ID'],
@@ -93,7 +108,8 @@ const find: FindHandler<ITicketMessage> = async (
           ID: data['STATEID'],
           name: data['STATE_NAME'],
           code: data['STATE_CODE']
-        }
+        },
+        files: await getFilesById(data['ID'])
       };
     }));
 
@@ -124,7 +140,7 @@ const save: SaveHandler<ITicketMessageSave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
 
-  const { ticketKey, body, state, userId } = metadata;
+  const { ticketKey, body, state, userId, files } = metadata;
 
   const fieldName = type === UserType.Tickets ? 'USR$CUSTOMER_AUTHORKEY' : 'USR$SUPPORT_AUTHORKEY';
 
@@ -142,6 +158,40 @@ const save: SaveHandler<ITicketMessageSave> = async (
         SENDER: userId
       }
     );
+
+    const renameDuplicates = (files: ITicketMessageFile[]) => {
+      const names = {};
+      return files.map(item => {
+        const name = item.fileName;
+        if (!names[name]) {
+          names[name] = 1;
+          return item;
+        } else {
+          const lastDot = name.lastIndexOf('.');
+          const baseName = lastDot !== -1 ? name.slice(0, lastDot) : name;
+          const extension = lastDot !== -1 ? name.slice(lastDot) : '';
+
+          const newName = `${baseName} (${names[name]}) ${extension}`;
+          names[name]++;
+          return { ...item, fileName: newName };
+        }
+      });
+    };
+
+    await Promise.all(renameDuplicates(files).map(async (file) => {
+      await fetchAsSingletonObject<ITicketMessageSave>(
+        `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME)
+          VALUES(:TICKETRECKEY, :NAME)
+          RETURNING ID
+        `,
+        {
+          TICKETRECKEY: message?.ID,
+          NAME: file.fileName,
+        }
+      );
+
+      return await putBase64MinioFile(buckets.ticketMessages, file.fileName, file.content, file.size);
+    }));
 
     await releaseTransaction();
 

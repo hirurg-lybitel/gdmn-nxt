@@ -716,11 +716,18 @@ export interface ITicket extends IWithID {
   files?: File[];
 }
 
+export interface ITicketMessageFile {
+  fileName: string;
+  size: number;
+  content: string;
+}
+
 export interface ITicketMessage extends IWithID {
   body: string,
   ticketKey: number,
   user: ICRMTicketUser & { type: 'empl' | 'user'; },
   state: ITicketState;
+  files?: ITicketMessageFile[];
 }
 
 export interface ICustomerTickets {

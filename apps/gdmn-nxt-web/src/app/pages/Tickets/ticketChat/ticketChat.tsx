@@ -1,10 +1,9 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, Divider, IconButton, Skeleton, Stack, Tab, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
-import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,44 +11,39 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketMessage, ITicketState, UserType } from '@gsbelarus/util-api-types';
-import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import { ICRMTicketUser, ITicketMessage, ITicketMessageFile, ITicketState, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { useGetCustomersQuery, customerApi } from '../../../features/customer/customerApi_new';
 import ReactMarkdown from 'react-markdown';
-import { TabContext, TabList } from '@mui/lab';
+import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
+import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 
 interface ITicketChatProps {
 
 }
 
-interface IFIle {
-  file: File;
-  size: number;
-  name: string;
-}
-
 const maxFileSize = 4 * 1024 * 1024; // 4MB
 const maxFilesCount = 10;
 
-const FilesView = ({ files, onDelete }: { files: IFIle[], onDelete?: (index: number) => void; }) => {
+const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageFile[], onDelete?: (index: number) => void, maxWidth?: number; }) => {
   const theme = useTheme();
+
+  const { imageDialog, openImage } = useImageDialog();
 
   type FileGroup = {
     type: 'image' | 'file';
-    files: IFIle[];
+    files: ITicketMessageFile[];
   };
   const sortedFiles = (() => {
     const result: FileGroup[] = [];
     let currentGroup: FileGroup | null = null;
 
     for (const file of files) {
-      const fileType = file.file.type.startsWith('image/') ? 'image' : 'file';
+      const fileType = file.content.startsWith('data:image') ? 'image' : 'file';
 
       if (!currentGroup || currentGroup.type !== fileType) {
         currentGroup = { type: fileType, files: [file] };
@@ -61,76 +55,76 @@ const FilesView = ({ files, onDelete }: { files: IFIle[], onDelete?: (index: num
 
     return result;
   })();
-  return sortedFiles.map(({ files, type }, index) => {
-    const [columns, style] = (() => {
-      const count = files.length;
-      if (count === 1) return ['1fr', (reverseIndex: number) => ({ height: '250px' })];
-      return ['1fr 1fr', (reverseIndex: number) => ((count % 2 !== 0 && reverseIndex === 1) ? { height: '250px', gridColumn: '1 / -1' } : { height: '150px' })];
-    })();
-
-    if (type === 'image') {
-      return (
-        <div
-          key={index}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: columns,
-            gap: '4px'
-          }}
-        >
-          {files.map((file, index2) => {
-            const url = URL.createObjectURL(file.file);
-            return (
-              <div key={index + index2} style={{ background: 'white', ...style(files.length - index2) }}>
-                <div
-                  style={{
-                    backgroundImage: `url(${url})`, display: 'flex', justifyContent: 'flex-end', height: '100%', width: '100%',
-                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'
-                  }}
-                >
-                  <div >
-                    <div style={{ background: 'rgb(0 0 0 / 40%)' }}>
-                      {onDelete && <IconButton color="secondary" onClick={() => onDelete(index + index2)}>
-                        <DeleteIcon />
-                      </IconButton>}
+  return (
+    <>
+      {imageDialog}
+      {sortedFiles.map(({ files, type }, index) => {
+        if (type === 'image') {
+          return (
+            <div
+              key={index}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '4px',
+                maxWidth: `${maxWidth * files.length}px`
+              }}
+            >
+              {files.map((file, index2) => {
+                return (
+                  <div key={index + index2} style={{ background: 'white', height: '200px', minWidth: '200px', flex: 1, maxWidth: `${maxWidth}px` }}>
+                    <div
+                      onClick={() => openImage(file.content)}
+                      style={{
+                        backgroundImage: `url(${file.content})`, display: 'flex', justifyContent: 'flex-end',
+                        backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                        height: '100%', width: '100%', cursor: 'pointer'
+                      }}
+                    >
+                      <div >
+                        <div style={{ background: 'rgb(0 0 0 / 40%)' }}>
+                          {onDelete && <IconButton color="secondary" onClick={() => onDelete(index + index2)}>
+                            <DeleteIcon />
+                          </IconButton>}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                );
+              })}
+            </div >
+          );
+        }
+        return files.map((file, index2) => {
+          return (
+            <div key={index + index2} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div
+                style={{
+                  background: theme.palette.primary.main, borderRadius: '100%', height: '40px',
+                  width: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}
+              >
+                <InsertDriveFileIcon />
               </div>
-            );
-          })}
-        </div >
-      );
-    }
-    return files.map((file, index2) => {
-      return (
-        <div key={index + index2} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            style={{
-              background: theme.palette.primary.main, borderRadius: '100%', height: '40px',
-              width: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center'
-            }}
-          >
-            <InsertDriveFileIcon />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography>
-              {file.name}
-            </Typography>
-            <Typography variant="caption">
-              {(file.size / 1024 / 1024).toFixed(1)} МБ
-            </Typography>
-          </div>
-          <div style={{ flex: 1 }} />
-          {onDelete && <div>
-            <IconButton color="error" onClick={() => onDelete(index + index2)}>
-              <DeleteIcon />
-            </IconButton>
-          </div>}
-        </div>
-      );
-    });
-  });
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography>
+                  {file.fileName}
+                </Typography>
+                <Typography variant="caption">
+                  {(file.size / 1024 / 1024).toFixed(1)} МБ
+                </Typography>
+              </div>
+              <div style={{ flex: 1 }} />
+              {onDelete && <div>
+                <IconButton color="error" onClick={() => onDelete(index + index2)}>
+                  <DeleteIcon />
+                </IconButton>
+              </div>}
+            </div>
+          );
+        });
+      })}
+    </>);
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -167,18 +161,19 @@ export default function TicketChat(props: ITicketChatProps) {
   const [shiftHold, setShiftHold] = useState(false);
 
   const [message, setMessage] = useState('');
-  const [files, setFiles] = useState<IFIle[]>([]);
+  const [files, setFiles] = useState<ITicketMessageFile[]>([]);
 
   const handleSend = useCallback(() => {
     if ((message.trim() === '' && files.length === 0) || !id) return;
     addMessages({
       ticketKey: Number(id),
       body: message,
-      state: stateChange
+      state: stateChange,
+      files: files
     });
     setMessage('');
     setFiles([]);
-  }, [addMessages, files.length, id, message, stateChange]);
+  }, [addMessages, files, id, message, stateChange]);
 
   useEffect(() => {
     const keydown = (e: KeyboardEvent) => {
@@ -213,11 +208,28 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    fileInputRef.current.value = '';
     if (!file || file.size > maxFileSize) return;
 
-    const data = { file: file, size: file.size, name: file.name };
-    setFiles([...files, data]);
+    fileInputRef.current.value = '';
+
+    const reader = new FileReader();
+    const attachment: ITicketMessageFile = await new Promise((resolve, reject) => {
+      reader.readAsDataURL(file);
+      reader.onerror = () => {
+        reader.abort();
+        reject(new DOMException('Problem parsing input file.'));
+      };
+      reader.onloadend = (e) => {
+        const stringFile = reader.result?.toString() ?? '';
+        resolve({
+          fileName: file.name,
+          size: file.size,
+          content: stringFile
+        });
+      };
+    });
+
+    setFiles([...files, attachment]);
   };
 
   const handleRemoveFile = useCallback((index: number) => {
@@ -243,49 +255,63 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const fileFialog = useMemo(() => {
     return (
-      <Dialog open={files.length > 0}>
-        <div style={{ padding: '16px', paddingTop: '8px', minWidth: '400px', maxHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+      <Dialog
+        fullWidth
+        maxWidth={false}
+        open={files.length > 0}
+        sx={{
+          '& .MuiPaper-root': {
+            height: '100%'
+          }
+        }}
+      >
+        <DialogTitle>
           <Typography variant="h6">
             Отправка файлов
           </Typography>
-          <div
-            style={{
-              flexGrow: 1, overflowY: 'auto',
-              margin: '16px 0px', display: 'flex', flexDirection: 'column', gap: '8px'
-            }}
-          >
-            {memoFiles}
-          </div>
-          <div>
-            <TextField
-              variant="standard"
-              label="Сообщение"
-              fullWidth
-              multiline
-              maxRows={6}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-          </div>
-          <div style={{ display: 'flex', gap: '16px', paddingTop: '16px' }}>
-            <Button
-              style={{ height: '100%' }}
-              disabled={files.length === maxFilesCount}
-              onClick={uploadClick}
+        </DialogTitle>
+        <DialogContent>
+          <div style={{ padding: '16px', paddingTop: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div
+              style={{
+                overflowY: 'auto', maxHeight: '40%', height: 'fit-content',
+                margin: '16px 0px', display: 'flex', flexDirection: 'column', gap: '8px',
+
+              }}
             >
-              Добавить
-            </Button>
-            <div style={{ flex: 1 }} />
-            <Button style={{ height: '100%' }} onClick={() => setFiles([])}>
-              Отмена
-            </Button>
-            <Button variant="contained" onClick={handleSend}>
-              Отправить
-            </Button>
+              {memoFiles}
+            </div>
+            <div style={{ flex: 1 }}>
+              <MarkdownTextfield
+                disabled={isLoading}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                fullHeight
+              />
+            </div>
           </div>
-        </div>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            style={{ height: '100%' }}
+            disabled={files.length === maxFilesCount}
+            onClick={uploadClick}
+          >
+            Добавить
+          </Button>
+          <div style={{ flex: 1 }} />
+          <Button style={{ height: '100%' }} onClick={() => setFiles([])}>
+            Отмена
+          </Button>
+          <Button variant="contained" onClick={handleSend}>
+            Отправить
+          </Button>
+        </DialogActions>
+
       </Dialog >
     );
-  }, [files.length, memoFiles, handleSend]);
+  }, [files.length, memoFiles, isLoading, message, handleSend]);
 
   const fakeMessages: ITicketMessage[] = Array.from({ length: 4 }, (_, index) => {
     return {
@@ -310,10 +336,6 @@ export default function TicketChat(props: ITicketChatProps) {
     navigate(url);
   }, [navigate, ticketsUser]);
 
-  const handleClose = useCallback(() => {
-    updateTicket({ ...ticket, closeAt: new Date(), needCall: false });
-  }, [ticket, updateTicket]);
-
   const rightButton = useMemo(() => {
     if (closed) return;
     if (ticketsUser) {
@@ -332,35 +354,7 @@ export default function TicketChat(props: ITicketChatProps) {
       );
     }
     return;
-    return (
-      <MenuBurger
-        disabled={isLoading}
-        items={({ closeMenu }) => [
-          <Confirmation
-            key="delete"
-            title="Завершение тикета"
-            text={'Завершить тикет? Изменение нельзя будет отменить.'}
-            dangerous
-            onConfirm={() => {
-              closeMenu();
-              handleClose();
-            }}
-            onClose={closeMenu}
-          >
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={1}
-              sx={(theme) => ({ color: theme.palette.primary.main })}
-            >
-              <TaskAltIcon color="primary" fontSize="small" />
-              <span>Завершить</span>
-            </Stack>
-          </Confirmation>,
-        ]}
-      />
-    );
-  }, [closed, handleClose, handleRequestCall, isLoading, ticket?.needCall, ticketsUser]);
+  }, [closed, handleRequestCall, isLoading, ticket?.needCall, ticketsUser]);
 
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
@@ -436,49 +430,18 @@ export default function TicketChat(props: ITicketChatProps) {
                 />)}
               </div>
             </div>
-            {!closed && <div>
+            {!closed && <>
               <Divider />
-              <TabContext value={tabIndex}>
-                <TabList
-                  style={{ paddingLeft: '24px' }}
-                  onChange={handleTabsChange}
-                >
-                  <Tab
-                    label="Изменение"
-                    value="1"
-                  />
-                  <Tab
-                    label="Просмотр"
-                    value="2"
-                  />
-                </TabList>
-              </TabContext>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0 }}>
-                <div style={{ width: '100%', position: 'relative' }}>
-                  <TextField
-                    disabled={isLoading}
-                    value={(tabIndex === '2' || files.length > 0) ? '' : message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    multiline
-                    minRows={8}
-                    maxRows={20}
-                    fullWidth
-                  />
-                  <Box
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.1)', position: 'absolute',
-                      inset: 0, opacity: tabIndex === '2' ? '1' : '0',
-                      visibility: tabIndex === '2' ? 'visible' : 'hidden',
-                      padding: '8.5px 14px', lineHeight: 1.3
-                    }}
-                  >
-                    <ReactMarkdown>
-                      {message}
-                    </ReactMarkdown>
-                  </Box>
-                </div>
+                <MarkdownTextfield
+                  disabled={isLoading}
+                  value={files.length > 0 ? '' : message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  minRows={8}
+                  maxRows={20}
+                />
                 <div style={{ display: 'flex', width: '100%' }}>
-                  {/* <div>
+                  <div>
                     <input
                       style={{ display: 'none' }}
                       type="file"
@@ -488,27 +451,25 @@ export default function TicketChat(props: ITicketChatProps) {
                     <Tooltip title={'Прикрепить файл'}>
                       <IconButton
                         color="primary"
-                        disabled
                         onClick={uploadClick}
                       >
                         <AttachFileIcon />
                       </IconButton>
                     </Tooltip>
-                  </div> */}
+                  </div>
                   <div style={{ flex: 1 }} />
-                  <Tooltip title={'Отправить'}>
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      disabled={!message || isLoading}
-                      onClick={handleSend}
-                    >
-                      Отправить
-                    </Button>
-                  </Tooltip>
+                  <Button
+                    style={{ width: '120px', textTransform: 'none' }}
+                    color="primary"
+                    variant="contained"
+                    disabled={!message || isLoading}
+                    onClick={handleSend}
+                  >
+                    Отправить
+                  </Button>
                 </div>
               </div>
-            </div>
+            </>
             }
           </div>
         </CardContent>
@@ -604,9 +565,7 @@ interface IUserMessage extends ITicketMessage {
   isLoading: boolean;
 }
 
-const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
-  const files: any = [];
-
+const UserMessage = ({ isLoading, user, body: message, files }: IUserMessage) => {
   const avatar = useMemo(() => {
     if (isLoading) {
       return (
@@ -649,7 +608,7 @@ const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
           marginLeft: '10px'
         }}
       >
-        <div style={{ background: 'var(--color-card-bg)' }}>
+        <div style={{ display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px', borderRadius: '14px', overflow: 'hidden' }}>
           {memoFiles}
         </div>
         {message && <div style={{ padding: '5px 10px' }}>
@@ -660,21 +619,6 @@ const UserMessage = ({ isLoading, user, body: message }: IUserMessage) => {
           </div>
         </div>}
       </div>
-      {/* {message && <>
-        <div
-          style={{
-            height: '20px', width: '20px', position: 'absolute',
-            background: theme.palette.background.paper, zIndex: 1, borderRadius: '100%', bottom: '0px',
-            ...(senderMessage ? { left: '20px' } : { right: '20px' })
-          }}
-        />
-        <div
-          style={{
-            background: 'var(--color-card-bg)', position: 'absolute', height: '10px', bottom: '0', width: '30px',
-            ...(senderMessage ? { left: '32px' } : { right: '32px' })
-          }}
-        />
-      </>} */}
     </div>
   );
 };
