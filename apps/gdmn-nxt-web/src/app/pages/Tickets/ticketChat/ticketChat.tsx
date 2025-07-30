@@ -21,6 +21,7 @@ import { useGetCustomersQuery, customerApi } from '../../../features/customer/cu
 import ReactMarkdown from 'react-markdown';
 import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
+import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
 
 interface ITicketChatProps {
 
@@ -169,6 +170,7 @@ export default function TicketChat(props: ITicketChatProps) {
       ticketKey: Number(id),
       body: message,
       state: stateChange,
+      sendAt: new Date(),
       files: files
     });
     setMessage('');
@@ -327,7 +329,8 @@ export default function TicketChat(props: ITicketChatProps) {
         ID: -1,
         name: '',
         code: 0
-      }
+      },
+      sendAt: new Date()
     };
   });
 
@@ -565,7 +568,7 @@ interface IUserMessage extends ITicketMessage {
   isLoading: boolean;
 }
 
-const UserMessage = ({ isLoading, user, body: message, files }: IUserMessage) => {
+const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMessage) => {
   const avatar = useMemo(() => {
     if (isLoading) {
       return (
@@ -608,6 +611,17 @@ const UserMessage = ({ isLoading, user, body: message, files }: IUserMessage) =>
           marginLeft: '10px'
         }}
       >
+        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px' }}>
+          <Typography variant="body2">{user.fullName}</Typography>
+          <Typography variant={'caption'}>
+            {(sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(sendAt)}>
+              <div>
+                {timeAgo(sendAt)}
+              </div>
+            </Tooltip>}
+          </Typography>
+        </div>
+        {!isLoading && <Divider />}
         <div style={{ display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px', borderRadius: '14px', overflow: 'hidden' }}>
           {memoFiles}
         </div>

@@ -5,25 +5,28 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { emailValidation, passwordValidation } from '@gdmn-nxt/helpers/validators';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import * as yup from 'yup';
-import { Chip, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { Chip, Stack, TextField, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
-import VisibilityOnIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import InfoIcon from '@mui/icons-material/Info';
 import { generatePassword } from '@gsbelarus/util-useful';
+import { ITicketUserRequestResult } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsApi';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query';
+import { SerializedError } from '@reduxjs/toolkit';
 
 export interface CustomerEditProps {
   open: boolean;
   user: ITicketUser | null;
-  onSubmit: (values: ITicketUser, isDelete: boolean) => void;
+  onSubmit: (values: ITicketUser, isDelete: boolean) => Promise<{ data: ITicketUserRequestResult; } | { error: FetchBaseQueryError | SerializedError; }>;
   onCancel: () => void;
+  isLoading: boolean;
 }
 
 export function TicketsUserEdit({
   open,
   user,
   onSubmit,
-  onCancel
+  onCancel,
+  isLoading
 }: Readonly<CustomerEditProps>) {
   const initValue: ITicketUser = useMemo(() => ({
     ID: -1,
@@ -62,9 +65,11 @@ export function TicketsUserEdit({
           ({ value }) => validatePhoneNumber(value) ?? '',
           (value = '') => !validatePhoneNumber(value))
     }),
-    onSubmit: (values) => {
-      onSubmit(values, false);
-      formik.resetForm();
+    onSubmit: async (values) => {
+      const result = await onSubmit(values, false);
+      if ('data' in result) {
+        formik.resetForm();
+      }
     },
   });
 
@@ -86,6 +91,7 @@ export function TicketsUserEdit({
       form={'ticketsUserAddForm'}
       title={'Добавление ответственного'}
       confirmation={formik.dirty}
+      submitButtonDisabled={isLoading}
     >
       <FormikProvider value={formik}>
         <Form
@@ -159,29 +165,13 @@ export function TicketsUserEdit({
                   name="password"
                   onChange={formik.handleChange}
                   value={formik.values.password}
-                  // InputProps={{
-                  //   endAdornment: (
-                  //     <InputAdornment position="end">
-                  //       <IconButton
-                  //         onClick={() => setShowPassword(!showPassword)}
-                  //         edge="end"
-                  //         sx={{
-                  //           opacity: 0.7,
-                  //           '&:hover': { opacity: 1 }
-                  //         }}
-                  //       >
-                  //         {showPassword ? <VisibilityOnIcon /> : <VisibilityOffIcon />}
-                  //       </IconButton>
-                  //     </InputAdornment>
-                  //   ),
-                  // }}
                   error={!!formik.errors.password}
                   helperText={formik.errors.password}
                 />
               </div>
               <Chip
                 icon={<InfoIcon />}
-                label={'После создания, изменение и просмотр данных буду недоступны'}
+                label={'После создания, изменение данных будет недоступно'}
                 variant="outlined"
                 className={styles.info}
                 style={{ border: 'none', cursor: 'pointer' }}

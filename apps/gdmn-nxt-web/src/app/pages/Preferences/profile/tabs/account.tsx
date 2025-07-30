@@ -1,13 +1,16 @@
 import EditableAvatar from '@gdmn-nxt/components/editable-avatar/editable-avatar';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
-import { Box, Button, Stack, TextField, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack, TextField, useMediaQuery, useTheme } from '@mui/material';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from 'apps/gdmn-nxt-web/src/app/features/profileSettings';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
-import { IProfileSettings } from '@gsbelarus/util-api-types';
+import { IProfileSettings, UserType } from '@gsbelarus/util-api-types';
 import useObjectsComparator from '@gdmn-nxt/helpers/hooks/useObjectsComparator';
-import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import { RootState } from '@gdmn-nxt/store';
+import { useSelector } from 'react-redux';
+import * as yup from 'yup';
+import { emailValidation } from '@gdmn-nxt/helpers/validators';
 
 export default function AccountTab() {
   const userProfile = useUserData();
@@ -21,6 +24,10 @@ export default function AccountTab() {
     initialValues: {
       ...settings
     },
+    validationSchema: yup.object().shape({
+      FULLNAME: yup.string().required(),
+      EMAIL: emailValidation()
+    }),
     onSubmit: (values) => {
       setSettings({
         userId: userProfile?.id ?? -1,
@@ -43,6 +50,8 @@ export default function AccountTab() {
   const theme = useTheme();
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+
   return (
     <FormikProvider value={formik}>
       <Form id="accountTabForm" onSubmit={formik.handleSubmit}>
@@ -60,21 +69,25 @@ export default function AccountTab() {
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
                   label="Имя"
-                  value={userProfile?.fullName || ''}
-                  disabled
+                  value={formik.values.FULLNAME || ''}
+                  disabled={!ticketsUser}
+                  name="FULLNAME"
                   fullWidth
+                  onChange={formik.handleChange}
                   inputProps={{
                     style: {
                       textTransform: 'capitalize'
                     }
                   }}
+                  helperText={getIn(formik.touched, 'FULLNAME') && getIn(formik.errors, 'FULLNAME')}
+                  error={getIn(formik.touched, 'FULLNAME') && Boolean(getIn(formik.errors, 'FULLNAME'))}
                 />
-                <TextField
+                {!ticketsUser && <TextField
                   label="Должность"
                   value={settings?.RANK || ''}
                   disabled
                   fullWidth
-                />
+                />}
               </Stack>
               <EmailInput
                 disabled={isLoading}

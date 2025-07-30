@@ -19,7 +19,7 @@ export const ERROR_MESSAGES = {
   DELETE_FAILED: 'Ошибка при удалении записи',
   PASSWORDS_MUST_MATCH: 'Пароли не сопадают',
   INVALID_OLD_PASSWORD: 'Неверный пароль',
-  PASSWORDS_MATCH: 'Старый и новый пароль не должны совпадать'
+  PASSWORDS_MATCH: 'Новый пароль должен отличатся от старого'
 };
 
 export const SUCCESS_MESSAGES = {
