@@ -5,13 +5,19 @@ const password = process.env['MINIO_ROOT_PASSWORD'];
 const minioHost = process.env['MINIO_HOST'] ?? 'minio';
 const minioPort = Number(process.env['MINIO_PORT'] ?? '9000');
 
-export const minioClient = new Client({
-  endPoint: minioHost,
-  port: minioPort,
-  useSSL: false,
-  accessKey: user,
-  secretKey: password,
-});
+export const minioClient = (() => {
+  if (!user || !password) {
+    console.error('необходимо указать MINIO_ROOT_USER и MINIO_ROOT_PASSWORD в .env для работы minio');
+    return;
+  }
+  return new Client({
+    endPoint: minioHost,
+    port: minioPort,
+    useSSL: false,
+    accessKey: user,
+    secretKey: password,
+  });
+})();
 
 export enum buckets {
   ticketMessages = 'crm-ticket-messages'
@@ -19,11 +25,13 @@ export enum buckets {
 
 async function initBuckets() {
   try {
+    if (!minioClient) {
+      throw new Error('minioClient не определен');
+    };
     for (const bucketName of Object.values(buckets)) {
-
-      const exists = await minioClient.bucketExists(bucketName);
+      const exists = await minioClient?.bucketExists(bucketName);
       if (!exists) {
-        await minioClient.makeBucket(bucketName);
+        await minioClient?.makeBucket(bucketName);
         console.log(`✅ Bucket ${bucketName} created`);
       } else {
         console.log(`📦 Bucket ${bucketName} already exists`);
@@ -46,16 +54,19 @@ export const putBase64MinioFile = async (bucket: buckets, path: string, file: st
 
   const buffer = Buffer.from(base64Data, 'base64');
 
-  return await minioClient.putObject(bucket, path, buffer, size, {
+  return await minioClient?.putObject(bucket, path, buffer, size, {
     'Content-Type': mimeType
   });
 };
 
 export const getBase64MinioFile = async (bucket: buckets, path: string) => {
   try {
-    const stat = await minioClient.statObject(bucket, path);
-    if (!stat) throw new Error('File not found');
-    const stream = await minioClient.getObject(bucket, path);
+    if (!minioClient) {
+      throw new Error('minioClient не определен');
+    };
+    const stat = await minioClient?.statObject(bucket, path);
+    if (!stat) throw new Error('Файл не найден');
+    const stream = await minioClient?.getObject(bucket, path);
     const mimeType = stat.metaData['content-type'] || 'application/octet-stream';
 
     const chunks: Buffer[] = [];
@@ -74,5 +85,6 @@ export const getBase64MinioFile = async (bucket: buckets, path: string) => {
     };
   } catch (err) {
     console.error(`getBase64MinioFile: ${err}`);
+    return;
   }
 };;
