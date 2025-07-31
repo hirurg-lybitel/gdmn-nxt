@@ -8,15 +8,19 @@ import useObjectsComparator from '@gdmn-nxt/helpers/hooks/useObjectsComparator';
 import EmailInput from '@gdmn-nxt/components/email-input/email-input';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { RootState } from '@gdmn-nxt/store';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
 import { emailValidation } from '@gdmn-nxt/helpers/validators';
+import TelephoneInput from '@gdmn-nxt/components/telephone-input';
+import { ticketsApi } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsApi';
 
 export default function AccountTab() {
   const userProfile = useUserData();
   const compareObjects = useObjectsComparator();
   const { data: settings, isLoading } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
   const [setSettings, { isLoading: updateIsLoading }] = useSetProfileSettingsMutation();
+
+  const dispatch = useDispatch();
 
   const formik = useFormik<IProfileSettings>({
     enableReinitialize: true,
@@ -28,14 +32,17 @@ export default function AccountTab() {
       FULLNAME: yup.string().required(),
       EMAIL: emailValidation()
     }),
-    onSubmit: (values) => {
-      setSettings({
+    onSubmit: async (values) => {
+      await setSettings({
         userId: userProfile?.id ?? -1,
         body: {
           ...settings,
           ...values
         }
       });
+      if (settings?.PHONE !== values.PHONE) {
+        dispatch(ticketsApi.util.invalidateTags(['users']));
+      }
     },
   });
 
@@ -89,14 +96,45 @@ export default function AccountTab() {
                   fullWidth
                 />}
               </Stack>
-              <EmailInput
-                disabled={isLoading}
-                name="EMAIL"
-                onChange={formik.handleChange}
-                value={formik.values.EMAIL ?? ''}
-                helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
-                error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
-              />
+              {ticketsUser ? <Box sx={{ display: 'flex', gap: '16px', flexDirection: { lg: 'row', xs: 'column' } }}>
+                <div style={{ flex: 1 }}>
+                  <EmailInput
+                    disabled={isLoading}
+                    name="EMAIL"
+                    fullWidth
+                    onChange={formik.handleChange}
+                    value={formik.values.EMAIL ?? ''}
+                    helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+                    error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <TelephoneInput
+                    name="PHONE"
+                    label="Телефон"
+                    value={formik.values.PHONE ?? ''}
+                    onChange={(value: string) => {
+                      formik.setFieldValue('PHONE', value);
+                    }}
+                    fullWidth
+                    fixedCode
+                    strictMode
+                    required
+                    helperText={getIn(formik.touched, 'PHONE') && getIn(formik.errors, 'PHONE')}
+                    error={getIn(formik.touched, 'PHONE') && Boolean(getIn(formik.errors, 'PHONE'))}
+                  />
+                </div>
+              </Box>
+                :
+                <EmailInput
+                  disabled={isLoading}
+                  name="EMAIL"
+                  onChange={formik.handleChange}
+                  value={formik.values.EMAIL ?? ''}
+                  helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
+                  error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
+                />
+              }
             </Stack>
           </Stack>
           <Box flex={1} />

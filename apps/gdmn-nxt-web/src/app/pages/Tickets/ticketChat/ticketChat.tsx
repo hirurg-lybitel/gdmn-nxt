@@ -1,9 +1,8 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { ticketsApi, useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,7 +10,7 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketMessage, ITicketMessageFile, ITicketState, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -23,6 +22,8 @@ import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import PhoneDialog from './phoneDialog';
+import { profileSettingsApi, useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
 
 interface ITicketChatProps {
 
@@ -178,6 +179,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const [message, setMessage] = useState('');
   const [files, setFiles] = useState<ITicketMessageFile[]>([]);
+  const dispatch = useDispatch();
 
   const handleSend = useCallback(() => {
     if ((message.trim() === '' && files.length === 0) || !id) return;
@@ -400,25 +402,35 @@ export default function TicketChat(props: ITicketChatProps) {
     navigate(url);
   }, [navigate, ticketsUser]);
 
-  const rightButton = useMemo(() => {
-    if (closed) return;
-    if (ticketsUser) {
-      return (
-        <Tooltip title={isLoading ? '' : ticket?.needCall ? 'Запрошен звонок' : 'Запросить звонок'}>
-          <div>
-            <IconButton
-              onClick={handleRequestCall}
-              disabled={isLoading || ticket?.needCall}
-              color="primary"
-            >
-              <LocalPhoneIcon />
-            </IconButton>
-          </div>
-        </Tooltip>
-      );
-    }
-    return;
-  }, [closed, handleRequestCall, isLoading, ticket?.needCall, ticketsUser]);
+  const userProfile = useSelector<RootState, IUserProfile | undefined>(state => state.user.userProfile);
+  const { data: settings, isFetching: profileIsFetching } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
+  const [setSettings, { isLoading: updateProfileIsLoading }] = useSetProfileSettingsMutation();
+
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+
+  const handleOpenPhoneDialog = useCallback(() => {
+    setPhoneDialogOpen(true);
+  }, []);
+
+  const handleClosePhoneDialog = useCallback(() => {
+    setPhoneDialogOpen(false);
+  }, []);
+
+  const handleSavePhone = useCallback(async (value: string) => {
+    setPhoneDialogOpen(false);
+    if (!settings || !userProfile?.id) return;
+    await setSettings({ userId: userProfile?.id, body: { ...settings, PHONE: value } });
+    dispatch(ticketsApi.util.invalidateTags(['users']));
+    dispatch(profileSettingsApi.util.invalidateTags(['settings']));
+  }, [dispatch, setSettings, settings, userProfile?.id]);
+
+  const memoPhoneDialog = useMemo(() => (
+    <PhoneDialog
+      open={phoneDialogOpen}
+      onClose={handleClosePhoneDialog}
+      onSubmit={handleSavePhone}
+    />
+  ), [handleClosePhoneDialog, handleSavePhone, phoneDialogOpen]);
 
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
@@ -426,7 +438,27 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
-  const dispatch = useDispatch();
+  const rightButton = useMemo(() => {
+    if (closed || ticket?.sender.ID !== userProfile?.id) return;
+    if (ticketsUser) {
+      const currentUser = users?.users.find((user) => user.ID === userProfile?.id);
+      return (
+        <Tooltip title={isLoading ? '' : ticket?.needCall ? 'Запрошен звонок' : ''}>
+          <div>
+            <Button
+              variant="contained"
+              onClick={currentUser?.phone ? handleRequestCall : handleOpenPhoneDialog}
+              disabled={isLoading || ticket?.needCall || !currentUser || updateProfileIsLoading || profileIsFetching}
+              color="primary"
+            >
+              Запросить звонок
+            </Button>
+          </div>
+        </Tooltip>
+      );
+    }
+    return;
+  }, [closed, handleOpenPhoneDialog, handleRequestCall, isLoading, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userProfile?.id, users?.users]);
 
   const handleUpdateStatus = useCallback(async (value: ITicketState | null) => {
     if (!value) return;
@@ -438,6 +470,7 @@ export default function TicketChat(props: ITicketChatProps) {
   return (
     <>
       {fileFialog}
+      {memoPhoneDialog}
       <CustomizedCard style={{ width: '100%' }}>
         <div style={{ display: 'flex', padding: '8px 10px', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>
