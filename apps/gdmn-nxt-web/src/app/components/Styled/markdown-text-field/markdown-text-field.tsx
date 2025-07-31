@@ -21,7 +21,7 @@ type IMarkdownTextfieldProps = TextFieldProps & {
 };
 
 export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
-  const { containerStyle, fullHeight = false, smallHintBreakpoint = 'md', fileUpload = false, onLoadFiles, maxFileSize, filesLimit, ...rest } = props;
+  const { containerStyle, fullHeight = false, smallHintBreakpoint = 'md', fileUpload = false, onLoadFiles, maxFileSize, filesLimit, maxTotalFilesSize, ...rest } = props;
   const [tab, setTab] = useState('1');
 
   const theme = useTheme();
@@ -87,6 +87,7 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
           fullHeight={fullHeight}
           maxFileSize={maxFileSize}
           filesLimit={filesLimit}
+          maxTotalFilesSize={maxTotalFilesSize}
         >
           {textField}
         </Container>
@@ -98,7 +99,7 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
             visibility: tab === '2' ? 'visible' : 'hidden',
             padding: '8.5px 14px', lineHeight: 1.3, wordWrap: 'break-word',
             borderRadius: 'var(--border-radius)', border: '1px solid var(--color-borders)',
-            '& > :first-child': {
+            '& > :first-of-type': {
               marginTop: 0
             },
             '& > :last-of-type': {
@@ -124,7 +125,7 @@ interface IContainerProps {
   maxTotalFilesSize?: number;
 }
 
-const Container = ({ children, fullHeight, onChange, maxFileSize = 5000000, filesLimit, maxTotalFilesSize }: IContainerProps) => {
+const Container = ({ children, fullHeight, onChange, maxFileSize, filesLimit, maxTotalFilesSize }: IContainerProps) => {
   const [fileObjects, setFileObjects] = useState<FileObject[]>([]);
 
   useEffect(() => {

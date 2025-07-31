@@ -194,7 +194,7 @@ export function TicketsList(props: ticketsListProps) {
         handleOnFilterChange={handleOnFilterChange}
         field={'userId'}
         label={'Постановщик'}
-        getOptionLabel={(option) => option.fullName}
+        getOptionLabel={(option) => option.fullName ?? option.userName ?? ''}
         getReturnedValue={(value) => value?.ID}
         sx={{ width: '100%', minWidth: '200px', flex: 1, maxWidth: '300px' }}
       />
@@ -382,7 +382,7 @@ export function TicketsList(props: ticketsListProps) {
             pagination
             paginationMode="server"
             paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-            rowCount={data?.count}
+            rowCount={data?.count ?? 0}
             pageSizeOptions={[10, 20, 50]}
             onPaginationModelChange={(data: any) => {
               setPaginationData((prevState) => ({

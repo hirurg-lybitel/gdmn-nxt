@@ -568,7 +568,7 @@ export default function TicketChat(props: ITicketChatProps) {
           loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
           loadingText="Загрузка данных..."
           options={states ?? []}
-          value={ticket?.state ?? null}
+          value={states?.find((state) => state.ID === ticket?.state.ID) ?? null}
           getOptionLabel={(option) => option.name}
           onChange={(e, value) => handleUpdateStatus(value)}
           sx={{
@@ -690,7 +690,7 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
           <Box
             sx={{
               opacity: isLoading ? 0 : 1, wordBreak: 'break-word',
-              '& > :first-child': {
+              '& > :first-of-type': {
                 marginTop: 0
               },
               '& > :last-of-type': {
