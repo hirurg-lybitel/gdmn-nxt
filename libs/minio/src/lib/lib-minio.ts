@@ -14,7 +14,7 @@ export const minioClient = new Client({
 });
 
 export enum buckets {
-  ticketMessages = 'ticket-messages'
+  ticketMessages = 'crm-ticket-messages'
 };
 
 async function initBuckets() {
