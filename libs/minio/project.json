@@ -1,31 +1,31 @@
 {
   "name": "lib-minio",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/lib/minio/src",
+  "sourceRoot": "libs/minio/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/lib/minio",
-        "main": "libs/lib/minio/src/index.ts",
-        "tsConfig": "libs/lib/minio/tsconfig.lib.json",
-        "assets": ["libs/lib/minio/*.md"]
+        "outputPath": "dist/libs/minio",
+        "main": "libs/minio/src/index.ts",
+        "tsConfig": "libs/minio/tsconfig.lib.json",
+        "assets": ["libs/minio/*.md"]
       }
     },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/lib/minio/**/*.ts"]
+        "lintFilePatterns": ["libs/minio/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/lib/minio/jest.config.ts",
+        "jestConfig": "libs/minio/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {
