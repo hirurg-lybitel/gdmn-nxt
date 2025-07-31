@@ -27,13 +27,25 @@
 
 .active {
   animation: progress 2s linear infinite !important;
-  background-image: repeating-linear-gradient(-45deg, var(--color-card-bg), var(--color-card-bg)  25px, var(--color-paper-bg) 25px, var(--color-paper-bg) 50px);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-card-bg),
+    var(--color-card-bg) 25px,
+    var(--color-paper-bg) 25px,
+    var(--color-paper-bg) 50px
+  );
   background-size: 150% 100%;
   border: solid;
 }
 
 .invalid {
-  background-image: repeating-linear-gradient(-45deg, #e57373, #e57373 25px, #d32f2f 25px, #d32f2f 50px);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #e57373,
+    #e57373 25px,
+    #d32f2f 25px,
+    #d32f2f 50px
+  );
   border-color: var(--color-error);
 }
 
@@ -44,9 +56,9 @@
 
 @keyframes progress {
   0% {
-    background-position: 0 0,
+    background-position: 0 0;
   }
   100% {
-    background-position: -70px 0,
+    background-position: -70px 0;
   }
 }

@@ -5,7 +5,7 @@ import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
@@ -22,83 +22,98 @@ import ReactMarkdown from 'react-markdown';
 import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
+import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 
 interface ITicketChatProps {
 
 }
 
-const maxFileSize = 4 * 1024 * 1024; // 4MB
+const maxFileSize = 5000000;
 const maxFilesCount = 10;
 
 const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageFile[], onDelete?: (index: number) => void, maxWidth?: number; }) => {
   const theme = useTheme();
 
+  const handleDelete = (index: number) => (e: MouseEvent) => {
+    e.stopPropagation();
+    onDelete && onDelete(index);
+  };
+
   const { imageDialog, openImage } = useImageDialog();
 
-  type FileGroup = {
-    type: 'image' | 'file';
-    files: ITicketMessageFile[];
+  type IFile = ITicketMessageFile & {
+    index: number;
   };
-  const sortedFiles = (() => {
-    const result: FileGroup[] = [];
-    let currentGroup: FileGroup | null = null;
 
-    for (const file of files) {
-      const fileType = file.content.startsWith('data:image') ? 'image' : 'file';
-
-      if (!currentGroup || currentGroup.type !== fileType) {
-        currentGroup = { type: fileType, files: [file] };
-        result.push(currentGroup);
+  const [imageFiles, binaryFiles] = (() => {
+    const images: IFile[] = [];
+    const binary: IFile[] = [];
+    files.forEach((file, index) => {
+      if (file.content.startsWith('data:image')) {
+        images.push({ ...file, index });
       } else {
-        currentGroup.files.push(file);
+        binary.push({ ...file, index });
       }
-    }
-
-    return result;
+    });
+    return [images, binary];
   })();
+
   return (
     <>
       {imageDialog}
-      {sortedFiles.map(({ files, type }, index) => {
-        if (type === 'image') {
-          return (
-            <div
-              key={index}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '4px',
-                maxWidth: `${maxWidth * files.length}px`
-              }}
-            >
-              {files.map((file, index2) => {
-                return (
-                  <div key={index + index2} style={{ background: 'white', height: '200px', minWidth: '200px', flex: 1, maxWidth: `${maxWidth}px` }}>
-                    <div
-                      onClick={() => openImage(file.content)}
-                      style={{
-                        backgroundImage: `url(${file.content})`, display: 'flex', justifyContent: 'flex-end',
-                        backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
-                        height: '100%', width: '100%', cursor: 'pointer'
-                      }}
-                    >
-                      <div >
-                        <div style={{ background: 'rgb(0 0 0 / 40%)' }}>
-                          {onDelete && <IconButton color="secondary" onClick={() => onDelete(index + index2)}>
-                            <DeleteIcon />
-                          </IconButton>}
-                        </div>
-                      </div>
+      {imageFiles.length > 0 && <div style={{ width: '100%', background: 'rgb(0 0 0 / 10%)', overflow: 'hidden', borderRadius: 'var(--border-radius)' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '4px',
+            maxWidth: `${maxWidth * imageFiles.length}px`
+          }}
+        >
+          {imageFiles.map((file) => {
+            return (
+              <div key={file.index} style={{ background: 'white', height: '200px', minWidth: '200px', flex: 1, maxWidth: `${maxWidth}px` }}>
+                <div
+                  onClick={() => openImage(file.content)}
+                  style={{
+                    backgroundImage: `url(${file.content})`, display: 'flex', justifyContent: 'flex-end',
+                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                    height: '100%', width: '100%', cursor: 'pointer'
+                  }}
+                >
+                  <div >
+                    <div style={{ background: 'rgb(0 0 0 / 40%)' }}>
+                      {onDelete && <IconButton color="secondary" onClick={handleDelete(file.index)}>
+                        <DeleteIcon />
+                      </IconButton>}
                     </div>
                   </div>
-                );
-              })}
-            </div >
-          );
-        }
-        return files.map((file, index2) => {
-          return (
-            <div key={index + index2} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>}
+      {binaryFiles.map((file) => {
+        return (
+          <a
+            key={file.index}
+            href={file.content}
+            download={file.fileName}
+            style={{ color: 'inherit', textDecoration: 'none' }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                borderRadius: '20px 7px 7px 20px',
+                '&:hover': {
+                  background: 'rgb(0 0 0 / 10%)'
+                },
+                cursor: 'pointer'
+              }}
+            >
               <div
                 style={{
                   background: theme.palette.primary.main, borderRadius: '100%', height: '40px',
@@ -116,14 +131,14 @@ const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageF
                 </Typography>
               </div>
               <div style={{ flex: 1 }} />
-              {onDelete && <div>
-                <IconButton color="error" onClick={() => onDelete(index + index2)}>
+              {onDelete && <div style={{ paddingRight: '5px' }}>
+                <IconButton color="error" onClick={handleDelete(file.index)}>
                   <DeleteIcon />
                 </IconButton>
               </div>}
-            </div>
-          );
-        });
+            </Box>
+          </a>
+        );
       })}
     </>);
 };
@@ -234,14 +249,6 @@ export default function TicketChat(props: ITicketChatProps) {
     setFiles([...files, attachment]);
   };
 
-  const handleRemoveFile = useCallback((index: number) => {
-    const newFiles = [...files];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
-  }, [files]);
-
-  const memoFiles = useMemo(() => <FilesView files={files} onDelete={handleRemoveFile} />, [files, handleRemoveFile]);
-
   const { addSnackbar } = useSnackbar();
 
   const handleRequestCall = useCallback(async () => {
@@ -254,6 +261,57 @@ export default function TicketChat(props: ITicketChatProps) {
   }, [ticket, updateTicket]);
 
   const classes = useStyles();
+
+  const attachmentsChange = useCallback(async (files: File[]) => {
+    const promises = files.map(file => {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.readAsDataURL(file);
+        reader.onerror = () => {
+          reader.abort();
+          reject(new DOMException('Problem parsing input file.'));
+        };
+        reader.onloadend = (e) => {
+          const stringFile = reader.result?.toString() ?? '';
+          resolve({
+            fileName: file.name,
+            size: file.size,
+            content: stringFile
+          });
+        };
+      });
+    });
+
+    const attachments = await Promise.all(promises);
+    if (JSON.stringify(files) === JSON.stringify(attachments)) {
+      return;
+    }
+    setFiles(attachments as ITicketMessageFile[]);
+  }, []);
+
+  const initialAttachments = useMemo(() => {
+    return files.reduce((res, { fileName, content }) => {
+      if (!content) {
+        return res;
+      }
+
+      const arr = content.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+
+      const binarystr = window.atob(arr[1]);
+      let n = binarystr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = binarystr.charCodeAt(n);
+      };
+
+      const file = new File([u8arr], fileName, { type: mime });
+      return [...res, file];
+    }, [] as File[]);
+  }, [files]);
+
+  console.log(files);
 
   const fileFialog = useMemo(() => {
     return (
@@ -273,15 +331,23 @@ export default function TicketChat(props: ITicketChatProps) {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <div style={{ padding: '16px', paddingTop: '8px', minWidth: '400px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
             <div
               style={{
-                overflowY: 'auto', maxHeight: '40%', height: 'fit-content',
-                margin: '16px 0px', display: 'flex', flexDirection: 'column', gap: '8px',
-
+                overflowY: 'auto', maxHeight: '250px', height: 'fit-content',
+                margin: '16px 0px', display: 'flex', flexDirection: 'column', gap: '8px'
               }}
             >
-              {memoFiles}
+              <Dropzone
+                maxFileSize={maxFileSize}
+                filesLimit={maxFilesCount}
+                maxTotalFilesSize={maxFileSize}
+                showPreviews
+                heightFitContent
+                disableSnackBar
+                initialFiles={initialAttachments}
+                onChange={attachmentsChange}
+              />
             </div>
             <div style={{ flex: 1 }}>
               <MarkdownTextfield
@@ -289,31 +355,28 @@ export default function TicketChat(props: ITicketChatProps) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 fullHeight
+                rows={1}
               />
             </div>
           </div>
         </DialogContent>
         <Divider />
-        <DialogActions>
-          <Button
-            style={{ height: '100%' }}
-            disabled={files.length === maxFilesCount}
-            onClick={uploadClick}
-          >
-            Добавить
-          </Button>
+        <DialogActions style={{ padding: '12px 24px' }}>
           <div style={{ flex: 1 }} />
-          <Button style={{ height: '100%' }} onClick={() => setFiles([])}>
+          <Button sx={{ width: '120px', textDecoration: 'none' }} onClick={() => setFiles([])}>
             Отмена
           </Button>
-          <Button variant="contained" onClick={handleSend}>
+          <Button
+            sx={{ width: '120px', textDecoration: 'none' }}
+            variant="contained"
+            onClick={handleSend}
+          >
             Отправить
           </Button>
         </DialogActions>
-
       </Dialog >
     );
-  }, [files.length, memoFiles, isLoading, message, handleSend]);
+  }, [files.length, initialAttachments, attachmentsChange, isLoading, message, handleSend]);
 
   const fakeMessages: ITicketMessage[] = Array.from({ length: 4 }, (_, index) => {
     return {
@@ -364,12 +427,6 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
   const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
-
-  const [tabIndex, setTabIndex] = useState('1');
-
-  const handleTabsChange = (event: any, newindex: string) => {
-    setTabIndex(newindex);
-  };
 
   const dispatch = useDispatch();
 
@@ -437,11 +494,17 @@ export default function TicketChat(props: ITicketChatProps) {
               <Divider />
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0 }}>
                 <MarkdownTextfield
+                  placeholder="Сообщение"
                   disabled={isLoading}
                   value={files.length > 0 ? '' : message}
                   onChange={(e) => setMessage(e.target.value)}
+                  onLoadFiles={attachmentsChange}
                   minRows={8}
                   maxRows={20}
+                  fileUpload
+                  maxFileSize={maxFileSize}
+                  filesLimit={maxFilesCount}
+                  maxTotalFilesSize={maxFileSize}
                 />
                 <div style={{ display: 'flex', width: '100%' }}>
                   <div>
@@ -465,7 +528,7 @@ export default function TicketChat(props: ITicketChatProps) {
                     style={{ width: '120px', textTransform: 'none' }}
                     color="primary"
                     variant="contained"
-                    disabled={!message || isLoading}
+                    disabled={!message || isLoading || files.length > 0}
                     onClick={handleSend}
                   >
                     Отправить
@@ -594,7 +657,7 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
 
   const theme = useTheme();
 
-  const memoFiles = useMemo(() => files && <FilesView files={files} />, [files]);
+  const memoFiles = useMemo(() => (files && files?.length > 0) && <FilesView files={files} />, [files]);
 
   return (
     <div
@@ -606,7 +669,7 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
       {avatar}
       <div
         style={{
-          background: 'var(--color-card-bg)', borderRadius: '14px',
+          background: 'var(--color-card-bg)', borderRadius: 'var(--border-radius)',
           zIndex: 1, width: '100%', overflow: 'hidden',
           marginLeft: '10px'
         }}
@@ -622,17 +685,27 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
           </Typography>
         </div>
         {!isLoading && <Divider />}
-        <div style={{ display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px', borderRadius: '14px', overflow: 'hidden' }}>
+        {memoFiles && <div style={{ display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px', borderRadius: 'var(--border-radius)', overflow: 'hidden' }}>
           {memoFiles}
-        </div>
+        </div>}
         {message && <div style={{ padding: '5px 10px' }}>
-          <div style={{ opacity: isLoading ? 0 : 1, wordBreak: 'break-word' }}>
+          <Box
+            sx={{
+              opacity: isLoading ? 0 : 1, wordBreak: 'break-word',
+              '& > :first-child': {
+                marginTop: 0
+              },
+              '& > :last-of-type': {
+                marginBottom: 0
+              }
+            }}
+          >
             <ReactMarkdown>
               {message}
             </ReactMarkdown>
-          </div>
+          </Box>
         </div>}
       </div>
-    </div>
+    </div >
   );
 };

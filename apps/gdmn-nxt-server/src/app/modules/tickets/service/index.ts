@@ -112,10 +112,11 @@ const createTicket = async (
         body: body.message,
         ticketKey: ticket.ID,
         state: ticket.state,
-        sendAt: ticket.openAt
+        sendAt: ticket.openAt,
+        files: body.files
       },
       type,
-      true
+      true,
     );
 
     cachedRequets.cacheRequest('customers');
