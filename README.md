@@ -9,7 +9,7 @@
  - установить yarn:
  ```
  npm install --global yarn
- ``` 
+ ```
  - установить все необходимые зависимости для проекта, перейдя в корневой каталог и запустив:
  ```
  yarn
@@ -24,8 +24,17 @@
      ```
       yarn docker:redis
      ```
+ - запустить minio сервер:
+    * для запуска с конигурацией из .env.prod
+    ```
+     yarn docker:minio:prod
+    ```
+    * для запуска с конигурацией из .env.dev
+    ```
+     yarn docker:minio:dev
+    ```
  - запустить проект:
-    * в режиме разработчика 
+    * в режиме разработчика
      ```
      yarn start:dev
      ```
@@ -59,7 +68,7 @@ yarn docker:run
 - `proxy` для обработки сетевых запросов
 - `session-store` для хранения пользовательских сессий
 - `crm_client` и `crm_server`
-  
+
 ![image](https://github.com/user-attachments/assets/482b733b-adf7-4027-ba23-94d4cde6354f)
 
 

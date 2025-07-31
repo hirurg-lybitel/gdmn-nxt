@@ -83,8 +83,11 @@ const find: FindHandler<ITicketMessage> = async (
         WHERE USR$TICKETRECKEY = ?
         `, [id]);
 
-      const files = await Promise.all(filesNames.map(async (file) => {
-        return await getBase64MinioFile(buckets.ticketMessages, file['USR$NAME']);
+      const files = [];
+
+      await Promise.all(filesNames.map(async (fileInfo) => {
+        const file = await getBase64MinioFile(buckets.ticketMessages, fileInfo['USR$NAME']);
+        if (file) files.push(file);
       }));
 
       return files;

@@ -42,8 +42,6 @@ const origin = process.env.NODE_ENV === 'production'
 
 const redisHost = process.env.NODE_ENV === 'production' ? 'session-store' : '127.0.0.1';
 
-const minioHost = process.env.NODE_ENV === 'production' ? 'session-store' : '127.0.0.1';
-
 export const config: IConfig = {
   host,
   appPort,
