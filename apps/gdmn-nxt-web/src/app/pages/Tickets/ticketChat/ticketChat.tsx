@@ -311,8 +311,6 @@ export default function TicketChat(props: ITicketChatProps) {
     }, [] as File[]);
   }, [files]);
 
-  console.log(files);
-
   const fileFialog = useMemo(() => {
     return (
       <Dialog
