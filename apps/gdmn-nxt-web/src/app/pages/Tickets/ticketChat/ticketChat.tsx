@@ -592,7 +592,7 @@ export default function TicketChat(props: ITicketChatProps) {
           loading={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
           loadingText="Загрузка данных..."
           options={customersResponse?.data ?? []}
-          value={ticket?.company ?? null}
+          value={customersResponse?.data.find(customer => customer.ID === ticket?.company.ID) ?? null}
           getOptionLabel={(option) => option?.FULLNAME ?? option?.NAME}
           renderInput={(params) => (
             <TextField

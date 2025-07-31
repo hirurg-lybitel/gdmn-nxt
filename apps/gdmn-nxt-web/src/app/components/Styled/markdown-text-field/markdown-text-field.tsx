@@ -204,7 +204,7 @@ const Container = ({ children, fullHeight, onChange, maxFileSize, filesLimit, ma
           <Box
             className={`${isActive ? styles.active : ''}`}
             {...getRootProps()}
-            onClick={() => { }}
+            onClick={undefined}
             style={{
               height: fullHeight ? '100%' : undefined
             }}
