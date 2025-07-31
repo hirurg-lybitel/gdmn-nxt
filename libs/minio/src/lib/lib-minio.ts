@@ -87,4 +87,4 @@ export const getBase64MinioFile = async (bucket: buckets, path: string) => {
     console.error(`getBase64MinioFile: ${err}`);
     return;
   }
-};;
+};
