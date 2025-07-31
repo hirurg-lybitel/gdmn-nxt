@@ -5,16 +5,6 @@ const password = process.env['MINIO_ROOT_PASSWORD'];
 const minioHost = process.env['MINIO_HOST'] ?? 'minio';
 const minioPort = Number(process.env['MINIO_PORT'] ?? '9000');
 
-console.log(
-  {
-    endPoint: minioHost,
-    port: minioPort,
-    useSSL: false,
-    accessKey: user,
-    secretKey: password,
-  }
-);
-
 export const minioClient = new Client({
   endPoint: minioHost,
   port: minioPort,

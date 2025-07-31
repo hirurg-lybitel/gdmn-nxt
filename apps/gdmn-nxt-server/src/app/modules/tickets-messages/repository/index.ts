@@ -1,9 +1,8 @@
-import { forEachAsync } from './../../../../../../../libs/util-helpers/src/lib/loops';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { FindHandler, FindOneHandler, FindOperator, ITicketMessage, ITicketMessageFile, SaveHandler, UserType } from '@gsbelarus/util-api-types';
 import { bin2String } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-import { buckets, getBase64MinioFile, minioClient, putBase64MinioFile } from '@gdmn/minio';
+import { buckets, getBase64MinioFile, putBase64MinioFile } from '@gdmn/minio';
 const find: FindHandler<ITicketMessage> = async (
   sessionID,
   clause = {},
