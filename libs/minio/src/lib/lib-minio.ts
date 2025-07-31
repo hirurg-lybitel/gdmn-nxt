@@ -1,14 +1,15 @@
 import { Client } from 'minio';
 
-const user = process.env.MINIO_ROOT_USER;
-const password = process.env.MINIO_ROOT_PASSWORD;
-const host = process.env.NX_SERVER_HOST;
-const isProduction = process.env.NODE_ENV === 'production';
+const user = process.env['MINIO_ROOT_USER'];
+const password = process.env['MINIO_ROOT_PASSWORD'];
+const isProduction = process.env['NODE_ENV'] === 'production';
+const minioHost = isProduction ? 'session-store' : '127.0.0.1';
+const minioPort = 9000;
 
 export const minioClient = new Client({
-  endPoint: host,
-  port: isProduction ? 443 : 9000,
-  useSSL: isProduction,
+  endPoint: minioHost,
+  port: minioPort,
+  useSSL: false,
   accessKey: user,
   secretKey: password,
 });
