@@ -18,7 +18,7 @@ export interface ITicketEditProps {
   onCancelClick: () => void;
 };
 
-const maxFileSize = 5000000; // 4MB
+const maxFileSize = 5000000; // 5MB
 const maxFilesCount = 10;
 
 export function TicketEdit(props: Readonly<ITicketEditProps>) {
