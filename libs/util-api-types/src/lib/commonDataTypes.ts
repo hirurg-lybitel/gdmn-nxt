@@ -111,6 +111,7 @@ export interface IProfileSettings {
   LAST_IP?: string;
   SAVEFILTERS?: boolean;
   ONE_TIME_PASSWORD?: boolean;
+  PHONE?: string;
 }
 
 export interface ISystemSettings extends IWithID {

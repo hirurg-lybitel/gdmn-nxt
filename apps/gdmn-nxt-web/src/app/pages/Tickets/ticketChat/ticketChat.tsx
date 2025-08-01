@@ -1,97 +1,100 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, Divider, IconButton, Skeleton, Stack, Tab, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
-import SendIcon from '@mui/icons-material/Send';
+import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketMessage, ITicketState, UserType } from '@gsbelarus/util-api-types';
-import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import { ICRMTicketUser, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { useGetUsersQuery } from '../../../features/systemUsers';
-import { useGetCustomersQuery, customerApi } from '../../../features/customer/customerApi_new';
+import { customerApi } from '../../../features/customer/customerApi_new';
 import ReactMarkdown from 'react-markdown';
-import { TabContext, TabList } from '@mui/lab';
+import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
+import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
+import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
+import PhoneDialog from './phoneDialog';
+import { profileSettingsApi, useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
+import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
+import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
+import { useFormik } from 'formik';
 
 interface ITicketChatProps {
 
 }
 
-interface IFIle {
-  file: File;
-  size: number;
-  name: string;
-}
-
-const maxFileSize = 4 * 1024 * 1024; // 4MB
+const maxFileSize = 5000000;
 const maxFilesCount = 10;
 
-const FilesView = ({ files, onDelete }: { files: IFIle[], onDelete?: (index: number) => void; }) => {
+const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageFile[], onDelete?: (index: number) => void, maxWidth?: number; }) => {
   const theme = useTheme();
 
-  type FileGroup = {
-    type: 'image' | 'file';
-    files: IFIle[];
+  const handleDelete = (index: number) => (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onDelete && onDelete(index);
   };
-  const sortedFiles = (() => {
-    const result: FileGroup[] = [];
-    let currentGroup: FileGroup | null = null;
 
-    for (const file of files) {
-      const fileType = file.file.type.startsWith('image/') ? 'image' : 'file';
+  const { imageDialog, openImage } = useImageDialog();
 
-      if (!currentGroup || currentGroup.type !== fileType) {
-        currentGroup = { type: fileType, files: [file] };
-        result.push(currentGroup);
+  type IFile = ITicketMessageFile & {
+    index: number;
+  };
+
+  const [imageFiles, binaryFiles] = (() => {
+    const images: IFile[] = [];
+    const binary: IFile[] = [];
+    files.forEach((file, index) => {
+      if (file.content.startsWith('data:image')) {
+        images.push({ ...file, index });
       } else {
-        currentGroup.files.push(file);
+        binary.push({ ...file, index });
       }
-    }
-
-    return result;
+    });
+    return [images, binary];
   })();
-  return sortedFiles.map(({ files, type }, index) => {
-    const [columns, style] = (() => {
-      const count = files.length;
-      if (count === 1) return ['1fr', (reverseIndex: number) => ({ height: '250px' })];
-      return ['1fr 1fr', (reverseIndex: number) => ((count % 2 !== 0 && reverseIndex === 1) ? { height: '250px', gridColumn: '1 / -1' } : { height: '150px' })];
-    })();
 
-    if (type === 'image') {
-      return (
+  return (
+    <>
+      {imageDialog}
+      {imageFiles.length > 0 && <div style={{ width: '100%', background: 'rgb(0 0 0 / 10%)', overflow: 'hidden', borderRadius: 'var(--border-radius)' }}>
         <div
-          key={index}
           style={{
             display: 'grid',
-            gridTemplateColumns: columns,
-            gap: '4px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '4px',
+            maxWidth: `${maxWidth * imageFiles.length}px`
           }}
         >
-          {files.map((file, index2) => {
-            const url = URL.createObjectURL(file.file);
+          {imageFiles.map((file) => {
             return (
-              <div key={index + index2} style={{ background: 'white', ...style(files.length - index2) }}>
+              <div key={file.index} style={{ background: 'white', height: '200px', minWidth: '200px', flex: 1, maxWidth: `${maxWidth}px` }}>
                 <div
+                  onClick={() => openImage(file.content)}
                   style={{
-                    backgroundImage: `url(${url})`, display: 'flex', justifyContent: 'flex-end', height: '100%', width: '100%',
-                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'
+                    backgroundImage: `url(${file.content})`, display: 'flex', justifyContent: 'flex-end',
+                    backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
+                    height: '100%', width: '100%', cursor: 'pointer'
                   }}
                 >
                   <div >
                     <div style={{ background: 'rgb(0 0 0 / 40%)' }}>
-                      {onDelete && <IconButton color="secondary" onClick={() => onDelete(index + index2)}>
+                      {onDelete && <IconButton color="secondary" onClick={handleDelete(file.index)}>
                         <DeleteIcon />
                       </IconButton>}
                     </div>
@@ -100,38 +103,55 @@ const FilesView = ({ files, onDelete }: { files: IFIle[], onDelete?: (index: num
               </div>
             );
           })}
-        </div >
-      );
-    }
-    return files.map((file, index2) => {
-      return (
-        <div key={index + index2} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
-            style={{
-              background: theme.palette.primary.main, borderRadius: '100%', height: '40px',
-              width: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center'
-            }}
-          >
-            <InsertDriveFileIcon />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography>
-              {file.name}
-            </Typography>
-            <Typography variant="caption">
-              {(file.size / 1024 / 1024).toFixed(1)} МБ
-            </Typography>
-          </div>
-          <div style={{ flex: 1 }} />
-          {onDelete && <div>
-            <IconButton color="error" onClick={() => onDelete(index + index2)}>
-              <DeleteIcon />
-            </IconButton>
-          </div>}
         </div>
-      );
-    });
-  });
+      </div>}
+      {binaryFiles.map((file) => {
+        return (
+          <a
+            key={file.index}
+            href={file.content}
+            download={file.fileName}
+            style={{ color: 'inherit', textDecoration: 'none' }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                borderRadius: '20px 7px 7px 20px',
+                '&:hover': {
+                  background: 'rgb(0 0 0 / 10%)'
+                },
+                cursor: 'pointer'
+              }}
+            >
+              <div
+                style={{
+                  background: theme.palette.primary.main, borderRadius: '100%', height: '40px',
+                  width: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}
+              >
+                <InsertDriveFileIcon />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography>
+                  {file.fileName}
+                </Typography>
+                <Typography variant="caption">
+                  {(file.size / 1024 / 1024).toFixed(1)} МБ
+                </Typography>
+              </div>
+              <div style={{ flex: 1 }} />
+              {onDelete && <div style={{ paddingRight: '5px' }}>
+                <IconButton color="error" onClick={handleDelete(file.index)}>
+                  <DeleteIcon />
+                </IconButton>
+              </div>}
+            </Box>
+          </a>
+        );
+      })}
+    </>);
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -168,7 +188,8 @@ export default function TicketChat(props: ITicketChatProps) {
   const [shiftHold, setShiftHold] = useState(false);
 
   const [message, setMessage] = useState('');
-  const [files, setFiles] = useState<IFIle[]>([]);
+  const [files, setFiles] = useState<ITicketMessageFile[]>([]);
+  const dispatch = useDispatch();
 
   const handleSend = useCallback(() => {
     if ((message.trim() === '' && files.length === 0) || !id) return;
@@ -176,11 +197,12 @@ export default function TicketChat(props: ITicketChatProps) {
       ticketKey: Number(id),
       body: message,
       state: stateChange,
-      sendAt: new Date()
+      sendAt: new Date(),
+      files: files
     });
     setMessage('');
     setFiles([]);
-  }, [addMessages, files.length, id, message, stateChange]);
+  }, [addMessages, files, id, message, stateChange]);
 
   useEffect(() => {
     const keydown = (e: KeyboardEvent) => {
@@ -215,20 +237,30 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    fileInputRef.current.value = '';
+
     if (!file || file.size > maxFileSize) return;
 
-    const data = { file: file, size: file.size, name: file.name };
-    setFiles([...files, data]);
+    fileInputRef.current.value = '';
+
+    const reader = new FileReader();
+    const attachment: ITicketMessageFile = await new Promise((resolve, reject) => {
+      reader.readAsDataURL(file);
+      reader.onerror = () => {
+        reader.abort();
+        reject(new DOMException('Problem parsing input file.'));
+      };
+      reader.onloadend = (e) => {
+        const stringFile = reader.result?.toString() ?? '';
+        resolve({
+          fileName: file.name,
+          size: file.size,
+          content: stringFile
+        });
+      };
+    });
+
+    setFiles([attachment]);
   };
-
-  const handleRemoveFile = useCallback((index: number) => {
-    const newFiles = [...files];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
-  }, [files]);
-
-  const memoFiles = useMemo(() => <FilesView files={files} onDelete={handleRemoveFile} />, [files, handleRemoveFile]);
 
   const { addSnackbar } = useSnackbar();
 
@@ -243,51 +275,112 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const classes = useStyles();
 
-  const fileFialog = useMemo(() => {
+  const attachmentsChange = useCallback(async (newFiles: File[]) => {
+    const promises = newFiles.map(file => {
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.readAsDataURL(file);
+        reader.onerror = () => {
+          reader.abort();
+          reject(new DOMException('Problem parsing input file.'));
+        };
+        reader.onloadend = (e) => {
+          const stringFile = reader.result?.toString() ?? '';
+          resolve({
+            fileName: file.name,
+            size: file.size,
+            content: stringFile
+          });
+        };
+      });
+    });
+
+    const attachments = await Promise.all(promises);
+    setFiles(attachments as ITicketMessageFile[]);
+  }, []);
+
+  const initialAttachments = useMemo(() => {
+    return files.reduce((res, { fileName, content }) => {
+      if (!content) {
+        return res;
+      }
+
+      const arr = content.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+
+      const binarystr = window.atob(arr[1]);
+      let n = binarystr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = binarystr.charCodeAt(n);
+      };
+
+      const file = new File([u8arr], fileName, { type: mime });
+      return [...res, file];
+    }, [] as File[]);
+  }, [files]);
+
+  const fileDialog = useMemo(() => {
     return (
-      <Dialog open={files.length > 0}>
-        <div style={{ padding: '16px', paddingTop: '8px', minWidth: '400px', maxHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h6">
-            Отправка файлов
-          </Typography>
-          <div
-            style={{
-              flexGrow: 1, overflowY: 'auto',
-              margin: '16px 0px', display: 'flex', flexDirection: 'column', gap: '8px'
-            }}
-          >
-            {memoFiles}
-          </div>
-          <div>
-            <TextField
-              variant="standard"
-              label="Сообщение"
-              fullWidth
-              multiline
-              maxRows={6}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-          </div>
-          <div style={{ display: 'flex', gap: '16px', paddingTop: '16px' }}>
-            <Button
-              style={{ height: '100%' }}
-              disabled={files.length === maxFilesCount}
-              onClick={uploadClick}
+      <Dialog
+        fullWidth
+        maxWidth={false}
+        open={files.length > 0}
+        sx={{
+          '& .MuiPaper-root': {
+            height: '100%'
+          }
+        }}
+      >
+        <DialogTitle>Отправка файлов</DialogTitle>
+        <DialogContent>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+            <div
+              style={{
+                overflowY: 'auto', maxHeight: '250px', height: 'fit-content',
+                margin: '16px 0px', display: 'flex', flexDirection: 'column', gap: '8px'
+              }}
             >
-              Добавить
-            </Button>
-            <div style={{ flex: 1 }} />
-            <Button style={{ height: '100%' }} onClick={() => setFiles([])}>
-              Отмена
-            </Button>
-            <Button variant="contained" onClick={handleSend}>
-              Отправить
-            </Button>
+              <Dropzone
+                maxFileSize={maxFileSize}
+                filesLimit={maxFilesCount}
+                maxTotalFilesSize={maxFileSize}
+                showPreviews
+                heightFitContent
+                disableSnackBar
+                initialFiles={initialAttachments}
+                onChange={attachmentsChange}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <MarkdownTextfield
+                disabled={isLoading}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                fullHeight
+                rows={1}
+              />
+            </div>
           </div>
-        </div>
+        </DialogContent>
+        <Divider />
+        <DialogActions style={{ padding: '12px 24px' }}>
+          <div style={{ flex: 1 }} />
+          <Button sx={{ width: '120px', textDecoration: 'none' }} onClick={() => setFiles([])}>
+            Отмена
+          </Button>
+          <Button
+            sx={{ width: '120px', textDecoration: 'none' }}
+            variant="contained"
+            onClick={handleSend}
+          >
+            Отправить
+          </Button>
+        </DialogActions>
       </Dialog >
     );
-  }, [files.length, memoFiles, handleSend]);
+  }, [files.length, initialAttachments, attachmentsChange, isLoading, message, handleSend]);
 
   const fakeMessages: ITicketMessage[] = Array.from({ length: 4 }, (_, index) => {
     return {
@@ -313,71 +406,62 @@ export default function TicketChat(props: ITicketChatProps) {
     navigate(url);
   }, [navigate, ticketsUser]);
 
-  const handleClose = useCallback(() => {
-    updateTicket({ ...ticket, closeAt: new Date(), needCall: false });
-  }, [ticket, updateTicket]);
+  const userProfile = useSelector<RootState, IUserProfile | undefined>(state => state.user.userProfile);
+  const { data: settings, isFetching: profileIsFetching } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
+  const [setSettings, { isLoading: updateProfileIsLoading }] = useSetProfileSettingsMutation();
+
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+
+  const handleOpenPhoneDialog = useCallback(() => {
+    setPhoneDialogOpen(true);
+  }, []);
+
+  const handleClosePhoneDialog = useCallback(() => {
+    setPhoneDialogOpen(false);
+  }, []);
+
+  const handleSavePhone = useCallback(async (value: string) => {
+    setPhoneDialogOpen(false);
+    if (!settings || !userProfile?.id) return;
+    await setSettings({ userId: userProfile?.id, body: { ...settings, PHONE: value } });
+    dispatch(ticketsApi.util.invalidateTags(['users']));
+    dispatch(profileSettingsApi.util.invalidateTags(['settings']));
+  }, [dispatch, setSettings, settings, userProfile?.id]);
+
+  const memoPhoneDialog = useMemo(() => (
+    <PhoneDialog
+      open={phoneDialogOpen}
+      onClose={handleClosePhoneDialog}
+      onSubmit={handleSavePhone}
+    />
+  ), [handleClosePhoneDialog, handleSavePhone, phoneDialogOpen]);
+
+  const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
+
+  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
   const rightButton = useMemo(() => {
-    if (closed) return;
+    if (closed || ticket?.sender.ID !== userProfile?.id) return;
     if (ticketsUser) {
+      const currentUser = users?.users.find((user) => user.ID === userProfile?.id);
       return (
-        <Tooltip title={isLoading ? '' : ticket?.needCall ? 'Запрошен звонок' : 'Запросить звонок'}>
+        <Tooltip title={isLoading ? '' : ticket?.needCall ? 'Запрошен звонок' : ''}>
           <div>
-            <IconButton
-              onClick={handleRequestCall}
-              disabled={isLoading || ticket?.needCall}
+            <Button
+              variant="contained"
+              onClick={currentUser?.phone ? handleRequestCall : handleOpenPhoneDialog}
+              disabled={isLoading || ticket?.needCall || !currentUser || updateProfileIsLoading || profileIsFetching}
               color="primary"
             >
-              <LocalPhoneIcon />
-            </IconButton>
+              Запросить звонок
+            </Button>
           </div>
         </Tooltip>
       );
     }
     return;
-    return (
-      <MenuBurger
-        disabled={isLoading}
-        items={({ closeMenu }) => [
-          <Confirmation
-            key="delete"
-            title="Завершение тикета"
-            text={'Завершить тикет? Изменение нельзя будет отменить.'}
-            dangerous
-            onConfirm={() => {
-              closeMenu();
-              handleClose();
-            }}
-            onClose={closeMenu}
-          >
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={1}
-              sx={(theme) => ({ color: theme.palette.primary.main })}
-            >
-              <TaskAltIcon color="primary" fontSize="small" />
-              <span>Завершить</span>
-            </Stack>
-          </Confirmation>,
-        ]}
-      />
-    );
-  }, [closed, handleClose, handleRequestCall, isLoading, ticket?.needCall, ticketsUser]);
-
-  const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
-
-  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
-  const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
-  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
-
-  const [tabIndex, setTabIndex] = useState('1');
-
-  const handleTabsChange = (event: any, newindex: string) => {
-    setTabIndex(newindex);
-  };
-
-  const dispatch = useDispatch();
+  }, [closed, handleOpenPhoneDialog, handleRequestCall, isLoading, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userProfile?.id, users?.users]);
 
   const handleUpdateStatus = useCallback(async (value: ITicketState | null) => {
     if (!value) return;
@@ -386,9 +470,120 @@ export default function TicketChat(props: ITicketChatProps) {
     dispatch(customerApi.util.invalidateTags(['Customers']));
   }, [dispatch, ticket, updateTicket]);
 
+  const memoPerformer = useMemo(() => {
+    if (ticketsUser) {
+      return (
+        <TextField
+          variant="standard"
+          value={ticket?.performer?.fullName ?? ''}
+          label={'Исполнитель'}
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+      );
+    }
+    return (
+      <Autocomplete
+        fullWidth
+        size="small"
+        disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+        loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+        loadingText="Загрузка данных..."
+        options={systemUsers ?? []}
+        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
+        getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
+        onChange={(e, value) => {
+          updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
+        }}
+        renderInput={(params) => (
+          <TextField
+            variant="standard"
+            {...params}
+            label={'Исполнитель'}
+          />
+        )}
+      />
+    );
+  }, [systemUsers, systemUsersIsFetching, systemUsersIsLoading, ticket, ticketIsFetching, ticketsUser, updateTicket]);
+
+  const memoStatus = useMemo(() => {
+    if (ticketsUser) {
+      return (
+        <TextField
+          variant="standard"
+          value={ticket?.state.name ?? ''}
+          label={'Статус'}
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+      );
+    }
+    return (
+      <Autocomplete
+        fullWidth
+        size="small"
+        disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+        loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+        loadingText="Загрузка данных..."
+        options={states ?? []}
+        value={states?.find((state) => state.ID === ticket?.state.ID) ?? null}
+        getOptionLabel={(option) => option.name}
+        onChange={(e, value) => handleUpdateStatus(value)}
+        sx={{
+          '& .MuiAutocomplete-clearIndicator': {
+            display: 'none'
+          },
+        }}
+        renderInput={(params) => (
+          <TextField
+            variant="standard"
+            {...params}
+            label={'Статус'}
+          />
+        )}
+      />
+    );
+  }, [handleUpdateStatus, states, statesIsFetching, statesIsLoading, ticket?.state.ID, ticket?.state.name, ticketIsFetching, ticketsUser]);
+
+  const memoCustomer = useMemo(() => {
+    if (ticketsUser) return;
+    return (
+      <TextField
+        variant="standard"
+        disabled={ticketIsFetching || ticketIsFetching}
+        value={ticket?.company.FULLNAME ?? ticket?.company.NAME ?? ''}
+        label={'Клиент'}
+        InputProps={{
+          readOnly: true,
+        }}
+      />
+    );
+  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketIsFetching, ticketsUser]);
+
+  const memoUser = useMemo(() => {
+    if (ticketsUser && !isAdmin) return;
+    return (
+      <TextField
+        disabled={ticketIsFetching || ticketIsFetching}
+        variant="standard"
+        value={ticket?.sender.fullName ?? ''}
+        label={'Постановщик'}
+        InputProps={{
+          readOnly: true,
+        }}
+      />
+    );
+  }, [isAdmin, ticket?.sender.fullName, ticketIsFetching, ticketsUser]);
+
+  const [enableTransition, setEnableTransition] = useState(true);
+  const [expand, setExpand] = useState(true);
+
   return (
     <>
-      {fileFialog}
+      {fileDialog}
+      {memoPhoneDialog}
       <CustomizedCard style={{ width: '100%' }}>
         <div style={{ display: 'flex', padding: '8px 10px', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>
@@ -413,80 +608,72 @@ export default function TicketChat(props: ITicketChatProps) {
         <Divider />
         <CardContent style={{ padding: '0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-            {(ticket?.needCall && !ticketsUser && !closed) && <div style={{ background: 'var(--color-card-bg)', width: '100%', padding: '5px', display: 'flex' }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', }}>
-                <span>Представитель клиента запросил звонок{ticket?.sender.phone ? ', вы можете позвонить ему по номеру:' : ''}</span>
-                <a className={classes.link} href={`tel:${ticket?.sender.phone}`}>{ticket?.sender.phone}</a>
-              </div>
-              <Confirmation
-                key="delete"
-                title="Звонок завершен"
-                text={'Пометить что звонок был завершен?'}
-                dangerous
-                onConfirm={handleEndCall}
+            {(ticket?.needCall && !ticketsUser && !closed) && (
+              <div
+                style={{
+                  background: 'var(--color-card-bg)', width: '100%',
+                  padding: '5px', display: 'flex', borderBottom: '1px solid var(--color-paper-bg)'
+                }}
               >
-                <IconButton>
-                  <CloseIcon color="action" fontSize="small" />
-                </IconButton>
-              </Confirmation>
-            </div>}
-            <div style={{ flex: 1, padding: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content' }}>
-                {(isLoading ? fakeMessages : messages).map((data, index) => <UserMessage
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                  <span>Представитель клиента запросил звонок{ticket?.sender.phone ? ', вы можете позвонить ему по номеру:' : ''}</span>
+                  <a className={classes.link} href={`tel:${ticket?.sender.phone}`}>{ticket?.sender.phone}</a>
+                </div>
+                <Confirmation
+                  key="delete"
+                  title="Звонок завершен"
+                  text={'Пометить что звонок был завершен?'}
+                  dangerous
+                  onConfirm={handleEndCall}
+                >
+                  <IconButton>
+                    <CloseIcon color="action" fontSize="small" />
+                  </IconButton>
+                </Confirmation>
+              </div>
+            )}
+            <div style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
+                {(isLoading ? fakeMessages : messages).map((message, index) => <UserMessage
                   isLoading={isLoading}
-                  {...data}
+                  message={message}
                   key={index}
                 />)}
               </div>
             </div>
-            {!closed && <div>
-              <Divider />
-              <TabContext value={tabIndex}>
-                <TabList
-                  style={{ paddingLeft: '24px' }}
-                  onChange={handleTabsChange}
-                >
-                  <Tab
-                    label="Изменение"
-                    value="1"
-                  />
-                  <Tab
-                    label="Просмотр"
-                    value="2"
-                  />
-                </TabList>
-              </TabContext>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0 }}>
-                <div style={{ width: '100%', position: 'relative' }}>
-                  <TextField
-                    style={{
-                      opacity: tabIndex === '2' ? 0 : 1,
-                      visibility: tabIndex === '2' ? 'hidden' : 'visible'
-                    }}
-                    disabled={isLoading}
-                    value={(files.length > 0) ? '' : message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    multiline
-                    minRows={8}
-                    maxRows={20}
-                    fullWidth
-                  />
-                  <Box
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.1)', position: 'absolute',
-                      inset: 0, opacity: tabIndex === '2' ? '1' : '0',
-                      visibility: tabIndex === '2' ? 'visible' : 'hidden',
-                      padding: '8.5px 14px', lineHeight: 1.3, overflow: 'auto',
-                      borderRadius: 'var(--border-radius)', border: '1px solid var(--color-borders)'
-                    }}
-                  >
-                    <ReactMarkdown>
-                      {message}
-                    </ReactMarkdown>
-                  </Box>
+            {!closed && <>
+              <Divider style={{ borderTop: '2px solid var(--color-paper-bg)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-30px', right: '8px', zIndex: 4 }}>
+                  <IconButton onClick={() => setExpand(!expand)}>
+                    {expand ? <ExpandLessOutlinedIcon /> : <ExpandMoreOutlinedIcon />}
+                  </IconButton>
                 </div>
+                <MarkdownTextfield
+                  onFocus={() => setEnableTransition(false)}
+                  onBlur={() => setEnableTransition(true)}
+                  placeholder="Сообщение"
+                  disabled={isLoading}
+                  value={files.length > 0 ? '' : message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onLoadFiles={attachmentsChange}
+                  rows={expand ? undefined : 1}
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      transition: enableTransition ? '0.3s' : undefined
+                    }
+                  }}
+                  smallHintBreakpoint="lg"
+                  minRows={expand ? 8 : undefined}
+                  maxRows={expand ? 20 : undefined}
+                  fileUpload
+                  maxFileSize={maxFileSize}
+                  filesLimit={maxFilesCount}
+                  maxTotalFilesSize={maxFileSize}
+                />
+
                 <div style={{ display: 'flex', width: '100%' }}>
-                  {/* <div>
+                  <div>
                     <input
                       style={{ display: 'none' }}
                       type="file"
@@ -496,124 +683,49 @@ export default function TicketChat(props: ITicketChatProps) {
                     <Tooltip title={'Прикрепить файл'}>
                       <IconButton
                         color="primary"
-                        disabled
                         onClick={uploadClick}
                       >
                         <AttachFileIcon />
                       </IconButton>
                     </Tooltip>
-                  </div> */}
+                  </div>
                   <div style={{ flex: 1 }} />
-                  <Tooltip title={'Отправить'}>
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      disabled={!message || isLoading}
-                      onClick={handleSend}
-                    >
-                      Отправить
-                    </Button>
-                  </Tooltip>
+                  <Button
+                    style={{ width: '120px', textTransform: 'none' }}
+                    color="primary"
+                    variant="contained"
+                    disabled={!message || isLoading || files.length > 0}
+                    onClick={handleSend}
+                  >
+                    Отправить
+                  </Button>
                 </div>
               </div>
-            </div>
+            </>
             }
           </div>
         </CardContent>
       </CustomizedCard >
-      <div style={{ width: '280px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: 0 }}>
-        <Autocomplete
-          fullWidth
-          readOnly={ticketsUser}
-          size="small"
-          disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
-          loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={systemUsers ?? []}
-          value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
-          getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
-          onChange={(e, value) => {
-            updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
-          }}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Исполнитель'}
-            />
-          )}
-        />
-        <Autocomplete
-          fullWidth
-          readOnly={ticketsUser}
-          size="small"
-          disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
-          loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={states ?? []}
-          value={ticket?.state ?? null}
-          getOptionLabel={(option) => option.name}
-          onChange={(e, value) => handleUpdateStatus(value)}
-          sx={{
-            '& .MuiAutocomplete-clearIndicator': {
-              display: 'none'
-            },
-          }}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Статус'}
-            />
-          )}
-        />
-        {!ticketsUser && <Autocomplete
-          fullWidth
-          readOnly
-          size="small"
-          disabled={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
-          loading={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={customersResponse?.data ?? []}
-          value={ticket?.company ?? null}
-          getOptionLabel={(option) => option?.FULLNAME ?? option?.NAME}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Клиент'}
-            />
-          )}
-        />}
-        {(!ticketsUser || isAdmin) && <Autocomplete
-          fullWidth
-          readOnly
-          size="small"
-          disabled={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
-          loading={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={users?.users ?? []}
-          value={users?.users?.find(user => user.ID === ticket?.sender.ID) ?? null}
-          getOptionLabel={(option) => option.fullName}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Постановщик'}
-            />
-          )}
-        />}
+      <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '16px' }}>
+        {memoPerformer}
+        {memoStatus}
+        {memoCustomer}
+        {memoUser}
       </div>
     </>
   );
 };
 
-interface IUserMessage extends ITicketMessage {
+interface IUserMessage {
   isLoading: boolean;
+  message: ITicketMessage;
 }
 
-const UserMessage = ({ isLoading, user, body: message, sendAt }: IUserMessage) => {
-  const files: any = [];
+const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
+  const [updateMessage, { isLoading: updateIsLoading }] = useUpdateTicketMessageMutation();
+  const [deleteMessage, { isLoading: deleteIsLoading }] = useDeleteTicketMessageMutation();
+
+  const isLoading = isLoadingProp;
 
   const avatar = useMemo(() => {
     if (isLoading) {
@@ -628,19 +740,81 @@ const UserMessage = ({ isLoading, user, body: message, sendAt }: IUserMessage) =
     }
     return (
       <UserTooltip
-        name={user.fullName}
-        phone={user.phone}
-        email={user.email}
-        avatar={user.avatar}
+        name={message.user.fullName}
+        phone={message.user.phone}
+        email={message.user.email}
+        avatar={message.user.avatar}
       >
-        <Avatar src={user.avatar} style={{ height: '30px', width: '30px', zIndex: 2 }} />
+        <Avatar src={message.user.avatar} style={{ height: '30px', width: '30px', zIndex: 2 }} />
       </UserTooltip>
     );
-  }, [isLoading, user.avatar, user.email, user.fullName, user.phone]);
+  }, [isLoading, message.user.avatar, message.user.email, message.user.fullName, message.user.phone]);
 
-  const theme = useTheme();
+  const [confirmDialog] = useConfirmation();
 
-  const memoFiles = useMemo(() => files && <FilesView files={files} />, [files]);
+  const [editMode, setEditMode] = useState(false);
+
+  const formik = useFormik<ITicketMessage>({
+    enableReinitialize: true,
+    validateOnBlur: false,
+    initialValues: {
+      ...message
+    },
+    onSubmit: (values, { resetForm }) => {
+      resetForm();
+      onClose();
+      updateMessage(values);
+    },
+  });
+
+  const handleEditClick = () => {
+    setEditMode(true);
+  };
+
+  const onClose = () => {
+    setEditMode(false);
+    formik.resetForm();
+  };
+
+  const handleCancelClick = () => {
+    if (formik.dirty) {
+      confirmDialog.setOpen(true);
+      confirmDialog.setOptions({
+        title: 'Внимание',
+        text: 'Изменения будут утеряны. Продолжить?',
+        dangerous: true,
+        confirmClick: () => {
+          confirmDialog.setOpen(false);
+          onClose();
+        },
+      });
+      return;
+    }
+
+    onClose();
+  };
+
+  const memoFiles = useMemo(() => {
+    if (!formik.values.files || formik.values.files?.length <= 0) return;
+    return <FilesView
+      files={formik.values.files}
+      onDelete={editMode ? (deleteFileIndex) => {
+        console.log(deleteFileIndex);
+        const newFiles = formik.values.files?.filter((file, index) => index !== deleteFileIndex);
+        formik.setFieldValue('files', newFiles);
+      } : undefined}
+    />;
+  }, [editMode, formik]);
+
+  const onDelete = (messageId: number) => {
+    deleteMessage(messageId);
+  };
+
+  const handleChangeMessage = (e: any) => {
+    formik.setFieldValue('body', e.target.value);
+  };
+
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
 
   return (
     <div
@@ -649,36 +823,117 @@ const UserMessage = ({ isLoading, user, body: message, sendAt }: IUserMessage) =
         justifyContent: 'flex-start',
       }}
     >
+      {confirmDialog.dialog}
       {avatar}
       <div
         style={{
-          background: 'var(--color-card-bg)', borderRadius: '14px',
+          background: 'var(--color-card-bg)', borderRadius: 'var(--border-radius)',
           zIndex: 1, width: '100%', overflow: 'hidden',
           marginLeft: '10px'
         }}
       >
-        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px' }}>
-          <Typography variant="body2">{user.fullName}</Typography>
+        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px', alignItems: 'center' }}>
+          <></>
+          <Typography variant="body2">{isLoading ? '' : message.user.fullName}</Typography>
           <Typography variant={'caption'}>
-            {(sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(sendAt)}>
+            {(message.sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(message.sendAt)}>
               <div>
-                {timeAgo(sendAt)}
+                {timeAgo(message.sendAt)}
               </div>
             </Tooltip>}
           </Typography>
+          <div style={{ flex: 1 }} />
+          {(message.user.ID === userId && !isLoading) && <MenuBurger
+            disabled={updateIsLoading || deleteIsLoading}
+            items={({ closeMenu }) => [
+              editMode ? (
+                <ItemButtonSave
+                  key="save"
+                  size={'small'}
+                  label="Сохранить"
+                  onClick={(e) => {
+                    formik.handleSubmit();
+                    closeMenu();
+                  }}
+                />)
+                : <></>,
+              editMode
+                ? (
+                  <ItemButtonCancel
+                    key="cancel"
+                    label={'Отменить'}
+                    onClick={(e) => {
+                      handleCancelClick();
+                      closeMenu();
+                    }}
+                  />)
+                : <></>,
+              !editMode
+                ? (
+                  <ItemButtonEdit
+                    key="edit"
+                    size={'small'}
+                    label="Редактировать"
+                    onClick={(e) => {
+                      handleEditClick();
+                      closeMenu();
+                    }}
+                  />)
+                : <></>,
+              <Confirmation
+                key="delete"
+                title="Удалить сообщение?"
+                text={'Его невозможно будет восстановить'}
+                dangerous
+                onConfirm={() => {
+                  closeMenu();
+                  onDelete(message.ID);
+                }}
+                onClose={closeMenu}
+              >
+                <ItemButtonDelete
+                  label="Удалить"
+                  confirmation={false}
+                />
+              </Confirmation>,
+            ]}
+          />}
         </div>
         {!isLoading && <Divider />}
-        <div style={{ background: 'var(--color-card-bg)' }}>
-          {memoFiles}
-        </div>
-        {message && <div style={{ padding: '5px 10px' }}>
-          <div style={{ opacity: isLoading ? 0 : 1, wordBreak: 'break-word' }}>
-            <ReactMarkdown>
-              {message}
-            </ReactMarkdown>
+        {(!isLoading && memoFiles) && (
+          <div
+            style={{
+              display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px',
+              borderRadius: 'var(--border-radius)', overflow: 'hidden'
+            }}
+          >
+            {memoFiles}
           </div>
+        )}
+        {editMode ? (
+          <MarkdownTextfield
+            value={formik.values.body}
+            onChange={handleChangeMessage}
+            minRows={3}
+          />
+        ) : message && <div style={{ padding: '5px 10px' }}>
+          <Box
+            sx={{
+              opacity: isLoading ? 0 : 1, wordBreak: 'break-word',
+              '& > :first-of-type': {
+                marginTop: 0
+              },
+              '& > :last-of-type': {
+                marginBottom: 0
+              }
+            }}
+          >
+            <ReactMarkdown>
+              {message.body}
+            </ReactMarkdown>
+          </Box>
         </div>}
       </div>
-    </div>
+    </div >
   );
 };

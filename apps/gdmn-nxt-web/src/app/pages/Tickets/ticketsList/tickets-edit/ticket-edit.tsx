@@ -1,20 +1,15 @@
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState, } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Stack, TextField } from '@mui/material';
+import { useCallback, useEffect, useMemo, } from 'react';
 import { ITicket } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
 import { UserState } from 'apps/gdmn-nxt-web/src/app/features/user/userSlice';
-import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
-import { useGetAllTicketsStatesQuery } from '../../../../features/tickets/ticketsApi';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
 import styles from './tickets-edit.module.less';
-import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import ReactMarkdown from 'react-markdown';
-import InfoIcon from '@mui/icons-material/Info';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -23,15 +18,13 @@ export interface ITicketEditProps {
   onCancelClick: () => void;
 };
 
-const maxFileSize = 4 * 1024 * 1024; // 4MB
+const maxFileSize = 5000000; // 5MB
 const maxFilesCount = 10;
 
 export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const { open, ticket } = props;
   const { onSubmit, onCancelClick } = props;
   const user = useSelector<RootState, UserState>(state => state.user);
-
-  const [tabIndex, setTabIndex] = useState('1');
 
   const initValue: ITicket = useMemo(() => ({
     ID: ticket?.ID ?? -1,
@@ -80,10 +73,6 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
 
   const handleOnClose = useCallback(() => onCancelClick(), [onCancelClick]);
 
-  const handleDelete = useCallback(() => {
-    onSubmit(formik.values, true);
-  }, [formik.values, onSubmit]);
-
   const attachmentsChange = useCallback(async (files: File[]) => {
     const promises = files.map(file => {
       const reader = new FileReader();
@@ -97,6 +86,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
           const stringFile = reader.result?.toString() ?? '';
           resolve({
             fileName: file.name,
+            size: file.size,
             content: stringFile
           });
         };
@@ -110,13 +100,6 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     formik.setFieldValue('files', attachments);
   }, [formik]);
 
-  const handleTabsChange = useCallback((event: any, newindex: string) => {
-    setTabIndex(newindex);
-  }, []);
-
-  const theme = useTheme();
-  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
-
   return (
     <Dialog
       maxWidth={false}
@@ -124,16 +107,13 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
       sx={{
         '& .MuiPaper-root': {
           height: '100%'
-        },
-        '& .MuiDialogContent-root': {
-          overflow: 'visible'
         }
       }}
       open={open}
       onClose={handleOnClose}
     >
       <DialogTitle>Создание заявки</DialogTitle>
-      <DialogContent >
+      <DialogContent style={{ paddingTop: '5px', marginTop: '-5px' }} >
         <FormikProvider value={formik}>
           <Form
             style={{ height: '100%', minWidth: 0 }}
@@ -158,69 +138,28 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                 error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
                 helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
               />
-              <TabContext value={tabIndex}>
-                <Box>
-                  <TabList onChange={handleTabsChange}>
-                    <Tab label="Изменение" value="1" />
-                    <Tab label="Просмотр" value="2" />
-                  </TabList>
-                  <Divider />
-                </Box>
-                <TabPanel
-                  value="1"
-                  className={styles.tabPanel}
-                >
-                  <TextField
-                    className={styles.inputTextField}
-                    label="Сообщение"
-                    type="text"
-                    fullWidth
-                    required
-                    multiline
-                    rows={1}
-                    name="message"
-                    onChange={formik.handleChange}
-                    value={formik.values.message}
-                    error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
-                    helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
-                  />
-
-                </TabPanel>
-                <TabPanel
-                  value="2"
-                  className={styles.tabPanel}
-                >
-                  <div className={styles.preview}>
-                    <CustomizedScrollBox>
-                      <ReactMarkdown components={{ p: 'div' }}>
-                        {formik.values.message ?? ''}
-                      </ReactMarkdown>
-                    </CustomizedScrollBox>
-                  </div>
-                </TabPanel>
-                <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
-                  <a
-                    href="https://www.markdownguide.org/basic-syntax/"
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <Chip
-                      icon={<InfoIcon />}
-                      label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
-                      variant="outlined"
-                      className={styles.info}
-                      style={{ border: 'none', cursor: 'pointer' }}
-                    />
-                  </a>
-                </Tooltip>
-              </TabContext>
-              {/* <Dropzone
-              maxFileSize={maxFileSize}
-              filesLimit={maxFilesCount}
-              showPreviews
-              onChange={attachmentsChange}
-            /> */}
+              <MarkdownTextfield
+                name="message"
+                placeholder="Сообщение"
+                sx={{ minHeight: '200px' }}
+                required
+                value={formik.values.message}
+                onChange={formik.handleChange}
+                error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
+                helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
+                fullHeight
+              />
+              <div style={{ maxHeight: '250px' }}>
+                <Dropzone
+                  disableSnackBar
+                  heightFitContent
+                  maxFileSize={maxFileSize}
+                  maxTotalFilesSize={maxFileSize}
+                  filesLimit={maxFilesCount}
+                  showPreviews
+                  onChange={attachmentsChange}
+                />
+              </div>
             </Stack>
           </Form>
         </FormikProvider>
@@ -250,7 +189,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
           </Button>
         </div>
       </DialogActions>
-    </Dialog>
+    </Dialog >
   );
 }
 

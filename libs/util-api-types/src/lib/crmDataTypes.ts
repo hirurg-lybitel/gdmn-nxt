@@ -713,7 +713,13 @@ export interface ITicket extends IWithID {
   performer?: ICRMTicketUser;
   needCall: boolean;
   message?: string;
-  files?: File[];
+  files?: ITicketMessageFile[];
+}
+
+export interface ITicketMessageFile {
+  fileName: string;
+  size: number;
+  content: string;
 }
 
 export interface ITicketMessage extends IWithID {
@@ -722,6 +728,7 @@ export interface ITicketMessage extends IWithID {
   user: ICRMTicketUser & { type: 'empl' | 'user'; },
   state: ITicketState;
   sendAt: Date;
+  files?: ITicketMessageFile[];
 }
 
 export interface ICustomerTickets {

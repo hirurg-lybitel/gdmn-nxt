@@ -55,3 +55,6 @@ ssl/*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Minio
+/minio_data/*

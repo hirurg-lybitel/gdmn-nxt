@@ -858,6 +858,7 @@ export function KanbanEditCard(props: Readonly<KanbanEditCardProps>) {
                       <div>
                         <Dropzone
                           maxFileSize={maxFileSize}
+                          maxTotalFilesSize={maxFileSize}
                           filesLimit={3}
                           showPreviews
                           initialFiles={id <= 0 ? undefined : initialAttachments}

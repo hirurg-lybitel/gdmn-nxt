@@ -5,13 +5,15 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { emailValidation, passwordValidation } from '@gdmn-nxt/helpers/validators';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import * as yup from 'yup';
-import { Chip, Stack, TextField, Typography } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { Chip, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { MouseEvent, useMemo, useState } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import { generatePassword } from '@gsbelarus/util-useful';
 import { ITicketUserRequestResult } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsApi';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query';
 import { SerializedError } from '@reduxjs/toolkit';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -78,10 +80,17 @@ export function TicketsUserEdit({
     formik.resetForm();
   };
 
-  const [showPassword, setShowPassword] = useState(true);
-
   const handlePhoneChange = (value: string) => {
     formik.setFieldValue('phone', value);
+  };
+
+  const { addSnackbar } = useSnackbar();
+
+  const handleCopy = (value?: string) => {
+    if (!value) return;
+    navigator.clipboard.writeText(value)
+      .then(() => addSnackbar('Скопировано!', { variant: 'success' }))
+      .catch(err => console.error('Ошибка копирования:', err));
   };
 
   return (
@@ -161,20 +170,36 @@ export function TicketsUserEdit({
                   fullWidth
                   disabled
                   label="Пароль"
-                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   onChange={formik.handleChange}
                   value={formik.values.password}
                   error={!!formik.errors.password}
                   helperText={formik.errors.password}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => handleCopy(formik.values.password)}
+                          edge="end"
+                          sx={{
+                            opacity: 0.7,
+                            '&:hover': { opacity: 1 }
+                          }}
+                        >
+                          <ContentCopyOutlinedIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </div>
               <Chip
                 icon={<InfoIcon />}
-                label={'После создания, изменение данных будет недоступно'}
+                color={'warning'}
+                label={'После создания изменение и просмотр данных будет недоступен'}
                 variant="outlined"
                 className={styles.info}
-                style={{ border: 'none', cursor: 'pointer' }}
+                sx={{ border: 'none', '& span': { textWrap: 'wrap' }, height: 'fit-content', marginTop: '8px' }}
               />
             </div>
           </Stack>

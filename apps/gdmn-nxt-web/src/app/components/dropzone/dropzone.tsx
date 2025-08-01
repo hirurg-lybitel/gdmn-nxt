@@ -2,7 +2,7 @@ import styles from './dropzone.module.less';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DropzoneBase, { DropzoneProps as DropzoneBaseProps, ErrorCode } from 'react-dropzone';
 import { Box, Typography } from '@mui/material';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { FileObject } from './types';
 import { convertBytesToMbsOrKbs, readFile } from './helpers';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
@@ -11,7 +11,7 @@ import { PreviewList } from './components/PreviewList';
 const getFileAddedMessage = (fileName: string) =>
   `Файл ${fileName} успешно добавлен.`;
 
-const getFileLimitExceedMessage = (filesLimit: number) =>
+export const getFileLimitExceedMessage = (filesLimit: number) =>
   `Превышено максимально допустимое количество файлов.\nРазрешено только ${filesLimit}`;
 
 const getFileRemovedMessage = (fileName: string) =>
@@ -23,8 +23,11 @@ export interface DropzoneProps {
   filesLimit?: number;
   showPreviews?: boolean;
   maxFileSize?: number;
+  maxTotalFilesSize?: number;
   dropzoneText?: string;
   initialFiles?: File[];
+  heightFitContent?: boolean,
+  disableSnackBar?: boolean,
   onChange: (loadedFiles: File[]) => void,
 }
 
@@ -36,11 +39,14 @@ export function Dropzone({
   showPreviews,
   initialFiles,
   dropzoneText = 'Перетащите файл сюда или нажмите',
+  heightFitContent = false,
+  disableSnackBar = false,
+  maxTotalFilesSize,
   onChange
-}: DropzoneProps) {
+}: Readonly<DropzoneProps>) {
   const { addSnackbar } = useSnackbar();
   const [fileObjects, setFileObjects] = useState<FileObject[]>([]);
-  const [initialized, toggleInitialized] = useReducer((v: boolean) => !v, false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (initialized) return;
@@ -61,18 +67,18 @@ export function Dropzone({
           };
         })
       );
-      toggleInitialized();
+      setInitialized(true);
       setFileObjects(res);
     };
 
     getFiles();
-  }, [initialFiles, disabled]);
+  }, [initialFiles, disabled, initialized]);
 
   useEffect(() => {
-    if (disabled) return;
+    if (disabled || !initialized) return;
 
     onChange(fileObjects.map(({ file }) => file));
-  }, [onChange, fileObjects, disabled]);
+  }, [onChange, disabled, fileObjects, initialized]);
 
 
   const acceptFiles = acceptedFiles.reduce((obj, item) => {
@@ -87,9 +93,19 @@ export function Dropzone({
     files,
     evt
   ) => {
+    if ((files.length + fileObjects.length) > filesLimit) {
+      addSnackbar(`${getFileLimitExceedMessage(filesLimit)}.`, { variant: 'error' });
+      return;
+    }
+
+    let totalSize = 0;
+
+    fileObjects.forEach(({ file }) => totalSize += file.size);
+
     const acceptedFileObjects = await Promise.all(
       files.map(async (file) => {
         const data = await readFile(file);
+        totalSize += file.size;
         return {
           file,
           data,
@@ -97,12 +113,17 @@ export function Dropzone({
       })
     );
 
+    if (maxTotalFilesSize && totalSize > maxTotalFilesSize) {
+      addSnackbar(`Общий размер файлов превышает ${convertBytesToMbsOrKbs(maxTotalFilesSize ?? 0)}.`, { variant: 'error' });
+      return;
+    }
+
     setFileObjects(prev => [
       ...prev,
       ...acceptedFileObjects
     ]);
 
-    acceptedFileObjects.forEach(({ file }) => addSnackbar(getFileAddedMessage(file.name), { variant: 'success' }));
+    !disableSnackBar && acceptedFileObjects.forEach(({ file }) => addSnackbar(getFileAddedMessage(file.name), { variant: 'success' }));
   };
 
   const handleDropRejected: DropzoneBaseProps['onDropRejected'] = async (
@@ -135,7 +156,7 @@ export function Dropzone({
 
     setFileObjects(newFileObjects);
 
-    addSnackbar(getFileRemovedMessage(removedFileObj.file.name), { variant: 'info' });
+    !disableSnackBar && addSnackbar(getFileRemovedMessage(removedFileObj.file.name), { variant: 'info' });
   };
 
   return (
@@ -161,6 +182,10 @@ export function Dropzone({
                 ${disabled ? styles['disabled'] : ''}
                 `}
             {...getRootProps()}
+            style={{
+              minHeight: heightFitContent ? 'fit-content' : undefined,
+              overflow: heightFitContent ? 'visible' : 'hidden'
+            }}
           >
             <input {...getInputProps()} />
             <Box className={styles['textContainer']}>

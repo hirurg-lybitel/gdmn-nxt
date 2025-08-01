@@ -1,8 +1,8 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import { Avatar, Button, CardContent, Chip, Divider, Theme, Tooltip, Typography } from '@mui/material';
-import { useCallback, useMemo, useState } from 'react';
+import { Avatar, Button, CardContent, Chip, Divider, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -24,6 +24,8 @@ import { customerApi, useGetCustomerQuery, useGetCustomersQuery } from '../../..
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -44,7 +46,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     '&:hover': {
       color: theme.palette.primary.main,
       textDecoration: 'underline'
-    }
+    },
+    maxWidth: '200px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   }
 }));
 
@@ -148,7 +153,7 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
 
-  const CustomerSelect = useMemo(() => {
+  const customerSelect = useMemo(() => {
     return (
       <SortSelect
         isLoading={customersIsFetching || customersIsLoading}
@@ -194,19 +199,23 @@ export function TicketsList(props: ticketsListProps) {
         handleOnFilterChange={handleOnFilterChange}
         field={'userId'}
         label={'Постановщик'}
-        getOptionLabel={(option) => option.fullName}
+        getOptionLabel={(option) => option.fullName ?? option.userName ?? ''}
         getReturnedValue={(value) => value?.ID}
         sx={{ width: '100%', minWidth: '200px', flex: 1, maxWidth: '300px' }}
       />
     );
   }, [filteringData, handleOnFilterChange, users?.users, usersIsFetching, usersIsLoading]);
 
+  const theme = useTheme();
+  const matchDownXl = useMediaQuery(theme.breakpoints.down('xl'));
+  const matchDownLg = useMediaQuery(theme.breakpoints.down('lg'));
+
   const columns: GridColDef<ITicket>[] = [
     {
       field: 'title',
       headerName: 'Меню',
       flex: 1,
-      minWidth: 516,
+      minWidth: matchDownXl ? 400 : 516,
       sortable: false,
       resizable: false,
       renderHeader: () => (
@@ -237,7 +246,7 @@ export function TicketsList(props: ticketsListProps) {
             />
           </Button>
           <div style={{ flex: 1, paddingLeft: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-            {(!ticketsUser || isAdmin) && openerSelect}
+            {((!ticketsUser || isAdmin) && !matchDownXl) && openerSelect}
           </div>
         </div>
       ),
@@ -253,13 +262,13 @@ export function TicketsList(props: ticketsListProps) {
     {
       field: 'state',
       headerName: 'Статус',
-      width: 180,
+      width: matchDownLg ? 120 : 180,
       sortable: false,
       resizable: false,
       renderCell: (params) => {
-        return <div style={{ textAlign: 'center', width: '100%' }}>{params.row.state.name}</div>;
+        return <div style={{ textAlign: matchDownLg ? undefined : 'center', width: '100%' }}>{params.row.state.name}</div>;
       },
-      renderHeader: () => stateSelect
+      renderHeader: () => matchDownLg ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Статус</div> : stateSelect
     },
     ...(ticketsUser ? [] : [{
       field: 'company',
@@ -289,30 +298,30 @@ export function TicketsList(props: ticketsListProps) {
             style={{
               background: 'var(--color-primary-bg)', height: '40px', width: '40px', borderRadius: '100%',
               display: 'flex', justifyContent: 'center', alignItems: 'center',
-              fontWeight: 500, fontSize: '15px', position: 'relative', overflow: 'hidden'
+              fontWeight: 500, fontSize: '15px', position: 'relative'
             }}
           >
             <span style={{ zIndex: 1 }}>{getLetters(company?.NAME ?? '')}</span>
           </div>
         );
 
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', overflow: 'hidden' }}>
           <UserTooltip
             name={company?.FULLNAME ?? company?.NAME}
             phone={company?.PHONE}
             email={company?.EMAIL}
             customAvatar={avatar}
           >
-            <span>{company?.FULLNAME ?? company?.NAME}</span>
+            <span style={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>{company?.FULLNAME ?? company?.NAME}</span>
           </UserTooltip >
         </div>;
       },
-      renderHeader: () => CustomerSelect
+      renderHeader: () => matchDownLg ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Клиент</div> : customerSelect
     }]),
     {
       field: 'performer',
       headerName: 'Исполнитель',
-      width: 200,
+      width: matchDownXl ? 100 : 200,
       sortable: false,
       resizable: false,
       renderCell: (params: GridRenderCellParams<ITicket, any, any, GridTreeNodeWithRender>) => {
@@ -329,8 +338,46 @@ export function TicketsList(props: ticketsListProps) {
           </UserTooltip>}
         </div>;
       },
-      renderHeader: () => <div style={{ paddingRight: '8px', width: '100%' }}>{performerSelect}</div>
-    }
+      renderHeader: () => matchDownXl ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ paddingRight: '8px', width: '100%' }}>{performerSelect}</div>
+    },
+    ...(matchDownXl ? [{
+      field: 'sort',
+      type: 'actions',
+      width: 40,
+      sortable: false,
+      resizable: false,
+      renderCell: () => null,
+      renderHeader: () => {
+        return (
+          <MenuBurger
+            hasFilters={filteringData?.userId || filteringData?.performerKey || (matchDownLg && (filteringData?.state || filteringData?.companyKey))}
+            filter
+            items={({ closeMenu }) => [
+              <div key="openerSelect">
+                <div style={{ width: '250px' }} >
+                  {openerSelect}
+                </div>
+              </div>,
+              ...(matchDownLg ? [<div key="performerSelect">
+                <div style={{ width: '250px' }} >
+                  {stateSelect}
+                </div>
+              </div>,
+              <div key="customerSelect">
+                <div style={{ width: '250px' }} >
+                  {customerSelect}
+                </div>
+              </div>] : []),
+              <div key="performerSelect">
+                <div style={{ width: '250px' }} >
+                  {performerSelect}
+                </div>
+              </div>
+            ]}
+          />
+        );
+      }
+    }] : [])
   ];
 
   return (
@@ -382,7 +429,7 @@ export function TicketsList(props: ticketsListProps) {
             pagination
             paginationMode="server"
             paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-            rowCount={data?.count}
+            rowCount={data?.count ?? 0}
             pageSizeOptions={[10, 20, 50]}
             onPaginationModelChange={(data: any) => {
               setPaginationData((prevState) => ({

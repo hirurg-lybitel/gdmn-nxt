@@ -3,20 +3,20 @@ import { Badge, IconButton, Tooltip } from '@mui/material';
 
 interface Props {
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   hasFilters?: boolean;
 }
 
 export default function CustomFilterButton({
   disabled = false,
-  onClick = () => {},
+  onClick = () => { },
   hasFilters = false
-}: Props) {
+}: Readonly<Props>) {
   return (
     <IconButton
       onClick={onClick}
       disabled={disabled}
-      size ="small"
+      size="small"
     >
       <Tooltip
         arrow

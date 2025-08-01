@@ -13,6 +13,7 @@ import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/c
 import { generatePassword } from '@gsbelarus/util-useful';
 import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
 import { emailValidation } from '@gdmn-nxt/helpers/validators';
+import UserInfo from '../user-info/user-Info';
 
 export interface TicketsCustomerAddProps {
   open: boolean;
@@ -123,33 +124,10 @@ export function TicketsCustomerAdd({
                 error={getIn(formik.touched, 'email') && getIn(formik.errors, 'email')}
                 helperText={getIn(formik.touched, 'email') && getIn(formik.errors, 'email')}
               />
-              <div
-                style={{
-                  display: 'flex', gap: '16px', border: '1px solid var(--color-borders)',
-                  padding: '16px', position: 'relative', borderRadius: 'var(--border-radius)',
-                  flexDirection: 'column'
-                }}
-              >
-                <div style={{ position: 'absolute', top: '-14px', left: '10px', background: 'var(--color-paper-bg)', padding: '0px 5px' }}>
-                  <Typography variant="caption">
-                    Данные для входа
-                  </Typography>
-                </div>
-                <TextField
-                  fullWidth
-                  label="Логин"
-                  type="text"
-                  disabled
-                  value={formik.values.admin?.name}
-                />
-                <TextField
-                  fullWidth
-                  label="Одноразовый пароль"
-                  type="text"
-                  disabled
-                  value={formik.values.admin?.password}
-                />
-              </div>
+              <UserInfo
+                userName={formik.values.admin?.name}
+                password={formik.values.admin?.password}
+              />
             </>}
           </div>
         </Form>

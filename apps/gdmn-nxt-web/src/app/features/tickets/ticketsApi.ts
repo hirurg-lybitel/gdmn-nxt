@@ -10,7 +10,7 @@ export type ITicketUserRequestResult = IRequestResult<{ users: ITicketUser[]; }>
 
 export const ticketsApi = createApi({
   reducerPath: 'ticketSystem',
-  tagTypes: ['tickets', 'ticketsStates', 'users'],
+  tagTypes: ['tickets', 'ticketsStates', 'users', 'messages'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<{ tickets: ITicket[], count: number, closed: number, open: number; }, Partial<{ active: boolean; } & IQueryOptions> | void>({
@@ -80,7 +80,7 @@ export const ticketsApi = createApi({
         };
       },
       transformResponse: (response: ITicketMessagesRequestResult) => response.queries?.messages || null,
-      providesTags: ['tickets']
+      providesTags: ['messages']
     }),
     addTicketMessage: builder.mutation<ITicketsRequestResult, Partial<ITicketMessage>>({
       query: (body) => ({
@@ -88,7 +88,22 @@ export const ticketsApi = createApi({
         body: body,
         method: 'POST'
       }),
-      invalidatesTags: ['tickets']
+      invalidatesTags: ['messages']
+    }),
+    updateTicketMessage: builder.mutation<ITicketMessage, Partial<ITicketMessage>>({
+      query: ({ ID, ...body }) => ({
+        url: `/messages/${ID}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: () => ['messages']
+    }),
+    deleteTicketMessage: builder.mutation<{ id: number; }, number>({
+      query: (id) => ({
+        url: `/messages/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['messages']
     }),
     getAllTicketUser: builder.query<{ users: ITicketUser[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
@@ -131,5 +146,7 @@ export const {
   useUpdateTicketMutation,
   useGetAllTicketUserQuery,
   useAddTicketUserMutation,
-  useDeleteTicketUserMutation
+  useDeleteTicketUserMutation,
+  useUpdateTicketMessageMutation,
+  useDeleteTicketMessageMutation
 } = ticketsApi;

@@ -6,6 +6,7 @@ import { useGetAllTicketUserQuery } from 'apps/gdmn-nxt-web/src/app/features/tic
 import { useMemo, useState } from 'react';
 import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
 import { Form, FormikProvider, useFormik } from 'formik';
+import UserInfo from '../user-info/user-Info';
 
 export interface CustomerEditProps {
   open: boolean;
@@ -38,54 +39,6 @@ export function CustomerEdit({
       onSubmit(values, false);
     },
   });
-
-  const content = useMemo(() => {
-    if (isLoading || isFetching) {
-      return (
-        <>
-          <Skeleton
-            variant="rectangular"
-            height={40}
-            width={'100%'}
-            style={{ borderRadius: 'var(--border-radius)' }}
-          />
-          <Skeleton
-            variant="rectangular"
-            height={40}
-            width={'100%'}
-            style={{ borderRadius: 'var(--border-radius)' }}
-          />
-        </>
-      );
-    }
-    if (!user?.oneTimePassword) {
-      return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: '0.4', flex: 1, paddingBottom: '10px' }}>
-          <Typography variant="h6">
-            {!user ? 'Пользователь не найден' : 'Пользователь сменил пароль'}
-          </Typography>
-        </div>
-      );
-    }
-    return (
-      <>
-        <TextField
-          fullWidth
-          label="Логин"
-          type="text"
-          disabled
-          value={user?.userName ?? ''}
-        />
-        <TextField
-          fullWidth
-          label="Одноразовый пароль"
-          type="text"
-          disabled
-          value={user?.password ?? ''}
-        />
-      </>
-    );
-  }, [isFetching, isLoading, user]);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
@@ -121,20 +74,13 @@ export function CustomerEdit({
                 </div>
               )}
             />
-            <div
-              style={{
-                display: 'flex', gap: '16px', border: '1px solid var(--color-borders)',
-                padding: '16px', position: 'relative', borderRadius: 'var(--border-radius)',
-                flexDirection: 'column', minHeight: '130px'
-              }}
-            >
-              <div style={{ position: 'absolute', top: '-14px', left: '10px', background: 'var(--color-paper-bg)', padding: '0px 5px' }}>
-                <Typography variant="caption">
-                  Данные для входа
-                </Typography>
-              </div>
-              {content}
-            </div>
+            <UserInfo
+              isLoading={isLoading || isFetching}
+              userNotFound={!user}
+              passwordChanged={!user?.oneTimePassword}
+              userName={user?.userName}
+              password={user?.password}
+            />
           </div>
         </Form>
       </FormikProvider>

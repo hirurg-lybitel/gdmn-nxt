@@ -186,6 +186,10 @@ const save: SaveHandler<ITicketSave> = async (
 
   const openState = ticketStates.find(state => state.code === 1);
 
+  if (!openState?.ID) {
+    throw new Error('Не удалось определить статус тикета');
+  }
+
   try {
     const ticket = await fetchAsSingletonObject<ITicketSave>(
       `INSERT INTO USR$CRM_TICKET(USR$TITLE,USR$COMPANYKEY,USR$USERKEY,USR$OPENAT,USR$STATE,USR$PERFORMERKEY)
