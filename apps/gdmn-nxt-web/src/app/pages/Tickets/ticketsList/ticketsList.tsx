@@ -25,6 +25,7 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -342,41 +343,35 @@ export function TicketsList(props: ticketsListProps) {
     ...(matchDownXl ? [{
       field: 'sort',
       type: 'actions',
-      width: 30,
+      width: 40,
       sortable: false,
       resizable: false,
       renderCell: () => null,
       renderHeader: () => {
-        const Container = ({ children }: { children: ReactNode; }) => {
-          return (
-            <div style={{ width: '250px' }} >
-              {children}
-            </div>
-          );
-        };
         return (
           <MenuBurger
-            buttons={false}
+            hasFilters={filteringData?.userId || filteringData?.performerKey || (matchDownLg && (filteringData?.state || filteringData?.companyKey))}
+            filter
             items={({ closeMenu }) => [
               <div key="openerSelect">
-                <Container >
+                <div style={{ width: '250px' }} >
                   {openerSelect}
-                </Container>
+                </div>
               </div>,
               ...(matchDownLg ? [<div key="performerSelect">
-                <Container >
+                <div style={{ width: '250px' }} >
                   {stateSelect}
-                </Container>
+                </div>
               </div>,
               <div key="customerSelect">
-                <Container >
+                <div style={{ width: '250px' }} >
                   {customerSelect}
-                </Container>
+                </div>
               </div>] : []),
               <div key="performerSelect">
-                <Container >
+                <div style={{ width: '250px' }} >
                   {performerSelect}
-                </Container>
+                </div>
               </div>
             ]}
           />
