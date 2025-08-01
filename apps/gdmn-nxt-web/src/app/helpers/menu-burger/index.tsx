@@ -45,7 +45,7 @@ export default function MenuBurger({
         {cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })}
       </MenuItem>
     ) : cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })
-    ), [handleClose, items, disabled]);
+    ), [items, handleClose, filter]);
 
   if (MenuItems.length === 0) return null;
 

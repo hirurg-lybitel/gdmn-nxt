@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ticketsApi, useAddTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,7 +16,7 @@ import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { useGetUsersQuery } from '../../../features/systemUsers';
-import { useGetCustomersQuery, customerApi } from '../../../features/customer/customerApi_new';
+import { customerApi } from '../../../features/customer/customerApi_new';
 import ReactMarkdown from 'react-markdown';
 import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
@@ -26,6 +26,13 @@ import PhoneDialog from './phoneDialog';
 import { profileSettingsApi, useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
+import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
+import ItemButtonSave from '@gdmn-nxt/components/customButtons/item-button-save/item-button-save';
+import ItemButtonCancel from '@gdmn-nxt/components/customButtons/item-button-cancel/item-button-cancel';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
+import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
+import { useFormik } from 'formik';
 
 interface ITicketChatProps {
 
@@ -39,6 +46,7 @@ const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageF
 
   const handleDelete = (index: number) => (e: MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     onDelete && onDelete(index);
   };
 
@@ -626,9 +634,9 @@ export default function TicketChat(props: ITicketChatProps) {
             )}
             <div style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
-                {(isLoading ? fakeMessages : messages).map((data, index) => <UserMessage
+                {(isLoading ? fakeMessages : messages).map((message, index) => <UserMessage
                   isLoading={isLoading}
-                  {...data}
+                  message={message}
                   key={index}
                 />)}
               </div>
@@ -708,11 +716,17 @@ export default function TicketChat(props: ITicketChatProps) {
   );
 };
 
-interface IUserMessage extends ITicketMessage {
+interface IUserMessage {
   isLoading: boolean;
+  message: ITicketMessage;
 }
 
-const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMessage) => {
+const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
+  const [updateMessage, { isLoading: updateIsLoading }] = useUpdateTicketMessageMutation();
+  const [deleteMessage, { isLoading: deleteIsLoading }] = useDeleteTicketMessageMutation();
+
+  const isLoading = isLoadingProp;
+
   const avatar = useMemo(() => {
     if (isLoading) {
       return (
@@ -726,17 +740,81 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
     }
     return (
       <UserTooltip
-        name={user.fullName}
-        phone={user.phone}
-        email={user.email}
-        avatar={user.avatar}
+        name={message.user.fullName}
+        phone={message.user.phone}
+        email={message.user.email}
+        avatar={message.user.avatar}
       >
-        <Avatar src={user.avatar} style={{ height: '30px', width: '30px', zIndex: 2 }} />
+        <Avatar src={message.user.avatar} style={{ height: '30px', width: '30px', zIndex: 2 }} />
       </UserTooltip>
     );
-  }, [isLoading, user.avatar, user.email, user.fullName, user.phone]);
+  }, [isLoading, message.user.avatar, message.user.email, message.user.fullName, message.user.phone]);
 
-  const memoFiles = useMemo(() => (files && files?.length > 0) && <FilesView files={files} />, [files]);
+  const [confirmDialog] = useConfirmation();
+
+  const [editMode, setEditMode] = useState(false);
+
+  const formik = useFormik<ITicketMessage>({
+    enableReinitialize: true,
+    validateOnBlur: false,
+    initialValues: {
+      ...message
+    },
+    onSubmit: (values, { resetForm }) => {
+      resetForm();
+      onClose();
+      updateMessage(values);
+    },
+  });
+
+  const handleEditClick = () => {
+    setEditMode(true);
+  };
+
+  const onClose = () => {
+    setEditMode(false);
+    formik.resetForm();
+  };
+
+  const handleCancelClick = () => {
+    if (formik.dirty) {
+      confirmDialog.setOpen(true);
+      confirmDialog.setOptions({
+        title: 'Внимание',
+        text: 'Изменения будут утеряны. Продолжить?',
+        dangerous: true,
+        confirmClick: () => {
+          confirmDialog.setOpen(false);
+          onClose();
+        },
+      });
+      return;
+    }
+
+    onClose();
+  };
+
+  const memoFiles = useMemo(() => {
+    if (!formik.values.files || formik.values.files?.length <= 0) return;
+    return <FilesView
+      files={formik.values.files}
+      onDelete={editMode ? (deleteFileIndex) => {
+        console.log(deleteFileIndex);
+        const newFiles = formik.values.files?.filter((file, index) => index !== deleteFileIndex);
+        formik.setFieldValue('files', newFiles);
+      } : undefined}
+    />;
+  }, [editMode, formik]);
+
+  const onDelete = (messageId: number) => {
+    deleteMessage(messageId);
+  };
+
+  const handleChangeMessage = (e: any) => {
+    formik.setFieldValue('body', e.target.value);
+  };
+
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
 
   return (
     <div
@@ -745,6 +823,7 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
         justifyContent: 'flex-start',
       }}
     >
+      {confirmDialog.dialog}
       {avatar}
       <div
         style={{
@@ -753,21 +832,91 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
           marginLeft: '10px'
         }}
       >
-        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px' }}>
-          <Typography variant="body2">{user.fullName}</Typography>
+        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px', alignItems: 'center' }}>
+          <></>
+          <Typography variant="body2">{isLoading ? '' : message.user.fullName}</Typography>
           <Typography variant={'caption'}>
-            {(sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(sendAt)}>
+            {(message.sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(message.sendAt)}>
               <div>
-                {timeAgo(sendAt)}
+                {timeAgo(message.sendAt)}
               </div>
             </Tooltip>}
           </Typography>
+          <div style={{ flex: 1 }} />
+          {(message.user.ID === userId && !isLoading) && <MenuBurger
+            disabled={updateIsLoading || deleteIsLoading}
+            items={({ closeMenu }) => [
+              editMode ? (
+                <ItemButtonSave
+                  key="save"
+                  size={'small'}
+                  label="Сохранить"
+                  onClick={(e) => {
+                    formik.handleSubmit();
+                    closeMenu();
+                  }}
+                />)
+                : <></>,
+              editMode
+                ? (
+                  <ItemButtonCancel
+                    key="cancel"
+                    label={'Отменить'}
+                    onClick={(e) => {
+                      handleCancelClick();
+                      closeMenu();
+                    }}
+                  />)
+                : <></>,
+              !editMode
+                ? (
+                  <ItemButtonEdit
+                    key="edit"
+                    size={'small'}
+                    label="Редактировать"
+                    onClick={(e) => {
+                      handleEditClick();
+                      closeMenu();
+                    }}
+                  />)
+                : <></>,
+              <Confirmation
+                key="delete"
+                title="Удалить сообщение?"
+                text={'Его невозможно будет восстановить'}
+                dangerous
+                onConfirm={() => {
+                  closeMenu();
+                  onDelete(message.ID);
+                }}
+                onClose={closeMenu}
+              >
+                <ItemButtonDelete
+                  label="Удалить"
+                  confirmation={false}
+                />
+              </Confirmation>,
+            ]}
+          />}
         </div>
         {!isLoading && <Divider />}
-        {memoFiles && <div style={{ display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px', borderRadius: 'var(--border-radius)', overflow: 'hidden' }}>
-          {memoFiles}
-        </div>}
-        {message && <div style={{ padding: '5px 10px' }}>
+        {(!isLoading && memoFiles) && (
+          <div
+            style={{
+              display: 'flex', gap: '8px', background: 'var(--color-card-bg)', flexDirection: 'column', margin: '8px',
+              borderRadius: 'var(--border-radius)', overflow: 'hidden'
+            }}
+          >
+            {memoFiles}
+          </div>
+        )}
+        {editMode ? (
+          <MarkdownTextfield
+            value={formik.values.body}
+            onChange={handleChangeMessage}
+            minRows={3}
+          />
+        ) : message && <div style={{ padding: '5px 10px' }}>
           <Box
             sx={{
               opacity: isLoading ? 0 : 1, wordBreak: 'break-word',
@@ -780,7 +929,7 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
             }}
           >
             <ReactMarkdown>
-              {message}
+              {message.body}
             </ReactMarkdown>
           </Box>
         </div>}

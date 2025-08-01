@@ -1,8 +1,8 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ITicketMessage, ITicketMessageFile, SaveHandler, UserType } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ITicketMessage, ITicketMessageFile, RemoveOneHandler, SaveHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
 import { bin2String } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
-import { buckets, getBase64MinioFile, putBase64MinioFile } from '@gdmn/minio';
+import { buckets, getBase64MinioFile, minioClient, putBase64MinioFile } from '@gdmn/minio';
 const find: FindHandler<ITicketMessage> = async (
   sessionID,
   clause = {},
@@ -185,6 +185,8 @@ const save: SaveHandler<ITicketMessageSave> = async (
     };
 
     await Promise.all(renameDuplicates(files).map(async (file) => {
+      const fileName = `${message.ID}/${file.fileName}`;
+
       await fetchAsSingletonObject<ITicketMessageSave>(
         `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME)
           VALUES(:TICKETRECKEY, :NAME)
@@ -192,11 +194,11 @@ const save: SaveHandler<ITicketMessageSave> = async (
         `,
         {
           TICKETRECKEY: message?.ID,
-          NAME: file.fileName,
+          NAME: fileName,
         }
       );
 
-      return await putBase64MinioFile(buckets.ticketMessages, file.fileName, file.content, file.size);
+      return await putBase64MinioFile(buckets.ticketMessages, fileName, file.content, file.size);
     }));
 
     await releaseTransaction();
@@ -208,8 +210,98 @@ const save: SaveHandler<ITicketMessageSave> = async (
   }
 };
 
+const update: UpdateHandler<ITicketMessage> = async (
+  sessionID,
+  id,
+  metadata,
+  type
+) => {
+  const { fetchAsSingletonObject, releaseTransaction, string2Blob } = await startTransaction(sessionID);
+
+  try {
+    const ID = id;
+
+    const {
+      body,
+      files
+    } = metadata;
+
+    const blobBody = await string2Blob(body);
+
+    const updatedMessage = await fetchAsSingletonObject<ITicketMessage>(
+      `UPDATE USR$CRM_TICKETREC
+      SET
+        USR$BODY = :BODY
+      WHERE
+        ID = :ID
+      RETURNING ID`,
+      {
+        ID,
+        BODY: blobBody,
+      }
+    );
+
+    const oldMessage = await findOne(sessionID, { id: id }, type);
+
+    const fileNames = new Set(files.map(obj => obj.fileName));
+
+    const deleteFiles = oldMessage.files.filter(obj => !fileNames.has(obj.fileName));
+
+    if (minioClient) {
+      await Promise.all(deleteFiles.map(async (file) => {
+        return await minioClient?.removeObject(buckets.ticketMessages, file.fileName);
+      }));
+    } else {
+      console.error('minioClient не определен');
+    }
+
+    await Promise.all(deleteFiles.map(async (file) => {
+      await fetchAsSingletonObject<ITicketMessageSave>(
+        `DELETE FROM USR$CRM_TICKETFILE WHERE USR$NAME = :NAME
+          RETURNING ID
+        `,
+        {
+          NAME: file.fileName,
+        }
+      );
+    }));
+
+    await releaseTransaction();
+
+    return updatedMessage;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
+const remove: RemoveOneHandler = async (
+  sessionID,
+  id,
+  type
+) => {
+  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+
+  try {
+    const deletedMessage = await fetchAsSingletonObject<{ ID: number; }>(
+      `DELETE FROM USR$CRM_TICKETREC WHERE ID = :id
+      RETURNING ID`,
+      { id }
+    );
+
+    await releaseTransaction();
+
+    return !!deletedMessage.ID;
+  } catch (error) {
+    await releaseTransaction(false);
+    throw new Error(error);
+  }
+};
+
 export const ticketsMessagesRepository = {
   find,
   findOne,
-  save
+  save,
+  update,
+  remove
 };
