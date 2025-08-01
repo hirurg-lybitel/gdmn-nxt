@@ -24,6 +24,8 @@ import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import PhoneDialog from './phoneDialog';
 import { profileSettingsApi, useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import ExpandLessOutlinedIcon from '@mui/icons-material/ExpandLessOutlined';
 
 interface ITicketChatProps {
 
@@ -549,6 +551,7 @@ export default function TicketChat(props: ITicketChatProps) {
     return (
       <TextField
         variant="standard"
+        disabled={ticketIsFetching || ticketIsFetching}
         value={ticket?.company.FULLNAME ?? ticket?.company.NAME ?? ''}
         label={'Клиент'}
         InputProps={{
@@ -556,12 +559,13 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketsUser]);
+  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketIsFetching, ticketsUser]);
 
   const memoUser = useMemo(() => {
     if (ticketsUser && !isAdmin) return;
     return (
       <TextField
+        disabled={ticketIsFetching || ticketIsFetching}
         variant="standard"
         value={ticket?.sender.fullName ?? ''}
         label={'Постановщик'}
@@ -570,7 +574,10 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
+  }, [isAdmin, ticket?.sender.fullName, ticketIsFetching, ticketsUser]);
+
+  const [enableTransition, setEnableTransition] = useState(true);
+  const [expand, setExpand] = useState(true);
 
   return (
     <>
@@ -600,25 +607,32 @@ export default function TicketChat(props: ITicketChatProps) {
         <Divider />
         <CardContent style={{ padding: '0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-            {(ticket?.needCall && !ticketsUser && !closed) && <div style={{ background: 'var(--color-card-bg)', width: '100%', padding: '5px', display: 'flex' }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', }}>
-                <span>Представитель клиента запросил звонок{ticket?.sender.phone ? ', вы можете позвонить ему по номеру:' : ''}</span>
-                <a className={classes.link} href={`tel:${ticket?.sender.phone}`}>{ticket?.sender.phone}</a>
-              </div>
-              <Confirmation
-                key="delete"
-                title="Звонок завершен"
-                text={'Пометить что звонок был завершен?'}
-                dangerous
-                onConfirm={handleEndCall}
+            {(ticket?.needCall && !ticketsUser && !closed) && (
+              <div
+                style={{
+                  background: 'var(--color-card-bg)', width: '100%',
+                  padding: '5px', display: 'flex', borderBottom: '1px solid var(--color-paper-bg)'
+                }}
               >
-                <IconButton>
-                  <CloseIcon color="action" fontSize="small" />
-                </IconButton>
-              </Confirmation>
-            </div>}
-            <div style={{ flex: 1, padding: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content' }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                  <span>Представитель клиента запросил звонок{ticket?.sender.phone ? ', вы можете позвонить ему по номеру:' : ''}</span>
+                  <a className={classes.link} href={`tel:${ticket?.sender.phone}`}>{ticket?.sender.phone}</a>
+                </div>
+                <Confirmation
+                  key="delete"
+                  title="Звонок завершен"
+                  text={'Пометить что звонок был завершен?'}
+                  dangerous
+                  onConfirm={handleEndCall}
+                >
+                  <IconButton>
+                    <CloseIcon color="action" fontSize="small" />
+                  </IconButton>
+                </Confirmation>
+              </div>
+            )}
+            <div style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
                 {(isLoading ? fakeMessages : messages).map((data, index) => <UserMessage
                   isLoading={isLoading}
                   {...data}
@@ -627,21 +641,35 @@ export default function TicketChat(props: ITicketChatProps) {
               </div>
             </div>
             {!closed && <>
-              <Divider />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0 }}>
+              <Divider style={{ borderTop: '2px solid var(--color-paper-bg)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-30px', right: '8px', zIndex: 4 }}>
+                  <IconButton onClick={() => setExpand(!expand)}>
+                    {expand ? <ExpandLessOutlinedIcon /> : <ExpandMoreOutlinedIcon />}
+                  </IconButton>
+                </div>
                 <MarkdownTextfield
+                  onFocus={() => setEnableTransition(false)}
+                  onBlur={() => setEnableTransition(true)}
                   placeholder="Сообщение"
                   disabled={isLoading}
                   value={files.length > 0 ? '' : message}
                   onChange={(e) => setMessage(e.target.value)}
                   onLoadFiles={attachmentsChange}
-                  minRows={8}
-                  maxRows={20}
+                  rows={expand ? undefined : 1}
+                  sx={{
+                    '& .MuiInputBase-input': {
+                      transition: enableTransition ? '0.3s' : undefined
+                    }
+                  }}
+                  minRows={expand ? 8 : undefined}
+                  maxRows={expand ? 20 : undefined}
                   fileUpload
                   maxFileSize={maxFileSize}
                   filesLimit={maxFilesCount}
                   maxTotalFilesSize={maxFileSize}
                 />
+
                 <div style={{ display: 'flex', width: '100%' }}>
                   <div>
                     <input
@@ -713,8 +741,6 @@ const UserMessage = ({ isLoading, user, body: message, sendAt, files }: IUserMes
       </UserTooltip>
     );
   }, [isLoading, user.avatar, user.email, user.fullName, user.phone]);
-
-  const theme = useTheme();
 
   const memoFiles = useMemo(() => (files && files?.length > 0) && <FilesView files={files} />, [files]);
 
