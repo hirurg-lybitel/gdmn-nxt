@@ -1,19 +1,24 @@
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import { cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
+import CustomFilterButton from '../custom-filter-button';
 
 interface ItemsProps {
-  closeMenu: () => void
+  closeMenu: () => void;
 }
 
 interface Props {
   disabled?: boolean;
   items: (props: ItemsProps) => JSX.Element[];
+  filter?: boolean;
+  hasFilters?: boolean;
 }
 
 export default function MenuBurger({
   items,
-  disabled
+  disabled,
+  filter,
+  hasFilters
 }: Readonly<Props>) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -35,17 +40,18 @@ export default function MenuBurger({
     closeMenu: handleClose
   })
     .filter(({ key }) => !!key)
-    .map((item, index) => (
+    .map((item, index) => !filter ? (
       <MenuItem key={index} style={{ padding: 0 }}>
         {cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })}
       </MenuItem>
-    )), [handleClose, items, disabled]);
+    ) : cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })
+    ), [items, handleClose, filter]);
 
   if (MenuItems.length === 0) return null;
 
   return (
     <div>
-      <IconButton
+      {filter ? <CustomFilterButton hasFilters={hasFilters} onClick={handleMenuClick} /> : <IconButton
         id="basic-button"
         aria-controls={menuOpen ? 'basic-menu' : undefined}
         aria-haspopup="true"
@@ -56,6 +62,8 @@ export default function MenuBurger({
       >
         <MoreVertIcon />
       </IconButton>
+      }
+
       <Menu
         id="basic-menu"
         anchorEl={anchorEl}

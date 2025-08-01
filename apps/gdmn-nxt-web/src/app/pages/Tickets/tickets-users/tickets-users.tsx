@@ -270,7 +270,7 @@ export function TicketsUsers(props: TicketsCustomersProps) {
                 pagination
                 paginationMode="server"
                 paginationModel={{ page: paginationData.pageNo, pageSize: paginationData.pageSize }}
-                rowCount={data?.count}
+                rowCount={data?.count ?? 0}
                 pageSizeOptions={[10, 20, 50]}
                 onPaginationModelChange={(data: any) => {
                   setPaginationData((prevState) => ({

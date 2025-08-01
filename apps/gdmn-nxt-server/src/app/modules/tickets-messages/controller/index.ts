@@ -49,7 +49,57 @@ const createMessage: RequestHandler = async (req, res) => {
   }
 };
 
+const updateById: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res
+      .status(422)
+      .send(resultError('Field ID is not defined or is not numeric'));
+  }
+  const userId = req.user['id'];
+
+  try {
+    const updatedMessage = await ticketsMessagesService.updateById(
+      req.sessionID,
+      id,
+      userId,
+      req.body,
+      req.user['type']
+    );
+
+    const result: IRequestResult = {
+      queries: { messages: [updatedMessage] },
+      _params: [{ id }],
+      _schema: {}
+    };
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
+const removeById: RequestHandler = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res
+      .status(422)
+      .send(resultError('Field ID is not defined or is not numeric'));
+  }
+
+  const userId = req.user['id'];
+
+
+  try {
+    await ticketsMessagesService.removeById(req.sessionID, id, userId, req.user['type']);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
+
 export const ticketsMessagesController = {
   findAll,
-  createMessage
+  createMessage,
+  updateById,
+  removeById
 };

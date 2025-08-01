@@ -6,7 +6,7 @@ services:
     container_name: session-store
     restart: always
     ports:
-      - "6379:6379"
+      - '6379:6379'
     networks:
       - proxy_network
 
@@ -30,9 +30,9 @@ services:
         condition: service_started
     container_name: crm_server
     ports:
-      - "${NX_SERVER_PORT}:${NX_SERVER_PORT}"
-      - "${NX_SOCKET_NOTIFICATIONS_PORT}:${NX_SOCKET_NOTIFICATIONS_PORT}"
-      - "${NX_SOCKET_STREAMING_UPDATE_PORT}:${NX_SOCKET_STREAMING_UPDATE_PORT}"
+      - '${NX_SERVER_PORT}:${NX_SERVER_PORT}'
+      - '${NX_SOCKET_NOTIFICATIONS_PORT}:${NX_SOCKET_NOTIFICATIONS_PORT}'
+      - '${NX_SOCKET_STREAMING_UPDATE_PORT}:${NX_SOCKET_STREAMING_UPDATE_PORT}'
     volumes:
       - type: bind
         source: ssl
@@ -45,7 +45,6 @@ services:
       - TZ=Europe/Minsk
     networks:
       - proxy_network
-
 networks:
   proxy_network:
     external: true

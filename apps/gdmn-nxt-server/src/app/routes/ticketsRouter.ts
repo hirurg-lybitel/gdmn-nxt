@@ -18,6 +18,8 @@ router.get('/states/:id', ticketsStatesController.findOne);
 
 router.get('/messages/:ticketId', ticketsMessagesController.findAll);
 router.post('/messages', ticketsMessagesController.createMessage);
+router.put('/messages/:id', ticketsMessagesController.updateById);
+router.delete('/messages/:id', ticketsMessagesController.removeById);
 
 router.get('/users', ticketsUserController.findAll);
 router.post('/users', ticketsUserController.create);
