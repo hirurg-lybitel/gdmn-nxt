@@ -11,7 +11,7 @@ import { PreviewList } from './components/PreviewList';
 const getFileAddedMessage = (fileName: string) =>
   `Файл ${fileName} успешно добавлен.`;
 
-const getFileLimitExceedMessage = (filesLimit: number) =>
+export const getFileLimitExceedMessage = (filesLimit: number) =>
   `Превышено максимально допустимое количество файлов.\nРазрешено только ${filesLimit}`;
 
 const getFileRemovedMessage = (fileName: string) =>

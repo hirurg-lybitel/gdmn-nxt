@@ -8,6 +8,7 @@ import { FileObject } from '@gdmn-nxt/components/dropzone/types';
 import { convertBytesToMbsOrKbs, readFile } from '@gdmn-nxt/components/dropzone/helpers';
 import styles from './mardown-text-filed.module.less';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
+import { getFileLimitExceedMessage } from '@gdmn-nxt/components/dropzone/dropzone';
 
 type IMarkdownTextfieldProps = TextFieldProps & {
   containerStyle?: CSSProperties;
@@ -138,7 +139,7 @@ const Container = ({ children, fullHeight, onChange, maxFileSize, filesLimit, ma
     evt
   ) => {
     if (filesLimit && (files.length + fileObjects.length) > filesLimit) {
-      addSnackbar(`Превышено максимально допустимое количество файлов.\nРазрешено только ${filesLimit}`, { variant: 'error' });
+      addSnackbar(getFileLimitExceedMessage(filesLimit), { variant: 'error' });
       return;
     }
 
@@ -180,7 +181,7 @@ const Container = ({ children, fullHeight, onChange, maxFileSize, filesLimit, ma
           case ErrorCode.FileTooLarge:
             return msg + `\nРазмер файла превышает ${convertBytesToMbsOrKbs(maxFileSize ?? 0)}.`;
           case ErrorCode.TooManyFiles:
-            return msg + `\nПревышено максимально допустимое количество файлов.\nРазрешено только ${filesLimit}.`;
+            return msg + '\n' + getFileLimitExceedMessage(filesLimit ?? 0);
           default:
             return msg + '';
         }
