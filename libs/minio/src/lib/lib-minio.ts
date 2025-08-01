@@ -36,9 +36,8 @@ async function initBuckets() {
       } else {
         console.log(`📦 Bucket ${bucketName} already exists`);
       }
-
     }
-    console.log(`📦 Buckets initialized`);
+    console.log('📦 Buckets initialized');
   } catch (error) {
     console.error(error);
   }
@@ -75,7 +74,9 @@ export const getBase64MinioFile = async (bucket: buckets, path: string) => {
       chunks.push(chunk as Buffer);
     }
 
-    const buffer = Buffer.concat(chunks);
+    // TODO: временное any (наверняка нет) из-за ошибки в докере
+    // Type 'Buffer' is not assignable to type 'Uint8Array<ArrayBufferLike>'.
+    const buffer = Buffer.concat(chunks as any);
     const base64 = buffer.toString('base64');
 
     return {
