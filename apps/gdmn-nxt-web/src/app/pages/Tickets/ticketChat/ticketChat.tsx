@@ -325,11 +325,7 @@ export default function TicketChat(props: ITicketChatProps) {
           }
         }}
       >
-        <DialogTitle>
-          <Typography variant="h6">
-            Отправка файлов
-          </Typography>
-        </DialogTitle>
+        <DialogTitle>Отправка файлов</DialogTitle>
         <DialogContent>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
             <div
