@@ -704,7 +704,7 @@ export default function TicketChat(props: ITicketChatProps) {
           </div>
         </CardContent>
       </CustomizedCard >
-      <div style={{ width: '280px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: 0 }}>
+      <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '16px' }}>
         {memoPerformer}
         {memoStatus}
         {memoCustomer}
