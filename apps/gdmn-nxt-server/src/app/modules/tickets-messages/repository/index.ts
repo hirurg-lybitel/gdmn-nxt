@@ -177,7 +177,7 @@ const save: SaveHandler<ITicketMessageSave> = async (
           const baseName = lastDot !== -1 ? name.slice(0, lastDot) : name;
           const extension = lastDot !== -1 ? name.slice(lastDot) : '';
 
-          const newName = `${baseName} (${names[name]}) ${extension}`;
+          const newName = extension ? `${baseName} (${names[name]}) ${extension}` : `${baseName} (${names[name]})`;
           names[name]++;
           return { ...item, fileName: newName };
         }
