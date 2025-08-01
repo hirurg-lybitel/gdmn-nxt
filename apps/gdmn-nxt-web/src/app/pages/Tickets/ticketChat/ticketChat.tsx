@@ -467,6 +467,111 @@ export default function TicketChat(props: ITicketChatProps) {
     dispatch(customerApi.util.invalidateTags(['Customers']));
   }, [dispatch, ticket, updateTicket]);
 
+  const memoPerformer = useMemo(() => {
+    if (ticketsUser) {
+      return (
+        <TextField
+          variant="standard"
+          value={ticket?.performer?.fullName ?? ''}
+          label={'Исполнитель'}
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+      );
+    }
+    return (
+      <Autocomplete
+        fullWidth
+        size="small"
+        disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+        loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+        loadingText="Загрузка данных..."
+        options={systemUsers ?? []}
+        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
+        getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
+        onChange={(e, value) => {
+          updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
+        }}
+        renderInput={(params) => (
+          <TextField
+            variant="standard"
+            {...params}
+            label={'Исполнитель'}
+          />
+        )}
+      />
+    );
+  }, [systemUsers, systemUsersIsFetching, systemUsersIsLoading, ticket, ticketIsFetching, ticketsUser, updateTicket]);
+
+  const memoStatus = useMemo(() => {
+    if (ticketsUser) {
+      return (
+        <TextField
+          variant="standard"
+          value={ticket?.state.name ?? ''}
+          label={'Статус'}
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+      );
+    }
+    return (
+      <Autocomplete
+        fullWidth
+        size="small"
+        disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+        loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+        loadingText="Загрузка данных..."
+        options={states ?? []}
+        value={states?.find((state) => state.ID === ticket?.state.ID) ?? null}
+        getOptionLabel={(option) => option.name}
+        onChange={(e, value) => handleUpdateStatus(value)}
+        sx={{
+          '& .MuiAutocomplete-clearIndicator': {
+            display: 'none'
+          },
+        }}
+        renderInput={(params) => (
+          <TextField
+            variant="standard"
+            {...params}
+            label={'Статус'}
+          />
+        )}
+      />
+    );
+  }, [handleUpdateStatus, states, statesIsFetching, statesIsLoading, ticket?.state.ID, ticket?.state.name, ticketIsFetching, ticketsUser]);
+
+  const memoCustomer = useMemo(() => {
+    if (ticketsUser) return;
+    return (
+      <TextField
+        variant="standard"
+        value={ticket?.company.FULLNAME ?? ticket?.company.NAME ?? ''}
+        label={'Клиент'}
+        InputProps={{
+          readOnly: true,
+        }}
+      />
+    );
+  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketsUser]);
+
+  const memoUser = useMemo(() => {
+    if (ticketsUser && !isAdmin) return;
+    return (
+      <TextField
+        variant="standard"
+        value={ticket?.sender.fullName ?? ''}
+        label={'Постановщик'}
+        InputProps={{
+          readOnly: true,
+        }}
+      />
+    );
+  }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
+
   return (
     <>
       {fileFialog}
@@ -572,87 +677,10 @@ export default function TicketChat(props: ITicketChatProps) {
         </CardContent>
       </CustomizedCard >
       <div style={{ width: '280px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: 0 }}>
-        <Autocomplete
-          fullWidth
-          readOnly={ticketsUser}
-          size="small"
-          disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
-          loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={systemUsers ?? []}
-          value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
-          getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
-          onChange={(e, value) => {
-            updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
-          }}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Исполнитель'}
-            />
-          )}
-        />
-        <Autocomplete
-          fullWidth
-          readOnly={ticketsUser}
-          size="small"
-          disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
-          loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={states ?? []}
-          value={states?.find((state) => state.ID === ticket?.state.ID) ?? null}
-          getOptionLabel={(option) => option.name}
-          onChange={(e, value) => handleUpdateStatus(value)}
-          sx={{
-            '& .MuiAutocomplete-clearIndicator': {
-              display: 'none'
-            },
-          }}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Статус'}
-            />
-          )}
-        />
-        {!ticketsUser && <Autocomplete
-          fullWidth
-          readOnly
-          size="small"
-          disabled={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
-          loading={customersIsFetching || customersIsLoading || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={customersResponse?.data ?? []}
-          value={customersResponse?.data.find(customer => customer.ID === ticket?.company.ID) ?? null}
-          getOptionLabel={(option) => option?.FULLNAME ?? option?.NAME}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Клиент'}
-            />
-          )}
-        />}
-        {(!ticketsUser || isAdmin) && <Autocomplete
-          fullWidth
-          readOnly
-          size="small"
-          disabled={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
-          loading={usersIsLoading || usersIsFetching || ticketIsFetching || ticketIsFetching}
-          loadingText="Загрузка данных..."
-          options={users?.users ?? []}
-          value={users?.users?.find(user => user.ID === ticket?.sender.ID) ?? null}
-          getOptionLabel={(option) => option.fullName}
-          renderInput={(params) => (
-            <TextField
-              variant="standard"
-              {...params}
-              label={'Постановщик'}
-            />
-          )}
-        />}
+        {memoPerformer}
+        {memoStatus}
+        {memoCustomer}
+        {memoUser}
       </div>
     </>
   );
