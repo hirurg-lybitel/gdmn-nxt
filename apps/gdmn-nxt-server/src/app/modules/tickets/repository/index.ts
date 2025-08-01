@@ -196,7 +196,7 @@ const save: SaveHandler<ITicketSave> = async (
         COMPANYKEY: company.ID,
         USERKEY: userId,
         OPENAT: openAt ? new Date(openAt) : new Date(),
-        STATEID: openState.ID,
+        STATEID: openState?.ID,
         PERFORMERKEY: (!performer?.ID || performer?.ID < 0) ? undefined : performer.ID
       }
     );

@@ -111,7 +111,7 @@ const createTicket = async (
       {
         body: body.message,
         ticketKey: ticket.ID,
-        state: ticket.state,
+        state: ticket?.state,
         sendAt: ticket.openAt,
         files: body.files
       },
