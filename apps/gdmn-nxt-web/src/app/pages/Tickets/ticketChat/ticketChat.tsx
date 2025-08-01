@@ -313,7 +313,7 @@ export default function TicketChat(props: ITicketChatProps) {
     }, [] as File[]);
   }, [files]);
 
-  const fileFialog = useMemo(() => {
+  const fileDialog = useMemo(() => {
     return (
       <Dialog
         fullWidth
@@ -574,7 +574,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   return (
     <>
-      {fileFialog}
+      {fileDialog}
       {memoPhoneDialog}
       <CustomizedCard style={{ width: '100%' }}>
         <div style={{ display: 'flex', padding: '8px 10px', alignItems: 'center' }}>
@@ -655,6 +655,7 @@ export default function TicketChat(props: ITicketChatProps) {
                       transition: enableTransition ? '0.3s' : undefined
                     }
                   }}
+                  smallHintBreakpoint="lg"
                   minRows={expand ? 8 : undefined}
                   maxRows={expand ? 20 : undefined}
                   fileUpload
