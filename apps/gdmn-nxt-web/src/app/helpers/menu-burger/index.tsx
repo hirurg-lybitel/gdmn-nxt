@@ -3,17 +3,19 @@ import { IconButton, Menu, MenuItem } from '@mui/material';
 import { cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
 
 interface ItemsProps {
-  closeMenu: () => void
+  closeMenu: () => void;
 }
 
 interface Props {
   disabled?: boolean;
   items: (props: ItemsProps) => JSX.Element[];
+  buttons?: boolean;
 }
 
 export default function MenuBurger({
   items,
-  disabled
+  disabled,
+  buttons = true
 }: Readonly<Props>) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -35,11 +37,12 @@ export default function MenuBurger({
     closeMenu: handleClose
   })
     .filter(({ key }) => !!key)
-    .map((item, index) => (
+    .map((item, index) => buttons ? (
       <MenuItem key={index} style={{ padding: 0 }}>
         {cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })}
       </MenuItem>
-    )), [handleClose, items, disabled]);
+    ) : cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })
+    ), [handleClose, items, disabled]);
 
   if (MenuItems.length === 0) return null;
 
