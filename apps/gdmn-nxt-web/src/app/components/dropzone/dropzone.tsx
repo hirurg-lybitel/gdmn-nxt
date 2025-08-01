@@ -2,7 +2,7 @@ import styles from './dropzone.module.less';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DropzoneBase, { DropzoneProps as DropzoneBaseProps, ErrorCode } from 'react-dropzone';
 import { Box, Typography } from '@mui/material';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { FileObject } from './types';
 import { convertBytesToMbsOrKbs, readFile } from './helpers';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
@@ -46,7 +46,7 @@ export function Dropzone({
 }: Readonly<DropzoneProps>) {
   const { addSnackbar } = useSnackbar();
   const [fileObjects, setFileObjects] = useState<FileObject[]>([]);
-  const [initialized, toggleInitialized] = useReducer((v: boolean) => !v, false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (initialized) return;
@@ -67,18 +67,18 @@ export function Dropzone({
           };
         })
       );
-      toggleInitialized();
+      setInitialized(true);
       setFileObjects(res);
     };
 
     getFiles();
-  }, [initialFiles, disabled]);
+  }, [initialFiles, disabled, initialized]);
 
   useEffect(() => {
-    if (disabled) return;
+    if (disabled || !initialized) return;
 
     onChange(fileObjects.map(({ file }) => file));
-  }, [onChange, fileObjects, disabled]);
+  }, [onChange, disabled, fileObjects, initialized]);
 
 
   const acceptFiles = acceptedFiles.reduce((obj, item) => {

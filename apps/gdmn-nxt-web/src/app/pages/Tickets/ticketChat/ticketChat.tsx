@@ -229,6 +229,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file || file.size > maxFileSize) return;
 
     fileInputRef.current.value = '';
@@ -250,7 +251,7 @@ export default function TicketChat(props: ITicketChatProps) {
       };
     });
 
-    setFiles([...files, attachment]);
+    setFiles([attachment]);
   };
 
   const { addSnackbar } = useSnackbar();
@@ -266,8 +267,8 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const classes = useStyles();
 
-  const attachmentsChange = useCallback(async (files: File[]) => {
-    const promises = files.map(file => {
+  const attachmentsChange = useCallback(async (newFiles: File[]) => {
+    const promises = newFiles.map(file => {
       const reader = new FileReader();
       return new Promise((resolve, reject) => {
         reader.readAsDataURL(file);
@@ -287,9 +288,6 @@ export default function TicketChat(props: ITicketChatProps) {
     });
 
     const attachments = await Promise.all(promises);
-    if (JSON.stringify(files) === JSON.stringify(attachments)) {
-      return;
-    }
     setFiles(attachments as ITicketMessageFile[]);
   }, []);
 
@@ -437,7 +435,6 @@ export default function TicketChat(props: ITicketChatProps) {
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
-  const { data: customersResponse, isLoading: customersIsLoading, isFetching: customersIsFetching } = useGetCustomersQuery({ filter: { ticketSystem: true } }, { skip: ticketsUser });
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
   const rightButton = useMemo(() => {

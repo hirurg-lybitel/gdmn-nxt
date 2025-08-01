@@ -63,10 +63,9 @@ export function MailingUpsert({
     isFetching: attachmentsFetching
   } = useGetMailingByIdQuery(id, { skip: !open || id <= 0, refetchOnMountOrArgChange: true });
 
-  const { data: { segments } = {
-    count: 0,
-    segments: [] },
-  isFetching: segmentsFetching
+  const {
+    data: { segments } = { count: 0, segments: [] },
+    isFetching: segmentsFetching
   } = useGetAllSegmentsQuery();
 
   const { addSnackbar } = useSnackbar();
@@ -354,7 +353,7 @@ export function MailingUpsert({
                       arrow
                       title={
                         <div>
-                            Системные символы:
+                          Системные символы:
                           <br />
                           {'#NAME# - наименование клиента'}
                         </div>}
@@ -428,7 +427,7 @@ export function MailingUpsert({
                     variant="contained"
                     size="small"
                   >
-                      Отправить
+                    Отправить
                   </LoadingButton>
                 </Box>
               </Tooltip>
@@ -482,6 +481,7 @@ export function MailingUpsert({
             <Dropzone
               // acceptedFiles={['image/*']}
               maxFileSize={maxFileSize}
+              maxTotalFilesSize={maxFileSize}
               filesLimit={3}
               showPreviews
               initialFiles={initialAttachments}
