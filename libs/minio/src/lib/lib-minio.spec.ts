@@ -1,7 +1,7 @@
-// import { libMinio } from './lib-minio';
+import { libMinio } from './lib-minio';
 
 describe('libMinio', () => {
-  it('should work', () => {
-    expect(true).toEqual('lib-minio');
+  it('should return the correct value', () => {
+    expect(libMinio()).toEqual('lib-minio');
   });
 });
