@@ -41,7 +41,7 @@ const getHistory: RequestHandler = async(req, res) => {
         const buffer = Buffer.alloc(await blobStream.length);
         await blobStream.read(buffer);
         await blobStream.close();
-        r['SQL_TEXT'] = decoder.decode(buffer);
+        r['SQL_TEXT'] = decoder.decode(new Uint8Array(buffer));
       } else {
         r['SQL_TEXT'] = r['SQL_TEXT_CHAR'];
       };
