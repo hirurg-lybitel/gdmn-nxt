@@ -280,9 +280,15 @@ const remove: RemoveOneHandler = async (
   id,
   type
 ) => {
-  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+  const { fetchAsSingletonObject, releaseTransaction, attachment, transaction } = await startTransaction(sessionID);
 
   try {
+    await attachment.execute(
+      transaction,
+      'DELETE FROM USR$CRM_TICKETFILE WHERE USR$TICKETRECKEY = ?',
+      [id]
+    );
+
     const deletedMessage = await fetchAsSingletonObject<{ ID: number; }>(
       `DELETE FROM USR$CRM_TICKETREC WHERE ID = :id
       RETURNING ID`,
