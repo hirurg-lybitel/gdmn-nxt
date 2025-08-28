@@ -15,7 +15,9 @@ const find: FindHandler<IRevenue> = async (
   const numberFix = (number: number) => {
     return Number((number ?? 0).toFixed());
   };
-
+  const accountKey51 = 355100;
+  const accountKey62 = 366200;
+  const accountKey90 = 344600;
   try {
     const sql = `
       SELECT
@@ -40,9 +42,16 @@ const find: FindHandler<IRevenue> = async (
       JOIN
         GD_CONTACT c ON c.ID = e.USR$GS_CUSTOMER
       WHERE
-        e.ACCOUNTKEY = 355100 AND
+        e.ACCOUNTKEY = ${accountKey51} AND
         e.ENTRYDATE BETWEEN :dateBegin AND :dateEnd
         ${customer ? 'AND c.ID = :customer' : ''}
+        AND EXISTS (
+          SELECT 1
+          FROM AC_ENTRY ec
+          WHERE ec.RECORDKEY = e.RECORDKEY
+            AND ec.ACCOUNTPART = 'C'
+            AND ec.ACCOUNTKEY IN (${accountKey62}, ${accountKey90})
+        )
       GROUP BY
         c.NAME,
         c.ID,
@@ -79,7 +88,7 @@ const find: FindHandler<IRevenue> = async (
       });
 
       if (groupByOrganization) {
-        const sortRevenues: {[key: string]: IRevenue[]} = {};
+        const sortRevenues: { [key: string]: IRevenue[]; } = {};
         data.forEach(revenue => {
           if (sortRevenues[revenue['ID']]) {
             sortRevenues[revenue['ID']].push(revenue);
