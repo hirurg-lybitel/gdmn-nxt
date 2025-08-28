@@ -5,6 +5,7 @@ import { config } from './db-config';
 import { genId } from './genId';
 import { getBlob, getStringFromBlob } from './convertors';
 import { getIdBySystemRUID } from './getIdByRUID';
+import { normalizeToWin1251 } from 'libs/util-helpers/src/lib/normalizeTowin1251';
 
 const { host, port, db, username, password } = config;
 
@@ -267,7 +268,10 @@ export const startTransaction = async (sessionId: string) => {
   };
 
   const generateId = () => genId(attachment, transaction);
-  const string2Blob = (value = '') => getBlob(attachment, transaction, value);
+  const string2Blob = (value = '') => {
+    const text = normalizeToWin1251(value);
+    return getBlob(attachment, transaction, text);
+  };
 
   return {
     attachment,
