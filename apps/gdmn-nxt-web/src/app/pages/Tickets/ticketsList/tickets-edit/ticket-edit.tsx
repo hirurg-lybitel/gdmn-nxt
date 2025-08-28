@@ -156,7 +156,6 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                   heightFitContent
                   maxFileSize={maxFileSize}
                   maxTotalFilesSize={maxFileSize}
-                  filesLimit={maxFilesCount}
                   showPreviews
                   onChange={attachmentsChange}
                 />
