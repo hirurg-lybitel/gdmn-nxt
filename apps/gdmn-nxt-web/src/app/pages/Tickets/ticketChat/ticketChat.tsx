@@ -50,7 +50,7 @@ const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageF
     onDelete && onDelete(index);
   };
 
-  const { imageDialog, openImage } = useImageDialog();
+  const { imageDialog, openMany } = useImageDialog();
 
   type IFile = ITicketMessageFile & {
     index: number;
@@ -69,6 +69,8 @@ const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageF
     return [images, binary];
   })();
 
+  const images = useMemo(() => imageFiles.map(file => file.content), [imageFiles]);
+
   return (
     <>
       {imageDialog}
@@ -81,11 +83,11 @@ const FilesView = ({ files, onDelete, maxWidth = 400 }: { files: ITicketMessageF
             maxWidth: `${maxWidth * imageFiles.length}px`
           }}
         >
-          {imageFiles.map((file) => {
+          {imageFiles.map((file, index) => {
             return (
               <div key={file.index} style={{ background: 'white', height: '200px', minWidth: '200px', flex: 1, maxWidth: `${maxWidth}px` }}>
                 <div
-                  onClick={() => openImage(file.content)}
+                  onClick={() => openMany(images, index)}
                   style={{
                     backgroundImage: `url(${file.content})`, display: 'flex', justifyContent: 'flex-end',
                     backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center',
@@ -344,7 +346,6 @@ export default function TicketChat(props: ITicketChatProps) {
             >
               <Dropzone
                 maxFileSize={maxFileSize}
-                filesLimit={maxFilesCount}
                 maxTotalFilesSize={maxFileSize}
                 showPreviews
                 heightFitContent
@@ -668,7 +669,6 @@ export default function TicketChat(props: ITicketChatProps) {
                   maxRows={expand ? 20 : undefined}
                   fileUpload
                   maxFileSize={maxFileSize}
-                  filesLimit={maxFilesCount}
                   maxTotalFilesSize={maxFileSize}
                 />
 

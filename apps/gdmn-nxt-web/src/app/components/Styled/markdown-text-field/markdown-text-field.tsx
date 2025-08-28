@@ -32,16 +32,19 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
     <TextField
       {...rest}
       sx={{
+        ...rest.sx,
         opacity: tab === '2' ? 0 : 1,
         visibility: tab === '2' ? 'hidden' : 'visible',
         height: fullHeight ? '100%' : undefined,
         '& .MuiInputBase-root': {
-          height: fullHeight ? '100%' : undefined
+          height: fullHeight ? '100%' : undefined,
+          paddingRight: '1px'
         },
         '& .MuiInputBase-input': {
-          height: fullHeight ? '100% !important' : undefined
-        },
-        ...rest.sx
+          height: fullHeight ? '100% !important' : undefined,
+          paddingRight: '13px !important',
+          ...(rest.sx as any)?.['& .MuiInputBase-input']
+        }
       }}
       multiline
       fullWidth
@@ -105,7 +108,8 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
             },
             '& > :last-of-type': {
               marginBottom: 0
-            }
+            },
+            overflow: 'auto'
           }}
         >
           <ReactMarkdown>

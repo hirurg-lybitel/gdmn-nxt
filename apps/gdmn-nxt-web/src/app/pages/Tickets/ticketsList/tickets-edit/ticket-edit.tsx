@@ -148,6 +148,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                 error={getIn(formik.touched, 'message') && Boolean(getIn(formik.errors, 'message'))}
                 helperText={getIn(formik.touched, 'message') && getIn(formik.errors, 'message')}
                 fullHeight
+                rows={1}
               />
               <div style={{ maxHeight: '250px' }}>
                 <Dropzone
@@ -155,7 +156,6 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                   heightFitContent
                   maxFileSize={maxFileSize}
                   maxTotalFilesSize={maxFileSize}
-                  filesLimit={maxFilesCount}
                   showPreviews
                   onChange={attachmentsChange}
                 />
