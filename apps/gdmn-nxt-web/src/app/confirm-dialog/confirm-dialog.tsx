@@ -3,8 +3,8 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Slide, IconB
 import useStyles from './styles';
 import { forwardRef, ReactElement, Ref } from 'react';
 import { TransitionProps } from '@mui/material/transitions';
-import ReactMarkdown from 'react-markdown';
 import CloseIcon from '@mui/icons-material/Close';
+import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -70,10 +70,10 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         </Box>
       </DialogTitle>
       <DialogContent dividers>
-        <ReactMarkdown components={{ p: 'div' }}>
+        <CustomMarkdown components={{ p: 'div' }}>
           {/** line break is a double space */}
           {text.replace('<br>', '  ')}
-        </ReactMarkdown>
+        </CustomMarkdown>
       </DialogContent>
       <DialogActions className={classes.dialogAction}>
         <Button
