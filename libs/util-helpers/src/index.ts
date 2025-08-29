@@ -7,3 +7,4 @@ export * from './lib/converters';
 export * from './lib/loops';
 export * from './lib/responseMessages';
 export * from './lib/parsers';
+export * from './lib/normalizeTowin1251';
