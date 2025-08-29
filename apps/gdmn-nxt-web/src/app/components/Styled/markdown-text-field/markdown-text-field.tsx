@@ -75,7 +75,7 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
             icon={<InfoIcon />}
             label={smallHint ? '' : 'Поддерживаются стили Markdown'}
             variant="outlined"
-            sx={{ border: 'none', cursor: 'pointer', width: smallHint ? '20px' : undefined }}
+            sx={{ border: 'none', cursor: 'pointer', width: smallHint ? '20px' : undefined, '&:hover': { textDecoration: 'underline' } }}
           />
         </a>
       </Tooltip>
