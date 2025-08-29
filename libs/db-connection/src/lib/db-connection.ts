@@ -1,11 +1,10 @@
-import { wrapForNamedParams } from '@gsbelarus/util-helpers';
+import { normalizeToWin1251, wrapForNamedParams } from '@gsbelarus/util-helpers';
 import { Semaphore } from '@gsbelarus/util-useful';
 import { Client, Attachment, createNativeClient, getDefaultLibraryFilename, Transaction, TransactionIsolation, Blob } from 'node-firebird-driver-native';
 import { config } from './db-config';
 import { genId } from './genId';
 import { getBlob, getStringFromBlob } from './convertors';
 import { getIdBySystemRUID } from './getIdByRUID';
-import { normalizeToWin1251 } from 'libs/util-helpers/src/lib/normalizeTowin1251';
 
 const { host, port, db, username, password } = config;
 
