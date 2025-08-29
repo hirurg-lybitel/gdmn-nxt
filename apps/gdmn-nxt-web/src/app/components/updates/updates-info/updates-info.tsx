@@ -8,10 +8,9 @@ import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CloseIcon from '@mui/icons-material/Close';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import { useEffect, useState } from 'react';
-import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 /* eslint-disable-next-line */
-export interface UpdatesInfoProps { }
+export interface UpdatesInfoProps {}
 
 export function UpdatesInfo(props: UpdatesInfoProps) {
   const { data: updates = [], isLoading: updatesIsLoading } = useGetAllUpdatesQuery();
@@ -69,15 +68,15 @@ export function UpdatesInfo(props: UpdatesInfoProps) {
       </DialogTitle>
       <DialogContent className={styles.content}>
         <div style={{ visibility: 'hidden' }}>
-          <CustomMarkdown>
+          <ReactMarkdown>
             {lastUpdate?.CHANGES ?? ''}
-          </CustomMarkdown>
+          </ReactMarkdown>
         </div>
         <div className={styles.scrollContainer}>
           <CustomizedScrollBox>
-            <CustomMarkdown>
+            <ReactMarkdown>
               {lastUpdate?.CHANGES ?? ''}
-            </CustomMarkdown>
+            </ReactMarkdown>
           </CustomizedScrollBox>
         </div>
       </DialogContent>

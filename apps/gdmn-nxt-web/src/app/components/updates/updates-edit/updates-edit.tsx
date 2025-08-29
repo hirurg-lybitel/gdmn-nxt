@@ -1,12 +1,19 @@
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
+import CustomizedDialog from '../../Styled/customized-dialog/customized-dialog';
 import styles from './updates-edit.module.less';
-import { ChangeEvent, useCallback, useEffect, useMemo } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
-import { Stack, TextField } from '@mui/material';
+import { Box, Button, Chip, DialogActions, DialogContent, DialogTitle, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
+import PermissionsGate from '../../Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
+import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
+import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
-import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 
 export interface UpdatesEditProps {
   open: boolean;
@@ -16,9 +23,11 @@ export interface UpdatesEditProps {
   onDelete?: (id: number) => void;
 }
 
-export function UpdatesEdit(props: Readonly<UpdatesEditProps>) {
+export function UpdatesEdit(props: UpdatesEditProps) {
   const { open, update } = props;
   const { onSubmit, onCancel, onDelete } = props;
+
+  const [tabIndex, setTabIndex] = useState('1');
 
   const userPermission = usePermissions();
 
@@ -56,6 +65,11 @@ export function UpdatesEdit(props: Readonly<UpdatesEditProps>) {
     if (!open) formik.resetForm();
   }, [open]);
 
+
+  const handleCancel = useCallback(() => {
+    onCancel();
+  }, [onCancel]);
+
   const handleClose = useCallback(() => {
     onCancel();
   }, [onCancel]);
@@ -68,6 +82,13 @@ export function UpdatesEdit(props: Readonly<UpdatesEditProps>) {
     const lengthOfInput = e.target.value.length;
     return e.target.setSelectionRange(lengthOfInput, lengthOfInput);
   }, []);
+
+  const handleTabsChange = useCallback((event: any, newindex: string) => {
+    setTabIndex(newindex);
+  }, []);
+
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <EditDialog
@@ -100,23 +121,63 @@ export function UpdatesEdit(props: Readonly<UpdatesEditProps>) {
               error={getIn(formik.touched, 'VERSION') && Boolean(getIn(formik.errors, 'VERSION'))}
               helperText={getIn(formik.touched, 'VERSION') && getIn(formik.errors, 'VERSION')}
             />
-            <MarkdownTextfield
-              label="Описание"
-              type="text"
-              fullWidth
-              required
-              multiline
-              rows={1}
-              name="CHANGES"
-              fullHeight
-              bottomHint
-              smallHintBreakpoint="xs"
-              smallButtonsBreakpoint="xs"
-              onChange={formik.handleChange}
-              value={formik.values.CHANGES}
-              error={getIn(formik.touched, 'CHANGES') && Boolean(getIn(formik.errors, 'CHANGES'))}
-              helperText={getIn(formik.touched, 'CHANGES') && getIn(formik.errors, 'CHANGES')}
-            />
+            <TabContext value={tabIndex}>
+              <Box>
+                <TabList onChange={handleTabsChange}>
+                  <Tab label="Изменение" value="1" />
+                  <Tab label="Просмотр" value="2" />
+                </TabList>
+              </Box>
+              <TabPanel
+                value="1"
+                className={styles.tabPanel}
+              >
+                <TextField
+                  className={styles.inputTextField}
+                  label="Описание"
+                  type="text"
+                  fullWidth
+                  required
+                  multiline
+                  rows={1}
+                  name="CHANGES"
+                  onChange={formik.handleChange}
+                  value={formik.values.CHANGES}
+                  error={getIn(formik.touched, 'CHANGES') && Boolean(getIn(formik.errors, 'CHANGES'))}
+                  helperText={getIn(formik.touched, 'CHANGES') && getIn(formik.errors, 'CHANGES')}
+                />
+
+              </TabPanel>
+              <TabPanel
+                value="2"
+                className={styles.tabPanel}
+              >
+                <div className={styles.preview}>
+                  <CustomizedScrollBox>
+                    <ReactMarkdown components={{ p: 'div' }}>
+                      {formik.values.CHANGES}
+                    </ReactMarkdown>
+                  </CustomizedScrollBox>
+
+                </div>
+              </TabPanel>
+              <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
+                <a
+                  href="https://www.markdownguide.org/basic-syntax/"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Chip
+                    icon={<InfoIcon />}
+                    label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
+                    variant="outlined"
+                    className={styles.info}
+                    style={{ border: 'none', cursor: 'pointer' }}
+                  />
+                </a>
+              </Tooltip>
+            </TabContext>
           </Stack>
         </Form>
       </FormikProvider>

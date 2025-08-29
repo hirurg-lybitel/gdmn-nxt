@@ -1,19 +1,21 @@
-import { useState, useCallback } from 'react';
-import { Box, Tab } from '@mui/material';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { CardHeader, Typography, Button, Divider, CardContent, Box, Tab, IconButton, Card, CardActions } from '@mui/material';
 import style from './popup.module.less';
+import ReactMarkdown from 'react-markdown';
 import TextField from '@mui/material/TextField';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import ConfirmDialog from '../../../confirm-dialog/confirm-dialog';
 import { fullFaq } from '../../../features/FAQ/faqApi';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
-import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 interface PopupProps {
-  close: () => void;
-  open: boolean;
-  isAddPopup: boolean;
+  close: () => void
+  open: boolean
+  isAddPopup: boolean
   faq?: fullFaq,
   addFaq?: (values: fullFaq) => void,
   editFaq?: (values: fullFaq) => void,
@@ -22,7 +24,7 @@ interface PopupProps {
 interface IShippingFields {
   ID: number,
   USR$QUESTION: string,
-  USR$ANSWER: string;
+  USR$ANSWER: string
 }
 
 export default function Popup({ close, open, isAddPopup, faq, addFaq, editFaq }: PopupProps) {
@@ -128,11 +130,11 @@ export default function Popup({ close, open, isAddPopup, faq, addFaq, editFaq }:
                 <div className={style.previewBackground}>
                   <PerfectScrollbar className={style.preview}>
                     <div className={style.previewContent}>
-                      <CustomMarkdown className={style.markdown}>
+                      <ReactMarkdown className={style.markdown}>
                         {
                           formik.values.USR$ANSWER
                         }
-                      </CustomMarkdown>
+                      </ReactMarkdown>
                     </div>
                   </PerfectScrollbar>
                 </div>

@@ -1,21 +1,24 @@
 import styles from './send-message.module.less';
-import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, FormControlLabel, IconButton, Stack, TextField, useTheme } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Autocomplete, Box, Button, CardActions, CardContent, Checkbox, Chip, Divider, FormControlLabel, IconButton, Stack, Tab, TextField, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { ChangeEvent, Fragment, useCallback, useEffect, useState } from 'react';
 import SendIcon from '@mui/icons-material/Send';
+import InfoIcon from '@mui/icons-material/Info';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CustomizedCard from '../../../components/Styled/customized-card/customized-card';
+import ReactMarkdown from 'react-markdown';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { IUser } from '@gsbelarus/util-api-types';
 import { ClientToServerEvents, ServerToClientEvents, getSocketClient } from '@gdmn-nxt/socket';
 import CloseIcon from '@mui/icons-material/Close';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { Socket } from 'socket.io-client';
+import CustomizedScrollBox from '../../../components/Styled/customized-scroll-box/customized-scroll-box';
 import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
-import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 
 /* eslint-disable-next-line */
-export interface SendMessageProps { }
+export interface SendMessageProps {}
 
 export function SendMessage(props: SendMessageProps) {
   const [tabIndex, setTabIndex] = useState('1');
@@ -76,6 +79,7 @@ export function SendMessage(props: SendMessageProps) {
   const [ListboxComponent] = useAutocompleteVirtualization();
 
   const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <CustomizedCard
@@ -119,10 +123,11 @@ export function SendMessage(props: SendMessageProps) {
 
                 return (
                   <TextField
-                    {...{
-                      ...paramsRest,
-                      InputProps: InputPropsRest
-                    }}
+                    {
+                      ...{
+                        ...paramsRest,
+                        InputProps: InputPropsRest
+                      }}
                     label={selectedUsers?.length === 0 || params.inputProps['aria-expanded'] ? 'Получатели' : `Выбрано: ${selectedUsers?.length}`}
                     placeholder={selectedUsers?.length === 0 ? 'Выберите получателей' : `Выбрано: ${selectedUsers?.length}`}
                   />);
@@ -139,18 +144,60 @@ export function SendMessage(props: SendMessageProps) {
               )}
             />
           </Stack>
-          <MarkdownTextfield
-            sx={{ minHeight: '200px' }}
-            required
-            value={message}
-            onChange={handleTextOnChange}
-            fullHeight
-            smallHintBreakpoint={'xl'}
-            rows={1}
-          />
+          <TabContext
+            value={tabIndex}
+          >
+            <Box>
+              <TabList
+                variant="scrollable"
+                scrollButtons={false}
+                onChange={handleTabsChange}
+              >
+                <Tab label="Сообщение" value="1" />
+                <Tab label="Предпросмотр" value="2" />
+              </TabList>
+            </Box>
+            <Divider style={{ margin: 0 }} />
+            <TabPanel value="1" className={styles['tab-panel']}>
+              <TextField
+                className={styles.inputTextField}
+                multiline
+                rows={1}
+                autoFocus
+                fullWidth
+                value={message}
+                onChange={handleTextOnChange}
+              />
+            </TabPanel>
+            <TabPanel value="2" className={styles['tab-panel']}>
+              <div className={styles.preview}>
+                <CustomizedScrollBox>
+                  <ReactMarkdown>
+                    {message}
+                  </ReactMarkdown>
+                </CustomizedScrollBox>
+              </div>
+            </TabPanel>
+          </TabContext>
         </Stack>
       </CardContent>
       <CardActions className={styles.actions}>
+        <Tooltip title={matchDownSm ? 'Поддерживаются стили Markdown' : ''}>
+          <a
+            href="https://www.markdownguide.org/basic-syntax/"
+            target="_blank"
+            rel="noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            <Chip
+              icon={<InfoIcon />}
+              label={matchDownSm ? '' : 'Поддерживаются стили Markdown'}
+              variant="outlined"
+              className={styles.info}
+              style={{ border: 'none', cursor: 'pointer' }}
+            />
+          </a>
+        </Tooltip>
         <Box flex={1} />
         <Button
           variant="contained"

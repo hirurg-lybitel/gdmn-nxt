@@ -16,10 +16,9 @@ import UpdatesEdit from '../updates-edit/updates-edit';
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 /* eslint-disable-next-line */
-export interface UpdatesListProps { }
+export interface UpdatesListProps {}
 
 export function UpdatesList(props: UpdatesListProps) {
   const { data: updates = [], isFetching, isLoading } = useGetAllUpdatesQuery();
@@ -130,9 +129,9 @@ export function UpdatesList(props: UpdatesListProps) {
                       </PermissionsGate>
                     </Stack>
                     <Typography variant="body1" component="div">
-                      <CustomMarkdown >
+                      <ReactMarkdown >
                         {u.CHANGES}
-                      </CustomMarkdown>
+                      </ReactMarkdown>
                     </Typography>
                   </AccordionDetails>
                 </Accordion>
