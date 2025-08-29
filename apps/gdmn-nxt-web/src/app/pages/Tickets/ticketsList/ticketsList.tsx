@@ -26,6 +26,7 @@ import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
+import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -112,11 +113,18 @@ export function TicketsList(props: ticketsListProps) {
     setFilteringData({ ...newObject, ...newValue });
   }, [filteringData, setFilteringData]);
 
+
+  const { addSnackbar } = useSnackbar();
+
   const handleSubmit = useCallback(async (ticket: ITicket, isDelete: boolean) => {
     setOpenEdit(false);
-    await addTicket(ticket);
+    const res = await addTicket(ticket);
+    if ('error' in res) return;
+    addSnackbar('Спасибо за ваше обращение. Мы постараемся ответить как можно скорее.', {
+      variant: 'success'
+    });
     dispatch(customerApi.util.invalidateTags(['Customers']));
-  }, [addTicket, dispatch]);
+  }, [addSnackbar, addTicket, dispatch]);
 
   const companyKey = useSelector<RootState, number>(state => state.user.userProfile?.companyKey ?? -1);
   const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 });
