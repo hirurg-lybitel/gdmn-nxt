@@ -5,10 +5,11 @@ import { importedModels } from '../utils/models';
 import { resultError } from '../responseMessages';
 import { getReadTransaction, releaseReadTransaction, genId, startTransaction } from '@gdmn-nxt/db-connection';
 import { cachedRequets } from '../utils/cachedRequests';
+import { normalizeToWin1251 } from 'libs/util-helpers/src/lib/normalizeTowin1251';
 
 const eintityName = 'TgdcAttrUserDefinedUSR_CRM_LABELS';
 
-export const get: RequestHandler = async(req, res) => {
+export const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   const { id } = req.params;
@@ -16,7 +17,7 @@ export const get: RequestHandler = async(req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
         const data = await rs.fetchAsObject();
@@ -67,7 +68,7 @@ const upsert: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       return [name, data];
@@ -79,7 +80,11 @@ const upsert: RequestHandler = async (req, res) => {
     const actualFields = allFields.filter(field => typeof req.body[field] !== 'undefined');
 
     const paramsValues = actualFields.map(field => {
-      return req.body[field];
+      const fieldData = req.body[field];
+      if (typeof fieldData === 'string') {
+        return normalizeToWin1251(fieldData);
+      }
+      return fieldData;
     });
 
     let ID = id;
@@ -135,7 +140,7 @@ const upsert: RequestHandler = async (req, res) => {
   };
 };
 
-export const remove: RequestHandler = async(req, res) => {
+export const remove: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
   const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
 
@@ -164,7 +169,7 @@ export const remove: RequestHandler = async(req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number; }[] = await result.fetchAsObject();
     await result.close();
 
     if (data[0].SUCCESS !== 1) {

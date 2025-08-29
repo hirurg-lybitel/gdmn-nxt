@@ -6,6 +6,7 @@ import { acquireReadTransaction, getReadTransaction, releaseReadTransaction, sta
 import { setPermissonsCache } from '../middlewares/permissions';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
 import { bin2String, forEachAsync } from '@gsbelarus/util-helpers';
+import { normalizeToWin1251 } from 'libs/util-helpers/src/lib/normalizeTowin1251';
 
 const eintityCrossName = 'TgdcAttrUserDefinedUSR_CRM_PERMISSIONS_CROSS';
 
@@ -109,7 +110,7 @@ const upsertCross: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       return [name, data];
@@ -145,8 +146,13 @@ const upsertCross: RequestHandler = async (req, res) => {
           return req.body['USERGROUP']['ID'];
         case 'USR$MODE':
           return req.body['MODE'];
-        default:
-          return req.body[field];
+        default: {
+          const fieldData = req.body[field];
+          if (typeof fieldData === 'string') {
+            return normalizeToWin1251(fieldData);
+          }
+          return fieldData;
+        }
       }
     });
 
@@ -204,7 +210,7 @@ const getUserGroups: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
 
@@ -266,7 +272,7 @@ const upsertGroup: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       return [data];
@@ -278,7 +284,11 @@ const upsertGroup: RequestHandler = async (req, res) => {
     const actualFields = allFields.filter(field => typeof req.body[field.replace('USR$', '')] !== 'undefined');
 
     const paramsValues = actualFields.map(field => {
-      return req.body[field.replace('USR$', '')];
+      const fieldData = req.body[field.replace('USR$', '')];
+      if (typeof fieldData === 'string') {
+        return normalizeToWin1251(fieldData);
+      }
+      return fieldData;
     });
 
     let ID = id;
@@ -378,7 +388,7 @@ const removeGroup: RequestHandler = async (req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number; }[] = await result.fetchAsObject();
     await result.close();
 
     if (data[0].SUCCESS !== 1) {
@@ -402,7 +412,7 @@ const getActions: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, []);
       const data = await rs.fetchAsObject();
       await rs.close();
@@ -444,7 +454,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       const data = await rs.fetchAsObject();
       await rs.close();
@@ -543,7 +553,7 @@ const getUserByGroup: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       const data = await rs.fetchAsObject();
       await rs.close();
@@ -609,7 +619,7 @@ const upsertUsersGroupLine: RequestHandler = async (req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       return [name, data];
@@ -731,7 +741,7 @@ const upsertUserGroupLine: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const data = await attachment.executeSingletonAsObject(transaction, query, params);
 
       return [name, data];
@@ -827,7 +837,7 @@ const removeUserGroupLine: RequestHandler = async (req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: number, USERID: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number, USERID: number; }[] = await result.fetchAsObject();
     await result.close();
 
     if (data[0].SUCCESS !== 1) {
@@ -849,11 +859,11 @@ const getPermissionByUser: RequestHandler = async (req, res) => {
   // const actionCode = parseInt(req.params.actionCode);
   // if (isNaN(actionCode)) return res.status(422).send(resultError('Поле "actionCode" не указано или неверного типа'));
   try {
-  //   if(!permissionsActionsCache.get(actionCode)){
-  //     const result = await updatePermissonsCache(req)
-  //     if(!result.result) return res.status(500).send(resultError(result.message));
-  //   }
-  //   return res.status(200).json({CODE:actionCode,MODE:permissionsActionsCache.get(actionCode)});
+    //   if(!permissionsActionsCache.get(actionCode)){
+    //     const result = await updatePermissonsCache(req)
+    //     if(!result.result) return res.status(500).send(resultError(result.message));
+    //   }
+    //   return res.status(200).json({CODE:actionCode,MODE:permissionsActionsCache.get(actionCode)});
     return res.status(200);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
