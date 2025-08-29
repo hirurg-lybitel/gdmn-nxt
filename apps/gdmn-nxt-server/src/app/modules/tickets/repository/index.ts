@@ -184,7 +184,7 @@ const save: SaveHandler<ITicketSave> = async (
 
   const ticketStates = await ticketsStateRepository.find(sessionID);
 
-  const openState = ticketStates.find(state => state.code === 1);
+  const openState = ticketStates.find(state => state.code === (performer.ID ? 2 : 1));
 
   if (!openState?.ID) {
     throw new Error('Не удалось определить статус тикета');

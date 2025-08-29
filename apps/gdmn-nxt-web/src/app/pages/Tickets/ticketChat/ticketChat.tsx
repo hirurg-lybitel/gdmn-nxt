@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,7 +10,7 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -33,6 +33,8 @@ import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 import { useFormik } from 'formik';
+import TicketHistory from './ticketHistory';
+import { Timeline } from '@mui/lab';
 
 interface ITicketChatProps {
 
@@ -168,6 +170,16 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+type messagesAndHistory = {
+  content: ITicketMessage;
+  type: string;
+  date: Date;
+} | {
+  content: ITicketHistory;
+  type: string;
+  date: Date;
+};
+
 export default function TicketChat(props: ITicketChatProps) {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -175,13 +187,35 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: messages = [], isFetching: messagesIsFetching, isLoading: messagesIsLoading } = useGetAllTicketMessagesQuery({ id });
   const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
   const { data: ticket, isFetching: ticketIsFetching, isLoading: ticketIsLoading } = useGetTicketByIdQuery(id ?? '');
+  const { data: ticketHistory = [], isFetching: historyIsFetching, isLoading: historyIsLoading } = useGetAllTicketHistoryQuery({ id });
+
+  const messagesAndHistory: messagesAndHistory[] = useMemo(() => {
+    return [...messages, ...ticketHistory].map((item) => {
+      if ('sendAt' in item) {
+        return {
+          content: item,
+          type: 'message',
+          date: item.sendAt
+        };
+      }
+      return {
+        content: item,
+        type: 'history',
+        date: item.changeAt
+      };
+    }).sort((a, b) => {
+      const nameA = new Date(a.date);
+      const nameB = new Date(b.date);
+      return new Date(nameA) < new Date(nameB) ? -1 : 1;
+    });
+  }, [messages, ticketHistory]);
 
   const closed = useMemo(() => !!ticket?.closeAt, [ticket?.closeAt]);
 
   const [addMessages] = useAddTicketMessageMutation();
   const [updateTicket] = useUpdateTicketMutation();
 
-  const isLoading = messagesIsLoading || statesIsLoading || ticketIsLoading;
+  const isLoading = messagesIsLoading || statesIsLoading || ticketIsLoading || historyIsLoading;
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
@@ -383,22 +417,26 @@ export default function TicketChat(props: ITicketChatProps) {
     );
   }, [files.length, initialAttachments, attachmentsChange, isLoading, message, handleSend]);
 
-  const fakeMessages: ITicketMessage[] = Array.from({ length: 4 }, (_, index) => {
+  const fakeMessages: messagesAndHistory[] = Array.from({ length: 4 }, (_, index) => {
     return {
-      ID: -1,
-      body: 'Загрузка данных',
-      ticketKey: -1,
-      user: {
+      content: {
         ID: -1,
-        type: index % 2 === 0 ? 'user' : 'empl',
-        fullName: '',
+        body: 'Загрузка данных',
+        ticketKey: -1,
+        user: {
+          ID: -1,
+          type: index % 2 === 0 ? 'user' : 'empl',
+          fullName: '',
+        },
+        state: {
+          ID: -1,
+          name: '',
+          code: 0
+        },
+        sendAt: new Date()
       },
-      state: {
-        ID: -1,
-        name: '',
-        code: 0
-      },
-      sendAt: new Date()
+      type: 'message',
+      date: new Date()
     };
   });
 
@@ -634,12 +672,22 @@ export default function TicketChat(props: ITicketChatProps) {
               </div>
             )}
             <div style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
-                {(isLoading ? fakeMessages : messages).map((message, index) => <UserMessage
-                  isLoading={isLoading}
-                  message={message}
-                  key={index}
-                />)}
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
+                {(isLoading ? fakeMessages : messagesAndHistory).map((item, index) => {
+                  if (item.type === 'message') {
+                    return <UserMessage
+                      indent={index !== 0 && messagesAndHistory[index - 1]?.type !== 'history'}
+                      isLoading={isLoading}
+                      message={item.content as ITicketMessage}
+                      key={index}
+                    />;
+                  }
+                  return <TicketHistory
+                    key={index}
+                    ticketId={ticket?.ID}
+                    history={item.content as ITicketHistory}
+                  />;
+                })}
               </div>
             </div>
             {!closed && <>
@@ -719,9 +767,10 @@ export default function TicketChat(props: ITicketChatProps) {
 interface IUserMessage {
   isLoading: boolean;
   message: ITicketMessage;
+  indent: boolean;
 }
 
-const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
+const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage) => {
   const [updateMessage, { isLoading: updateIsLoading }] = useUpdateTicketMessageMutation();
   const [deleteMessage, { isLoading: deleteIsLoading }] = useDeleteTicketMessageMutation();
 
@@ -820,7 +869,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
     <div
       style={{
         display: 'flex', position: 'relative', alignItems: 'start',
-        justifyContent: 'flex-start',
+        justifyContent: 'flex-start', marginTop: indent ? '10px' : 0
       }}
     >
       {confirmDialog.dialog}

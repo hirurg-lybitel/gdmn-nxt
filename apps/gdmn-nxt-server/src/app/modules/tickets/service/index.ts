@@ -2,6 +2,8 @@ import { InternalServerErrorException, UserType, NotFoundException, ITicket, For
 import { ticketsRepository } from '../repository';
 import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
 import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';
+import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
+import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
 
 const findAll = async (
   sessionID: string,
@@ -105,6 +107,10 @@ const createTicket = async (
     const newTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
     const ticket = await ticketsRepository.findOne(sessionID, { ID: newTicket.ID }, type);
 
+    if (!ticket?.ID) {
+      throw NotFoundException(`Не найден тикет с id=${newTicket.ID}`);
+    }
+
     const newMessage = await ticketsMessagesService.createMessage(
       sessionID,
       userId,
@@ -118,6 +124,37 @@ const createTicket = async (
       type,
       true,
     );
+
+    const ticketStates = await ticketsStateRepository.find(sessionID);
+
+    const openState = ticketStates.find(state => state.code === 1);
+
+    await ticketsHistoryService.createHistory(
+      sessionID,
+      userId,
+      {
+        ticketKey: ticket.ID,
+        state: openState,
+        changeAt: new Date()
+      },
+      type
+    );
+
+    const assignedState = ticketStates.find(state => state.code === 2);
+
+    if (ticket.performer) {
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        undefined,
+        {
+          ticketKey: ticket.ID,
+          state: assignedState,
+          changeAt: new Date(),
+          performer: ticket.performer
+        },
+        type
+      );
+    }
 
     cachedRequets.cacheRequest('customers');
 
@@ -170,6 +207,23 @@ const updateById = async (
 
     const ticket = await ticketsRepository.findOne(sessionID, { id: updatedTicket.ID }, type);
 
+    const ticketStates = await ticketsStateRepository.find(sessionID);
+
+    const ressignedState = ticketStates.find(state => state.code === 3);
+
+    if (oldTicket.performer.ID !== body.performer.ID) {
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        undefined,
+        {
+          ticketKey: oldTicket.ID,
+          state: ressignedState,
+          changeAt: new Date(),
+          performer: body.performer
+        },
+        type
+      );
+    }
     if (oldTicket.closeAt !== ticket.closeAt) cachedRequets.cacheRequest('customers');
 
     return ticket;

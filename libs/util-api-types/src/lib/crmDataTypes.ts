@@ -758,3 +758,11 @@ export interface IChangePassword {
   newPassword?: string,
   repeatPassword?: string;
 }
+
+export interface ITicketHistory extends IWithID {
+  ticketKey: number,
+  user?: ICRMTicketUser,
+  state: ITicketState;
+  changeAt: Date;
+  performer?: ICRMTicketUser;
+}

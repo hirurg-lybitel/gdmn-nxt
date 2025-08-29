@@ -3,6 +3,7 @@ import { ticketsController } from '@gdmn-nxt/modules/tickets/controller';
 import { ticketsStatesController } from '@gdmn-nxt/modules/tickets-state/controller';
 import { ticketsMessagesController } from '@gdmn-nxt/modules/tickets-messages/controller';
 import { ticketsUserController } from '@gdmn-nxt/modules/tickets-user/controller';
+import { ticketsHistoryController } from '@gdmn-nxt/modules/tickets-history/controller';
 
 const router = express.Router();
 const parentRouter = express.Router();
@@ -24,5 +25,7 @@ router.delete('/messages/:id', ticketsMessagesController.removeById);
 router.get('/users', ticketsUserController.findAll);
 router.post('/users', ticketsUserController.create);
 router.delete('/users/:id', ticketsUserController.removeById);
+
+router.get('/history/:ticketId', ticketsHistoryController.findAll);
 
 export const ticketsRouter = parentRouter;
