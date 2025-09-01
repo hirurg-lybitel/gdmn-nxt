@@ -205,7 +205,6 @@ const updateTickets: UpdateHandler<ICustomer> = async (
         RETURNING CONTACTKEY
       `,
       {
-        TICKETSYSTEM: true,
         PERFORMER: performer.ID,
         ID: id
       }

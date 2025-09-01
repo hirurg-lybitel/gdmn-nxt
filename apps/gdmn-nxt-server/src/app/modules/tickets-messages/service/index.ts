@@ -2,6 +2,7 @@ import { ForbiddenException, InternalServerErrorException, ITicketMessage, NotFo
 import { ticketsMessagesRepository } from '../repository';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 import { buckets, minioClient } from '@gdmn-nxt/lib/minio';
+import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
 
 const findAll = async (
   sessionID: string,
@@ -47,6 +48,16 @@ const createMessage = async (
 
     if (body.state && !fromTicketEP) {
       const ticket = await ticketsRepository.update(sessionID, oldTicket.ID, { ...oldTicket, state: body.state }, type);
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        undefined,
+        {
+          ticketKey: oldTicket.ID,
+          state: body.state,
+          changeAt: new Date()
+        },
+        type
+      );
     }
 
     const newMessage = await ticketsMessagesRepository.save(sessionID, { ...body, userId }, type);

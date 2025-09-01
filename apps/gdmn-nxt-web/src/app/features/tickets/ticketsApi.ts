@@ -144,7 +144,7 @@ export const ticketsApi = createApi({
         };
       },
       transformResponse: (response: ITicketHistoryRequestResult) => response.queries?.ticketsHistory || null,
-      providesTags: ['messages']
+      providesTags: ['messages', 'tickets']
     }),
   }),
 });

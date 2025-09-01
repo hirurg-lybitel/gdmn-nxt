@@ -9,7 +9,7 @@ import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useAddTicketMutation, useGetAllTicketsQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsApi';
-import { IFilteringData, IPaginationData, ISortingData, ITicket, UserType } from '@gsbelarus/util-api-types';
+import { IFilteringData, IPaginationData, ISortingData, ITicket, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import pluralize from 'libs/util-useful/src/lib/pluralize';
 import TicketEdit from './tickets-edit/ticket-edit';
@@ -456,7 +456,7 @@ export function TicketsList(props: ticketsListProps) {
 interface IItemProps extends ITicket {
 }
 
-const Item = ({ ID, title, sender, openAt, closeAt, closeBy }: IItemProps) => {
+const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state }: IItemProps) => {
   const classes = useStyles();
 
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -468,6 +468,9 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy }: IItemProps) => {
     const msInDay = 1000 * 60 * 60 * 24;
     const daysLeft = Math.floor((now.getTime() - startDate.getTime()) / msInDay);
 
+    if (state.code === ticketStateCodes.confirmed) {
+      return <CheckCircleOutlineIcon color={'success'} />;
+    }
     if (closeAt) {
       return <CheckCircleOutlineIcon color={'primary'} />;
     }
