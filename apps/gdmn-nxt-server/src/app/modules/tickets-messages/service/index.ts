@@ -3,6 +3,7 @@ import { ticketsMessagesRepository } from '../repository';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 import { buckets, minioClient } from '@gdmn-nxt/lib/minio';
 import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
+import { insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
 
 const findAll = async (
   sessionID: string,
@@ -66,6 +67,30 @@ const createMessage = async (
 
     if (!message?.ID) {
       throw NotFoundException(`Не найдено сообщение с id=${newMessage?.ID}`);
+    }
+
+    if (type === UserType.Tickets && oldTicket.performer.ID) {
+      await insertNotification({
+        sessionId: sessionID,
+        title: `Тикет №${oldTicket.ID}`,
+        message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
+        onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
+        userIDs: [oldTicket.performer.ID],
+        actionContent: body.ticketKey + '',
+        actionType: '3'
+      });
+    }
+    if (type !== UserType.Tickets && oldTicket.sender.ID) {
+      await insertNotification({
+        sessionId: sessionID,
+        title: `Заявка №${oldTicket.ID}`,
+        message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
+        onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
+        userIDs: [oldTicket.sender.ID],
+        type: UserType.Tickets,
+        actionContent: body.ticketKey + '',
+        actionType: '3'
+      });
     }
 
     return message;
