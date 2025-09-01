@@ -23,14 +23,14 @@ interface ITicketHistoryProps {
 export default function TicketHistory({ history, ticketId }: Readonly<ITicketHistoryProps>) {
   const getIconByStateCode = (code: number) => {
     switch (code) {
-      case 1: return <CreateIcon />;
-      case 2: return <PersonAddIcon />;
-      case 3: return <PersonIcon />;
-      case 4: return <SettingsIcon />;
-      case 5: return <InfoIcon />;
-      case 6: return <DoneIcon />;
-      case 7: return <DoneAllIcon />;
-      default: return <Brightness1Icon />;
+      case 1: return <CreateIcon color={'action'} />;
+      case 2: return <PersonAddIcon color={'action'} />;
+      case 3: return <PersonIcon color={'action'} />;
+      case 4: return <SettingsIcon color={'action'} />;
+      case 5: return <InfoIcon color={'action'} />;
+      case 6: return <DoneIcon color={'action'} />;
+      case 7: return <DoneAllIcon color={'action'} />;
+      default: return <Brightness1Icon color={'action'} />;
     }
   };
 
@@ -74,11 +74,11 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         }}
       >
         <TimelineSeparator>
-          <TimelineConnector />
-          <TimelineDot variant="outlined" style={{ margin: '4px 0px' }}>
+          <TimelineConnector style={{ background: 'var(--color-card-bg)' }} />
+          <TimelineDot style={{ margin: '4px 0px', background: 'var(--color-card-bg)' }}>
             {getIconByStateCode(history.state.code)}
           </TimelineDot>
-          <TimelineConnector style={{ visibility: history.state.code !== ticketStateCodes.confirmed ? 'visible' : 'hidden' }} />
+          <TimelineConnector style={{ background: 'var(--color-card-bg)', visibility: history.state.code !== ticketStateCodes.confirmed ? 'visible' : 'hidden' }} />
         </TimelineSeparator>
         <TimelineContent style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', padding: '8px 16px' }}>
           <UserTooltip
