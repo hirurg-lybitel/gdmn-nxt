@@ -38,8 +38,8 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
 
   const getTextByStateCode = (code: number) => {
     switch (code) {
-      case 1: return `создал ${ticketsUser ? 'заявку' : 'тикет'} №${ticketId}`;
-      case 2: return <span>назначил <UserTooltip
+      case 1: return `создал(a) ${ticketsUser ? 'заявку' : 'тикет'} №${ticketId}`;
+      case 2: return <span>{'назначил(a) '} <UserTooltip
         name={history.performer?.fullName ?? ''}
         phone={history.performer?.phone}
         email={history.performer?.email}
@@ -48,7 +48,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         <span>{history.performer?.fullName}</span>
       </UserTooltip>
       </span>;
-      case 3: return <span>переназначил <UserTooltip
+      case 3: return <span>{'переназначил(a) '}<UserTooltip
         name={history.performer?.fullName ?? ''}
         phone={history.performer?.phone}
         email={history.performer?.email}
