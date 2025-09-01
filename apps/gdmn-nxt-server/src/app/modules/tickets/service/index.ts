@@ -218,18 +218,44 @@ const updateById = async (
 
     const ressignedState = ticketStates.find(state => state.code === ticketStateCodes.ressigned);
 
+    const doneState = ticketStates.find(state => state.code === ticketStateCodes.done);
+
     if (body.state.ID && oldTicket.state.ID !== body.state.ID) {
-      await ticketsHistoryService.createHistory(
-        sessionID,
-        userId,
-        {
-          ticketKey: oldTicket.ID,
-          state: body.state,
-          changeAt: new Date(),
-          performer: body.performer
-        },
-        type
-      );
+      if (body.state.code === ticketStateCodes.confirmed && oldTicket.state.code !== ticketStateCodes.done) {
+        await ticketsHistoryService.createHistory(
+          sessionID,
+          userId,
+          {
+            ticketKey: oldTicket.ID,
+            state: doneState,
+            changeAt: new Date(),
+          },
+          type
+        );
+        await ticketsHistoryService.createHistory(
+          sessionID,
+          userId,
+          {
+            ticketKey: oldTicket.ID,
+            state: body.state,
+            changeAt: new Date(),
+            performer: body.performer
+          },
+          type
+        );
+      } else {
+        await ticketsHistoryService.createHistory(
+          sessionID,
+          userId,
+          {
+            ticketKey: oldTicket.ID,
+            state: body.state,
+            changeAt: new Date(),
+            performer: body.performer
+          },
+          type
+        );
+      }
     }
 
     if ((!oldTicket.performer.ID || oldTicket.performer.ID !== body.performer.ID) && body.performer.ID) {

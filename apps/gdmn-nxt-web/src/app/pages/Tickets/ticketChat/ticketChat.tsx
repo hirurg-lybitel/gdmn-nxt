@@ -189,6 +189,7 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: ticket, isFetching: ticketIsFetching, isLoading: ticketIsLoading } = useGetTicketByIdQuery(id ?? '');
   const { data: ticketHistory = [], isFetching: historyIsFetching, isLoading: historyIsLoading } = useGetAllTicketHistoryQuery({ id });
 
+
   const messagesAndHistory: messagesAndHistory[] = useMemo(() => {
     return [...messages, ...ticketHistory].map((item) => {
       if ('sendAt' in item) {
@@ -213,7 +214,7 @@ export default function TicketChat(props: ITicketChatProps) {
   const confirmed = useMemo(() => ticket?.state.code === ticketStateCodes.confirmed, [ticket?.state.code]);
 
   const [addMessages] = useAddTicketMessageMutation();
-  const [updateTicket] = useUpdateTicketMutation();
+  const [updateTicket, { isLoading: updateTicketIsLoading }] = useUpdateTicketMutation();
 
   const isLoading = messagesIsLoading || statesIsLoading || ticketIsLoading || historyIsLoading;
 
@@ -552,8 +553,8 @@ export default function TicketChat(props: ITicketChatProps) {
         fullWidth
         size="small"
         readOnly={confirmed}
-        disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
-        loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+        disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+        loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={systemUsers ?? []}
         value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
@@ -570,7 +571,7 @@ export default function TicketChat(props: ITicketChatProps) {
         )}
       />
     );
-  }, [systemUsers, systemUsersIsFetching, systemUsersIsLoading, ticket, ticketIsFetching, ticketsUser, updateTicket]);
+  }, [confirmed, systemUsers, systemUsersIsFetching, systemUsersIsLoading, ticket, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicket, updateTicketIsLoading]);
 
   const memoStatus = useMemo(() => {
     const changeables = [
@@ -594,8 +595,8 @@ export default function TicketChat(props: ITicketChatProps) {
       <Autocomplete
         fullWidth
         size="small"
-        disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching || !ticket?.performer?.ID}
-        loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+        disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsLoading || !ticket?.performer?.ID || updateTicketIsLoading}
+        loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={states ?? []}
         value={states?.find((state) => state.ID === ticket?.state.ID) ?? null}
@@ -623,14 +624,14 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [handleUpdateStatus, states, statesIsFetching, statesIsLoading, ticket?.performer?.ID, ticket?.state.ID, ticket?.state.name, ticketIsFetching, ticketsUser]);
+  }, [confirmed, handleUpdateStatus, states, statesIsFetching, statesIsLoading, ticket?.performer?.ID, ticket?.state.ID, ticket?.state.name, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const memoCustomer = useMemo(() => {
     if (ticketsUser) return;
     return (
       <TextField
         variant="standard"
-        disabled={ticketIsFetching || ticketIsFetching}
+        disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         value={ticket?.company.FULLNAME ?? ticket?.company.NAME ?? ''}
         label={'Клиент'}
         InputProps={{
@@ -638,13 +639,13 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketIsFetching, ticketsUser]);
+  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const memoUser = useMemo(() => {
     if (ticketsUser && !isAdmin) return;
     return (
       <TextField
-        disabled={ticketIsFetching || ticketIsFetching}
+        disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         variant="standard"
         value={ticket?.sender.fullName ?? ''}
         label={'Постановщик'}
@@ -653,7 +654,7 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [isAdmin, ticket?.sender.fullName, ticketIsFetching, ticketsUser]);
+  }, [isAdmin, ticket?.sender.fullName, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
@@ -825,6 +826,23 @@ export default function TicketChat(props: ITicketChatProps) {
         {memoStatus}
         {memoCustomer}
         {memoUser}
+        {(ticketsUser && !confirmed) && (
+          <Confirmation
+            key="delete"
+            title="Завершить заявку?"
+            text={'После завершения открыть заявку будет невозможно'}
+            dangerous
+            onConfirm={confirmTicket}
+          >
+            <Button
+              color={'error'}
+              variant={'outlined'}
+              disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+            >
+              Завершить заявку
+            </Button>
+          </Confirmation>
+        )}
       </div>
     </>
   );
