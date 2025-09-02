@@ -108,7 +108,6 @@
     "react-router-dom": "6.4.3",
     "react-window": "^1.8.10",
     "regenerator-runtime": "0.13.7",
-    "remark-breaks": "^4.0.0",
     "socket.io": "^4.5.3",
     "socket.io-client": "^4.5.3",
     "svg-captcha": "^1.4.0",

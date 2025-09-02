@@ -1,24 +1,32 @@
-import { Box, CardContent, Stack } from '@mui/material';
+import { Box, CardContent, Grid, Stack } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Typography, Divider, Skeleton } from '@mui/material';
+import { CardHeader, Typography, Divider, Button, IconButton, CircularProgress, Skeleton } from '@mui/material';
 import style from './faq.module.less';
 import * as React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
+import EditIcon from '@mui/icons-material/Edit';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
-import { Theme } from '@mui/material/styles';
+import { useTheme, Theme } from '@mui/material/styles';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmDialog from '../../confirm-dialog/confirm-dialog';
 import { makeStyles } from '@mui/styles';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
+import CardToolbar from '../../components/Styled/card-toolbar/card-toolbar';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
+import CustomAddButton from '@gdmn-nxt/helpers/custom-add-button';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 const useStyles = makeStyles((theme: Theme) => ({
   accordion: {
@@ -129,7 +137,7 @@ export default function FAQ() {
           <CustomizedScrollBox style={{ paddingRight: '20px' }}>
             {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
               <div key={item.ID}>
-                {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider />}
+                {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider/>}
                 <div className={style.faqList}>
                   {componentIsFetching ?
                     <div style={{ margin: '20px', width: '100%' }}>
@@ -162,9 +170,9 @@ export default function FAQ() {
                           alignItems={{ xs: 'flex-start', sm: 'center' }}
                         >
                           <Typography variant="h6" sx={{ fontSize: { xs: '15px', sm: '1.25rem' } }}>
-                            <CustomMarkdown>
+                            <ReactMarkdown>
                               {item.USR$QUESTION}
-                            </CustomMarkdown>
+                            </ReactMarkdown>
                           </Typography>
                           <Box flex={1} />
                           {!componentIsFetching &&
@@ -201,9 +209,9 @@ export default function FAQ() {
                       </AccordionSummary>
                       <AccordionDetails className={style.details}>
                         <Typography variant="body1" component="div">
-                          <CustomMarkdown >
+                          <ReactMarkdown >
                             {item.USR$ANSWER}
-                          </CustomMarkdown>
+                          </ReactMarkdown>
                         </Typography>
                       </AccordionDetails>
                     </Accordion>

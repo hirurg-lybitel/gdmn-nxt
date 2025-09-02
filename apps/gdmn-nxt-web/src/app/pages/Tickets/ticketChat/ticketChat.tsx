@@ -17,6 +17,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { customerApi } from '../../../features/customer/customerApi_new';
+import ReactMarkdown from 'react-markdown';
 import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
@@ -32,7 +33,6 @@ import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 import { useFormik } from 'formik';
-import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 interface ITicketChatProps {
 
@@ -928,9 +928,9 @@ const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
               }
             }}
           >
-            <CustomMarkdown>
+            <ReactMarkdown>
               {message.body}
-            </CustomMarkdown>
+            </ReactMarkdown>
           </Box>
         </div>}
       </div>
