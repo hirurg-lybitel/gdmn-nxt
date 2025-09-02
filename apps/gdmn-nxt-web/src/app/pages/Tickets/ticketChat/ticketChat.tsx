@@ -1,8 +1,8 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Popper, Skeleton, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -34,6 +34,8 @@ import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 import { useFormik } from 'formik';
 import TicketHistory from './ticketHistory';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
+import { ticketsUserApi, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
 
 interface ITicketChatProps {
 
@@ -488,7 +490,7 @@ export default function TicketChat(props: ITicketChatProps) {
     setPhoneDialogOpen(false);
     if (!settings || !userProfile?.id) return;
     await setSettings({ userId: userProfile?.id, body: { ...settings, PHONE: value } });
-    dispatch(ticketsApi.util.invalidateTags(['users']));
+    dispatch(ticketsUserApi.util.invalidateTags(['users']));
     dispatch(profileSettingsApi.util.invalidateTags(['settings']));
   }, [dispatch, setSettings, settings, userProfile?.id]);
 
@@ -652,6 +654,48 @@ export default function TicketChat(props: ITicketChatProps) {
       />
     );
   }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
+
+  const memoLabels = useMemo(() => {
+    const CustomPopper = (props: any) => {
+      return (
+        <Popper
+          {...props}
+          style={{ width: 'fit-content' }}
+          modifiers={[
+            {
+              name: 'preventOverflow',
+              options: {
+                boundary: 'viewport',
+                padding: 8,
+              },
+            },
+          ]}
+        />
+      );
+    };
+    return (
+      <LabelsSelect
+        type={UserType.Tickets}
+        editIconSpace
+        disableCreation={ticketsUser}
+        disableEdition={ticketsUser}
+        slotProps={{
+          paper: {
+            style: {
+              width: 'max-content',
+              maxWidth: 'calc(100vw - 40px)'
+            }
+          }
+        }}
+        PopperComponent={CustomPopper}
+        textFieldProps={{
+          variant: 'standard'
+        }}
+        labels={[]}
+        onChange={(newLabels) => console.log(newLabels)}
+      />
+    );
+  }, [ticketsUser]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
@@ -823,6 +867,7 @@ export default function TicketChat(props: ITicketChatProps) {
         {memoStatus}
         {memoCustomer}
         {memoUser}
+        {memoLabels}
         {(ticketsUser && !confirmed) && (
           <Confirmation
             key="delete"

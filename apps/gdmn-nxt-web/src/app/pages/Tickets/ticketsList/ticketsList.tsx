@@ -2,16 +2,15 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { Avatar, Button, CardContent, Chip, Divider, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { useAddTicketMutation, useGetAllTicketsQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsApi';
-import { IFilteringData, IPaginationData, ISortingData, ITicket, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { useAddTicketMutation, useGetAllTicketsQuery, useGetAllTicketsStatesQuery } from '../../../features/tickets/ticketsApi';
+import { IFilteringData, IPaginationData, ITicket, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
-import pluralize from 'libs/util-useful/src/lib/pluralize';
 import TicketEdit from './tickets-edit/ticket-edit';
 import { UserState } from '../../../features/user/userSlice';
 import { RootState } from '@gdmn-nxt/store';
@@ -25,8 +24,8 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
-import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
+import { useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }

@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
 import { emailValidation } from '@gdmn-nxt/helpers/validators';
 import TelephoneInput from '@gdmn-nxt/components/telephone-input';
-import { ticketsApi } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsApi';
+import { ticketsUserApi } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsUserApi';
 
 export default function AccountTab() {
   const userProfile = useUserData();
@@ -41,7 +41,7 @@ export default function AccountTab() {
         }
       });
       if (settings?.PHONE !== values.PHONE) {
-        dispatch(ticketsApi.util.invalidateTags(['users']));
+        dispatch(ticketsUserApi.util.invalidateTags(['users']));
       }
     },
   });

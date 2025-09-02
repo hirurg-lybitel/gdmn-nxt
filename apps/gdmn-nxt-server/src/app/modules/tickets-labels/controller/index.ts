@@ -1,26 +1,13 @@
 import { RequestHandler } from 'express';
-import { IRequestResult, UserType } from '@gsbelarus/util-api-types';
-import { ticketsMessagesService } from '../service';
+import { IRequestResult, } from '@gsbelarus/util-api-types';
+import { ticketsLabelsService } from '../service';
 import { resultError } from '@gsbelarus/util-helpers';
 
 const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const ticketId = req.params.ticketId;
-
-    const userId = req.user['id'];
-
-    if (!ticketId) {
-      throw new Error('Не указан обязательный параметр ticketId');
-    }
-
-    const response = await ticketsMessagesService.findAll(
-      sessionID,
-      userId,
-      ticketId,
-      req.user['type'],
-    );
+    const response = await ticketsLabelsService.findAll(sessionID);
 
     const result: IRequestResult = {
       queries: { ...response },
@@ -33,13 +20,12 @@ const findAll: RequestHandler = async (req, res) => {
   }
 };
 
-const createMessage: RequestHandler = async (req, res) => {
+const createLabel: RequestHandler = async (req, res) => {
   try {
-    const userId = req.user['id'];
-    const messages = await ticketsMessagesService.createMessage(req.sessionID, userId, req.body, req.user['type']);
+    const labels = await ticketsLabelsService.createLabel(req.sessionID, req.body);
 
     const result: IRequestResult = {
-      queries: { messages: [messages] },
+      queries: { labels: [labels] },
       _schema: {}
     };
 
@@ -56,19 +42,15 @@ const updateById: RequestHandler = async (req, res) => {
     throw new Error('Идентификатор поля не определен или не является числовым');
   }
 
-  const userId = req.user['id'];
-
   try {
-    const updatedMessage = await ticketsMessagesService.updateById(
+    const updatedLabel = await ticketsLabelsService.updateById(
       req.sessionID,
       id,
-      userId,
-      req.body,
-      req.user['type']
+      req.body
     );
 
     const result: IRequestResult = {
-      queries: { messages: [updatedMessage] },
+      queries: { labels: [updatedLabel] },
       _params: [{ id }],
       _schema: {}
     };
@@ -85,20 +67,17 @@ const removeById: RequestHandler = async (req, res) => {
     throw new Error('Идентификатор поля не определен или не является числовым');
   }
 
-  const userId = req.user['id'];
-
-
   try {
-    await ticketsMessagesService.removeById(req.sessionID, id, userId, req.user['type']);
+    await ticketsLabelsService.removeById(req.sessionID, id);
     res.sendStatus(200);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
   }
 };
 
-export const ticketsMessagesController = {
+export const ticketsLabelsController = {
   findAll,
-  createMessage,
+  createLabel,
   updateById,
   removeById
 };
