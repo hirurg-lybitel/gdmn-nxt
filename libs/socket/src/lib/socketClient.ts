@@ -18,8 +18,6 @@ export function setSocketClient(name: string, options: SocketOptions) {
   const userId = options?.userId || -1;
   const userType = options?.userType || UserType.Gedemin;
 
-  console.log(options);
-
   if (!socketClients[name]) {
     socketClients[name] = io(
       url,
