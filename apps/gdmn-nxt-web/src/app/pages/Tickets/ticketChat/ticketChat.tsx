@@ -1,16 +1,16 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -19,7 +19,7 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import { customerApi } from '../../../features/customer/customerApi_new';
 import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
-import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
+import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import PhoneDialog from './phoneDialog';
 import { profileSettingsApi, useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
@@ -32,6 +32,7 @@ import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 import { useFormik } from 'formik';
+import TicketHistory from './ticketHistory';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 interface ITicketChatProps {
@@ -168,6 +169,16 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+type messagesAndHistory = {
+  content: ITicketMessage;
+  type: string;
+  date: Date;
+} | {
+  content: ITicketHistory;
+  type: string;
+  date: Date;
+};
+
 export default function TicketChat(props: ITicketChatProps) {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -175,17 +186,49 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: messages = [], isFetching: messagesIsFetching, isLoading: messagesIsLoading } = useGetAllTicketMessagesQuery({ id });
   const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
   const { data: ticket, isFetching: ticketIsFetching, isLoading: ticketIsLoading } = useGetTicketByIdQuery(id ?? '');
+  const { data: ticketHistory = [], isFetching: historyIsFetching, isLoading: historyIsLoading } = useGetAllTicketHistoryQuery({ id });
 
-  const closed = useMemo(() => !!ticket?.closeAt, [ticket?.closeAt]);
+
+  const messagesAndHistory: messagesAndHistory[] = useMemo(() => {
+    return [...messages, ...ticketHistory].map((item) => {
+      if ('sendAt' in item) {
+        return {
+          content: item,
+          type: 'message',
+          date: item.sendAt
+        };
+      }
+      return {
+        content: item,
+        type: 'history',
+        date: item.changeAt
+      };
+    }).sort((a, b) => {
+      const nameA = new Date(a.date);
+      const nameB = new Date(b.date);
+      return new Date(nameA) < new Date(nameB) ? -1 : 1;
+    });
+  }, [messages, ticketHistory]);
+
+  const confirmed = useMemo(() => ticket?.state.code === ticketStateCodes.confirmed, [ticket?.state.code]);
 
   const [addMessages] = useAddTicketMessageMutation();
-  const [updateTicket] = useUpdateTicketMutation();
+  const [updateTicket, { isLoading: updateTicketIsLoading }] = useUpdateTicketMutation();
 
-  const isLoading = messagesIsLoading || statesIsLoading || ticketIsLoading;
+  const isLoading = messagesIsLoading || statesIsLoading || ticketIsLoading || historyIsLoading;
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
-  const stateChange = useMemo(() => states?.find(state => state.code === (ticketsUser ? -1 : 2)), [states, ticketsUser]);
+  const stateChange = useMemo(() => {
+    if (!ticket?.state.code) return;
+    if (ticket.state.code === ticketStateCodes.needInfo && ticketsUser) {
+      return states?.find(state => state.code === ticketStateCodes.inProgress);
+    }
+    if (ticket?.state.code < ticketStateCodes.inProgress && !ticketsUser) {
+      return states?.find(state => state.code === ticketStateCodes.inProgress);
+    }
+    return;
+  }, [states, ticket?.state.code, ticketsUser]);
 
   const [shiftHold, setShiftHold] = useState(false);
 
@@ -195,16 +238,20 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const handleSend = useCallback(() => {
     if ((message.trim() === '' && files.length === 0) || !id) return;
-    addMessages({
-      ticketKey: Number(id),
-      body: message,
-      state: stateChange,
-      sendAt: new Date(),
-      files: files
-    });
+    const sendMessage = async () => {
+      await addMessages({
+        ticketKey: Number(id),
+        body: message,
+        state: stateChange,
+        sendAt: new Date(),
+        files: files
+      });
+      dispatch(ticketsApi.util.invalidateTags(['tickets']));
+    };
+    sendMessage();
     setMessage('');
     setFiles([]);
-  }, [addMessages, files, id, message, stateChange]);
+  }, [addMessages, dispatch, files, id, message, stateChange]);
 
   useEffect(() => {
     const keydown = (e: KeyboardEvent) => {
@@ -383,22 +430,26 @@ export default function TicketChat(props: ITicketChatProps) {
     );
   }, [files.length, initialAttachments, attachmentsChange, isLoading, message, handleSend]);
 
-  const fakeMessages: ITicketMessage[] = Array.from({ length: 4 }, (_, index) => {
+  const fakeMessages: messagesAndHistory[] = Array.from({ length: 4 }, (_, index) => {
     return {
-      ID: -1,
-      body: 'Загрузка данных',
-      ticketKey: -1,
-      user: {
+      content: {
         ID: -1,
-        type: index % 2 === 0 ? 'user' : 'empl',
-        fullName: '',
+        body: 'Загрузка данных',
+        ticketKey: -1,
+        user: {
+          ID: -1,
+          type: index % 2 === 0 ? 'user' : 'empl',
+          fullName: '',
+        },
+        state: {
+          ID: -1,
+          name: '',
+          code: 0
+        },
+        sendAt: new Date()
       },
-      state: {
-        ID: -1,
-        name: '',
-        code: 0
-      },
-      sendAt: new Date()
+      type: 'message',
+      date: new Date()
     };
   });
 
@@ -412,6 +463,18 @@ export default function TicketChat(props: ITicketChatProps) {
   const [setSettings, { isLoading: updateProfileIsLoading }] = useSetProfileSettingsMutation();
 
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+
+  const [confirmDialog] = useConfirmation();
+
+  const confirmTicket = useCallback(() => {
+    confirmDialog.setOpen(false);
+    updateTicket({ ...ticket, state: states?.find(state => state.code === ticketStateCodes.confirmed) });
+  }, [confirmDialog, states, ticket, updateTicket]);
+
+  const cancelConfrimTicket = useCallback(() => {
+    confirmDialog.setOpen(false);
+    updateTicket({ ...ticket, state: states?.find(state => state.code === ticketStateCodes.inProgress) });
+  }, [confirmDialog, states, ticket, updateTicket]);
 
   const handleOpenPhoneDialog = useCallback(() => {
     setPhoneDialogOpen(true);
@@ -443,7 +506,7 @@ export default function TicketChat(props: ITicketChatProps) {
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
   const rightButton = useMemo(() => {
-    if (closed || ticket?.sender.ID !== userProfile?.id) return;
+    if (confirmed || ticket?.sender.ID !== userProfile?.id) return;
     if (ticketsUser) {
       const currentUser = users?.users.find((user) => user.ID === userProfile?.id);
       return (
@@ -462,7 +525,7 @@ export default function TicketChat(props: ITicketChatProps) {
       );
     }
     return;
-  }, [closed, handleOpenPhoneDialog, handleRequestCall, isLoading, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userProfile?.id, users?.users]);
+  }, [confirmed, handleOpenPhoneDialog, handleRequestCall, isLoading, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userProfile?.id, users?.users]);
 
   const handleUpdateStatus = useCallback(async (value: ITicketState | null) => {
     if (!value) return;
@@ -472,7 +535,7 @@ export default function TicketChat(props: ITicketChatProps) {
   }, [dispatch, ticket, updateTicket]);
 
   const memoPerformer = useMemo(() => {
-    if (ticketsUser) {
+    if (ticketsUser || confirmed) {
       return (
         <TextField
           variant="standard"
@@ -488,8 +551,9 @@ export default function TicketChat(props: ITicketChatProps) {
       <Autocomplete
         fullWidth
         size="small"
-        disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
-        loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsFetching}
+        readOnly={confirmed}
+        disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+        loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={systemUsers ?? []}
         value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
@@ -506,10 +570,15 @@ export default function TicketChat(props: ITicketChatProps) {
         )}
       />
     );
-  }, [systemUsers, systemUsersIsFetching, systemUsersIsLoading, ticket, ticketIsFetching, ticketsUser, updateTicket]);
+  }, [confirmed, systemUsers, systemUsersIsFetching, systemUsersIsLoading, ticket, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicket, updateTicketIsLoading]);
 
   const memoStatus = useMemo(() => {
-    if (ticketsUser) {
+    const changeables = [
+      ticketStateCodes.done,
+      ticketStateCodes.inProgress,
+      ticketStateCodes.needInfo
+    ];
+    if (ticketsUser || confirmed) {
       return (
         <TextField
           variant="standard"
@@ -525,8 +594,8 @@ export default function TicketChat(props: ITicketChatProps) {
       <Autocomplete
         fullWidth
         size="small"
-        disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
-        loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsFetching}
+        disabled={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsLoading || !ticket?.performer?.ID || updateTicketIsLoading}
+        loading={statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={states ?? []}
         value={states?.find((state) => state.ID === ticket?.state.ID) ?? null}
@@ -544,16 +613,23 @@ export default function TicketChat(props: ITicketChatProps) {
             label={'Статус'}
           />
         )}
+        renderOption={(props, option) => {
+          if (!changeables.includes(option.code)) return;
+          return (
+            <li {...props} key={option.ID}>
+              {option.name}
+            </li>
+          );
+        }}
       />
     );
-  }, [handleUpdateStatus, states, statesIsFetching, statesIsLoading, ticket?.state.ID, ticket?.state.name, ticketIsFetching, ticketsUser]);
+  }, [confirmed, handleUpdateStatus, states, statesIsFetching, statesIsLoading, ticket?.performer?.ID, ticket?.state.ID, ticket?.state.name, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const memoCustomer = useMemo(() => {
     if (ticketsUser) return;
     return (
       <TextField
         variant="standard"
-        disabled={ticketIsFetching || ticketIsFetching}
         value={ticket?.company.FULLNAME ?? ticket?.company.NAME ?? ''}
         label={'Клиент'}
         InputProps={{
@@ -561,13 +637,12 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketIsFetching, ticketsUser]);
+  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketsUser]);
 
   const memoUser = useMemo(() => {
     if (ticketsUser && !isAdmin) return;
     return (
       <TextField
-        disabled={ticketIsFetching || ticketIsFetching}
         variant="standard"
         value={ticket?.sender.fullName ?? ''}
         label={'Постановщик'}
@@ -576,14 +651,18 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [isAdmin, ticket?.sender.fullName, ticketIsFetching, ticketsUser]);
+  }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <>
       {fileDialog}
+      {confirmDialog.dialog}
       {memoPhoneDialog}
       <CustomizedCard style={{ width: '100%' }}>
         <div style={{ display: 'flex', padding: '8px 10px', alignItems: 'center' }}>
@@ -609,7 +688,7 @@ export default function TicketChat(props: ITicketChatProps) {
         <Divider />
         <CardContent style={{ padding: '0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-            {(ticket?.needCall && !ticketsUser && !closed) && (
+            {(ticket?.needCall && !ticketsUser && !confirmed) && (
               <div
                 style={{
                   background: 'var(--color-card-bg)', width: '100%',
@@ -633,16 +712,49 @@ export default function TicketChat(props: ITicketChatProps) {
                 </Confirmation>
               </div>
             )}
+            {
+              (ticket?.state.code === ticketStateCodes.done && ticketsUser && !ticketIsLoading &&
+                !ticketIsFetching && !statesIsFetching && !statesIsLoading) && (
+                <div
+                  style={{
+                    background: 'var(--color-card-bg)', width: '100%',
+                    padding: '5px 16px', display: 'flex', borderBottom: '1px solid var(--color-paper-bg)'
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: matchDownSm ? '8px' : '16px', flexDirection: matchDownSm ? 'column' : 'row'
+                    }}
+                  >
+                    <span>Удовлетворены ли вы ответом специалиста технической поддержки?</span>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                      <Button onClick={cancelConfrimTicket} variant={'outlined'}>Нет</Button>
+                      <Button onClick={confirmTicket} variant={'contained'}>Да</Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             <div style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
-                {(isLoading ? fakeMessages : messages).map((message, index) => <UserMessage
-                  isLoading={isLoading}
-                  message={message}
-                  key={index}
-                />)}
+              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
+                {(isLoading ? fakeMessages : messagesAndHistory).map((item, index) => {
+                  if (item.type === 'message') {
+                    return <UserMessage
+                      indent={index !== 0 && messagesAndHistory[index - 1]?.type !== 'history'}
+                      isLoading={isLoading}
+                      message={item.content as ITicketMessage}
+                      key={index}
+                    />;
+                  }
+                  return <TicketHistory
+                    key={index}
+                    ticketId={ticket?.ID}
+                    history={item.content as ITicketHistory}
+                  />;
+                })}
               </div>
             </div>
-            {!closed && <>
+            {!confirmed && <>
               <Divider style={{ borderTop: '2px solid var(--color-paper-bg)' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', flexDirection: 'column', paddingTop: 0, position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '-30px', right: '8px', zIndex: 4 }}>
@@ -711,6 +823,24 @@ export default function TicketChat(props: ITicketChatProps) {
         {memoStatus}
         {memoCustomer}
         {memoUser}
+        {(ticketsUser && !confirmed) && (
+          <Confirmation
+            key="delete"
+            title="Завершить заявку?"
+            text={'После завершения открыть заявку будет невозможно'}
+            dangerous
+            onConfirm={confirmTicket}
+          >
+            <Button
+              color={'error'}
+              variant={'outlined'}
+              style={{ width: '100%', textTransform: 'none' }}
+              disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+            >
+              Завершить заявку
+            </Button>
+          </Confirmation>
+        )}
       </div>
     </>
   );
@@ -719,9 +849,10 @@ export default function TicketChat(props: ITicketChatProps) {
 interface IUserMessage {
   isLoading: boolean;
   message: ITicketMessage;
+  indent: boolean;
 }
 
-const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
+const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage) => {
   const [updateMessage, { isLoading: updateIsLoading }] = useUpdateTicketMessageMutation();
   const [deleteMessage, { isLoading: deleteIsLoading }] = useDeleteTicketMessageMutation();
 
@@ -820,7 +951,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
     <div
       style={{
         display: 'flex', position: 'relative', alignItems: 'start',
-        justifyContent: 'flex-start',
+        justifyContent: 'flex-start', marginTop: indent ? '10px' : 0
       }}
     >
       {confirmDialog.dialog}
@@ -835,13 +966,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
         <div style={{ display: 'flex', padding: '5px 10px', gap: '16px', alignItems: 'center' }}>
           <></>
           <Typography variant="body2">{isLoading ? '' : message.user.fullName}</Typography>
-          <Typography variant={'caption'}>
-            {(message.sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(message.sendAt)}>
-              <div>
-                {timeAgo(message.sendAt)}
-              </div>
-            </Tooltip>}
-          </Typography>
+          {!isLoading && <MessageTime date={message.sendAt} />}
           <div style={{ flex: 1 }} />
           {(message.user.ID === userId && !isLoading) && <MenuBurger
             disabled={updateIsLoading || deleteIsLoading}
@@ -935,5 +1060,53 @@ const UserMessage = ({ isLoading: isLoadingProp, message }: IUserMessage) => {
         </div>}
       </div>
     </div >
+  );
+};
+
+interface IMessageTimeProps {
+  date: Date | undefined;
+}
+
+const MessageTime = ({ date }: IMessageTimeProps) => {
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const calcUpdateInterval = (date: Date | undefined) => {
+    if (!date) return;
+    const pastDate = new Date(date);
+    const now = new Date();
+
+    const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
+
+    if (secondsPassed <= 60) return 1000;
+    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    return;
+  };
+
+  const [updateInterval, setUpdateInterval] = useState(calcUpdateInterval(date));
+
+  useEffect(() => {
+    if (!date || !updateInterval) return;
+
+    const updateTime = setInterval(() => {
+      forceUpdate();
+      const newInterval = calcUpdateInterval(date);
+      if (newInterval !== updateInterval) {
+        setUpdateInterval(newInterval);
+      }
+    }, updateInterval);
+
+    return () => {
+      clearInterval(updateTime);
+    };
+  }, [date, updateInterval]);
+
+  return (
+    <Typography variant={'caption'}>
+      {(date) && <Tooltip arrow title={formatToFullDate(date)}>
+        <div>
+          {timeAgo(date)}
+        </div>
+      </Tooltip>}
+    </Typography>
   );
 };

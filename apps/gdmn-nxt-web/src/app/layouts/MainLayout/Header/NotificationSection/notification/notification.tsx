@@ -141,7 +141,8 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [showedMessages, setShowedMessages] = useState<number[]>([]);
   const [isActivePage, setIsActivePage] = useState<boolean>(true);
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+  const type = useSelector<RootState, UserType | undefined>(state => state.user.userProfile?.type);
+  const ticketsUser = type === UserType.Tickets;
 
   function onBlur() {
     setIsActivePage(false);
@@ -187,7 +188,8 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
 
     const socket = setSocketClient('notifications', {
       url: `https://${config.serverHost}:${config.notificationPort}`,
-      userId
+      userId,
+      userType: type
     });
     let oldMessages: IMessage[] = [];
     socket.on('messages', (data: IMessage[]) => {
@@ -201,7 +203,7 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
     return () => {
       clearSocket('notifications');
     };
-  }, []);
+  }, [type, userId]);
 
   /** Disable scrolling for main window when notifications are opened */
   const preventDefault = useCallback((e: Event) => e.preventDefault(), []);
@@ -290,6 +292,12 @@ export function Notification({ menuItemClick }: Readonly<NotificationProps>) {
         menuItemClick({ url, id: '', type: 'item' }, 0);
         navigate(url);
         dispatch(saveFilterData({ 'tasks': newTasksFilters }));
+        break;
+      }
+      case NotificationAction.JumpToTicket: {
+        const url = `${ticketsUser ? '' : 'tickets/'}list/${actionContent}`;
+        menuItemClick({ url, id: '', type: 'item' }, 0);
+        navigate(url);
         break;
       }
       default:

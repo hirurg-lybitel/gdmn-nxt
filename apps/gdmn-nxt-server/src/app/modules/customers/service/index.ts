@@ -248,7 +248,6 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
           const BUSINESSPROCESSES = businessProcesses[c.ID] ?? null;
 
           const performerKey = c.PERFORMERKEY;
-          delete c.PERFORMERKEY;
 
           filteredArray.push({
             ...c,

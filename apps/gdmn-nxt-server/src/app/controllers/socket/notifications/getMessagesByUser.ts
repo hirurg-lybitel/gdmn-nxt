@@ -1,6 +1,6 @@
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 import { INotification } from '@gdmn-nxt/socket';
-import { IDataSchema, IRequestResult } from '@gsbelarus/util-api-types';
+import { IDataSchema, IRequestResult, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from 'apps/gdmn-nxt-server/src/app/responseMessages';
 import { RequestHandler } from 'express';
 
@@ -25,7 +25,7 @@ export const getMessagesByUser: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       // const rs = await attachment.executeQuery(transaction, query, params);
       try {
         // const data = await rs.fetchAsObject();
@@ -48,12 +48,14 @@ export const getMessagesByUser: RequestHandler = async (req, res) => {
       }
     };
 
+    const notificationTable = req.user['type'] === UserType.Tickets ? 'USR$CRM_T_NOTIFICATIONS' : 'USR$CRM_NOTIFICATIONS';
+
     const query = {
       name: 'notifications',
       query: `
         SELECT
           ID, EDITIONDATE, USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$ACTIONTYPE, USR$ACTIONCONTENT
-        FROM USR$CRM_NOTIFICATIONS
+        FROM ${notificationTable}
         WHERE USR$DELAYED = 0 AND USR$USERKEY = ${userId}
         ORDER BY USR$USERKEY, EDITIONDATE DESC`
     };
@@ -79,7 +81,6 @@ export const getMessagesByUser: RequestHandler = async (req, res) => {
         notifictions[n.USR$USERKEY] = [newNotification];
       };
     });
-
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {

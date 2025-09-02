@@ -1,26 +1,30 @@
 import { io, Socket } from 'socket.io-client';
 import { ClientToServerEvents, ServerToClientEvents } from './socketTypes';
+import { UserType } from '@gsbelarus/util-api-types';
 
 export let socketClient: Socket<ServerToClientEvents, ClientToServerEvents>;
 
 type SocketClients = {
-  [key: string]: Socket<ServerToClientEvents, ClientToServerEvents>
-}
+  [key: string]: Socket<ServerToClientEvents, ClientToServerEvents>;
+};
 type SocketOptions = {
   url: string;
   userId: number;
-}
+  userType?: UserType;
+};
 const socketClients: SocketClients = {};
 export function setSocketClient(name: string, options: SocketOptions) {
   const url = options?.url || '';
   const userId = options?.userId || -1;
+  const userType = options?.userType || UserType.Gedemin;
 
   if (!socketClients[name]) {
     socketClients[name] = io(
       url,
       {
         auth: {
-          userId
+          userId,
+          userType
         },
         secure: true,
         rejectUnauthorized: false,
