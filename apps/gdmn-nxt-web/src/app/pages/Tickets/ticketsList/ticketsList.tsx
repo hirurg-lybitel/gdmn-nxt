@@ -270,11 +270,11 @@ export function TicketsList(props: ticketsListProps) {
     {
       field: 'state',
       headerName: 'Статус',
-      width: matchDownLg ? 120 : 180,
+      width: matchDownLg ? 120 : 200,
       sortable: false,
       resizable: false,
       renderCell: (params) => {
-        return <div style={{ textAlign: matchDownLg ? undefined : 'center', width: '100%' }}>{params.row.state.name}</div>;
+        return <div style={{ textAlign: matchDownLg ? undefined : 'center', width: '100%', textOverflow: 'ellipsis', overflow: 'hidden' }}>{params.row.state.name}</div>;
       },
       renderHeader: () => matchDownLg ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Статус</div> : stateSelect
     },
