@@ -17,6 +17,7 @@ import path from 'path';
 import { forEachAsync } from '@gsbelarus/util-helpers';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { deleteAllNotifications } from '@gdmn-nxt/controllers/socket/notifications/deleteAllNotifications';
+import { UserType } from '@gsbelarus/util-api-types';
 
 marked.use({
   mangle: false,
@@ -57,8 +58,19 @@ export function Notifications({ router }: NotificationsProps) {
   socketIO.on('connection', (socket) => {
     console.log(`⚡ Notifications: ${socket.id} user just connected!`);
 
+    const user: IUser = {
+      userId: socket.handshake.auth.userId,
+      socketId: socket.id,
+      userType: socket.handshake.auth.userType
+    };
+
+    users.push(user);
+
     socket.on('delete', async (notificationId) => {
-      await deleteNotification(sessionId, notificationId);
+      const user = users.find(u => u.socketId === socket.id);
+      const userType = user?.userType;
+
+      await deleteNotification(sessionId, notificationId, userType);
       await sendMessages();
     });
 
@@ -68,7 +80,10 @@ export function Notifications({ router }: NotificationsProps) {
     });
 
     socket.on('messagesByUser_request', async (userId) => {
-      const notifications = await getNotifications(sessionId);
+      const user = users.find(u => u.socketId === socket.id);
+      const userType = user?.userType;
+
+      const notifications = await getNotifications(sessionId, userType);
       const userNotifications: INotification[] = notifications[userId];
 
       socket.emit('messagesByUser_response', userNotifications?.map(n => {
@@ -83,7 +98,7 @@ export function Notifications({ router }: NotificationsProps) {
       };
 
       try {
-        await insertNotification(sessionId, message, userIDs);
+        await insertNotification({ sessionId, message, userIDs });
       } catch (error) {
         socket.emit('sendMessageToUsers_response', 500, 'Сообщение не отправлено. Обратитесь к администратору');
         return;
@@ -93,15 +108,8 @@ export function Notifications({ router }: NotificationsProps) {
       socket.emit('sendMessageToUsers_response', 200, 'Сообщение успешно отправлено');
     });
 
-    const user: IUser = {
-      userId: socket.handshake.auth.userId,
-      socketId: socket.id
-    };
-
-    users.push(user);
-
     /** выслать список уведомлений подключившемуся пользователю */
-    const notifications = getNotifications(sessionId);
+    const notifications = getNotifications(sessionId, socket.handshake.auth.userType);
     const userNotifications: INotification[] = notifications[user.userId];
     socket.emit('messages', userNotifications?.map(n => {
       const { message, userId, ...mes } = n;
@@ -123,11 +131,12 @@ export function Notifications({ router }: NotificationsProps) {
     await updateNotifications(sessionId);
 
     /** считать актуальные уведомления */
-    const notifications = await getNotifications(sessionId);
+    const notificationsGedemin = await getNotifications(sessionId, UserType.Gedemin);
+    const notificationsTickets = await getNotifications(sessionId, UserType.Tickets);
 
     /** отправить каждому активному пользователю из users свои уведомления */
     users.forEach(user => {
-      const userNotifications: INotification[] = notifications[user.userId];
+      const userNotifications: INotification[] = (user.userType === UserType.Tickets ? notificationsTickets : notificationsGedemin)[user.userId];
 
       socketIO.to(user.socketId).emit('messages', userNotifications?.map(n => {
         const { message, userId, ...mes } = n;

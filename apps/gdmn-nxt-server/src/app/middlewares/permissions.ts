@@ -17,7 +17,8 @@ const ticketsUserRoutes = [
   'ticketSystem/states',
   'ticketSystem/messages',
   'system/users',
-  'contacts/customerId'
+  'contacts/customerId',
+  'ticketSystem/history'
 ];
 
 const ticketsAdminRoutes = [

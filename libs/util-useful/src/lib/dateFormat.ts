@@ -20,7 +20,7 @@ export function timeAgo(date: Date): string {
   return `${year} ${pluralize(year, 'год', 'года', 'лет')} назад`;
 }
 
-export function formatFullDateDate(dateString: Date): string {
+export function formatToFullDate(dateString: Date): string {
   const date = new Date(dateString);
   const pad = (n: number) => n.toString().padStart(2, '0');
 

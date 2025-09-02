@@ -1,4 +1,4 @@
-import { IKanbanCard, IKanbanColumn, IKanbanTask } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IKanbanTask, UserType } from '@gsbelarus/util-api-types';
 export interface InterServerEvents {
   ping: () => void;
   joinToRoom: (roomName: string) => void;
@@ -28,11 +28,13 @@ export interface IMessage {
 export interface IUser {
   userId: number;
   socketId: string;
+  userType: UserType;
 };
 
 export enum NotificationAction {
   JumpToDeal = 1,
-  JumpToTask = 2
+  JumpToTask = 2,
+  JumpToTicket = 3
 }
 
 export interface INotification {

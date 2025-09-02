@@ -1,6 +1,6 @@
 import { acquireReadTransaction } from '@gdmn-nxt/db-connection';
 import { INotification } from '@gdmn-nxt/socket';
-import { IDataSchema } from '@gsbelarus/util-api-types';
+import { IDataSchema, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from 'apps/gdmn-nxt-server/src/app/responseMessages';
 
 interface IMapOfNotifications {
@@ -10,7 +10,7 @@ interface IMapOfNotifications {
 /**
  * Get notifications list by userIds
  */
-export const getNotifications = async (sessionId: string) => {
+export const getNotifications = async (sessionId: string, userType?: UserType) => {
   // const { attachment, transaction } = await getReadTransaction(sessionId);
   const { releaseReadTransaction, fetchAsObject } = await acquireReadTransaction(sessionId);
 
@@ -23,7 +23,7 @@ export const getNotifications = async (sessionId: string) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       // const rs = await attachment.executeQuery(transaction, query, params);
       try {
         // const data = await rs.fetchAsObject();
@@ -46,12 +46,14 @@ export const getNotifications = async (sessionId: string) => {
       }
     };
 
+    const notificationsTable = userType === UserType.Tickets ? 'USR$CRM_T_NOTIFICATIONS' : 'USR$CRM_NOTIFICATIONS';
+
     const query = {
       name: 'notifications',
       query: `
         SELECT
           ID, EDITIONDATE, USR$USERKEY, USR$TITLE, USR$MESSAGE, USR$ACTIONTYPE, USR$ACTIONCONTENT, USR$ONDATE
-        FROM USR$CRM_NOTIFICATIONS
+        FROM ${notificationsTable}
         WHERE USR$DELAYED = 0
         ORDER BY USR$USERKEY, EDITIONDATE DESC`
     };

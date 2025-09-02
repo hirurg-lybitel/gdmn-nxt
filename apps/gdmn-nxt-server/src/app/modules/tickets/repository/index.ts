@@ -1,4 +1,4 @@
-import { UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
+import { ticketStateCodes, UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
@@ -184,9 +184,9 @@ const save: SaveHandler<ITicketSave> = async (
 
   const ticketStates = await ticketsStateRepository.find(sessionID);
 
-  const openState = ticketStates.find(state => state.code === 1);
+  const currentState = ticketStates.find(state => state.code === ((performer.ID && performer.ID !== -1) ? ticketStateCodes.assigned : ticketStateCodes.initial));
 
-  if (!openState?.ID) {
+  if (!currentState?.ID) {
     throw new Error('Не удалось определить статус тикета');
   }
 
@@ -200,7 +200,7 @@ const save: SaveHandler<ITicketSave> = async (
         COMPANYKEY: company.ID,
         USERKEY: userId,
         OPENAT: openAt ? new Date(openAt) : new Date(),
-        STATEID: openState.ID,
+        STATEID: currentState.ID,
         PERFORMERKEY: (!performer?.ID || performer?.ID < 0) ? undefined : performer.ID
       }
     );
@@ -236,7 +236,9 @@ const update: UpdateHandler<ITicket> = async (
 
     const ticketsUserField = `
         USR$TITLE = :TITLE,
-        USR$NEEDCALL = :NEEDCALL
+        USR$NEEDCALL = :NEEDCALL,
+        USR$STATE = :STATE,
+        USR$CLOSEAT = :CLOSEAT
       `;
 
     const gedeminUserFields = `

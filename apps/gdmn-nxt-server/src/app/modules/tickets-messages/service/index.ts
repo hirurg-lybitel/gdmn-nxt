@@ -1,7 +1,10 @@
-import { ForbiddenException, InternalServerErrorException, ITicketMessage, NotFoundException, UserType } from '@gsbelarus/util-api-types';
+import { ForbiddenException, InternalServerErrorException, ITicketMessage, NotFoundException, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import { ticketsMessagesRepository } from '../repository';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 import { buckets, minioClient } from '@gdmn-nxt/lib/minio';
+import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
+import { insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
+import { NotificationAction } from '@gdmn-nxt/socket';
 
 const findAll = async (
   sessionID: string,
@@ -37,7 +40,7 @@ const createMessage = async (
   try {
     const oldTicket = await ticketsRepository.findOne(sessionID, { id: body.ticketKey }, type);
 
-    if (oldTicket?.closeAt) {
+    if (oldTicket.state.code === ticketStateCodes.confirmed) {
       throw ForbiddenException('Тикет завершен');
     }
 
@@ -47,6 +50,16 @@ const createMessage = async (
 
     if (body.state && !fromTicketEP) {
       const ticket = await ticketsRepository.update(sessionID, oldTicket.ID, { ...oldTicket, state: body.state }, type);
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        undefined,
+        {
+          ticketKey: oldTicket.ID,
+          state: body.state,
+          changeAt: new Date()
+        },
+        type
+      );
     }
 
     const newMessage = await ticketsMessagesRepository.save(sessionID, { ...body, userId }, type);
@@ -55,6 +68,30 @@ const createMessage = async (
 
     if (!message?.ID) {
       throw NotFoundException(`Не найдено сообщение с id=${newMessage?.ID}`);
+    }
+
+    if (type === UserType.Tickets && oldTicket.performer.ID && !fromTicketEP) {
+      await insertNotification({
+        sessionId: sessionID,
+        title: `Тикет №${oldTicket.ID}`,
+        message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
+        onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
+        userIDs: [oldTicket.performer.ID],
+        actionContent: body.ticketKey + '',
+        actionType: NotificationAction.JumpToTicket
+      });
+    }
+    if (type !== UserType.Tickets && oldTicket.sender.ID) {
+      await insertNotification({
+        sessionId: sessionID,
+        title: `Заявка №${oldTicket.ID}`,
+        message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
+        onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
+        userIDs: [oldTicket.sender.ID],
+        type: UserType.Tickets,
+        actionContent: body.ticketKey + '',
+        actionType: NotificationAction.JumpToTicket
+      });
     }
 
     return message;

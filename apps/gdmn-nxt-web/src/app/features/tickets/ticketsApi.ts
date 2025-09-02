@@ -1,4 +1,4 @@
-import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser, IChangePassword, IAuthResult } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser, IChangePassword, IAuthResult, ITicketHistory } from '@gsbelarus/util-api-types';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { baseUrlApi } from '@gdmn/constants/client';
 
@@ -7,6 +7,7 @@ export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicket
 export type ITicketMessagesRequestResult = IRequestResult<{ messages: ITicketMessage[]; }>;
 export type ITicketUsersRequestResult = IRequestResult<{ users: ITicketUser[], count: number; }>;
 export type ITicketUserRequestResult = IRequestResult<{ users: ITicketUser[]; }>;
+export type ITicketHistoryRequestResult = IRequestResult<{ ticketsHistory: ITicketHistory[]; }>;
 
 export const ticketsApi = createApi({
   reducerPath: 'ticketSystem',
@@ -132,6 +133,19 @@ export const ticketsApi = createApi({
       }),
       invalidatesTags: ['users']
     }),
+    getAllTicketHistory: builder.query<ITicketHistory[], Partial<{ id: string; } & IQueryOptions>>({
+      query: (options) => {
+        const { id } = options;
+        const params = queryOptionsToParamsString(options);
+
+        return {
+          url: `/history/${id}${params ? `?${params}` : ''}`,
+          method: 'GET'
+        };
+      },
+      transformResponse: (response: ITicketHistoryRequestResult) => response.queries?.ticketsHistory || null,
+      providesTags: ['messages', 'tickets']
+    }),
   }),
 });
 
@@ -148,5 +162,6 @@ export const {
   useAddTicketUserMutation,
   useDeleteTicketUserMutation,
   useUpdateTicketMessageMutation,
-  useDeleteTicketMessageMutation
+  useDeleteTicketMessageMutation,
+  useGetAllTicketHistoryQuery
 } = ticketsApi;
