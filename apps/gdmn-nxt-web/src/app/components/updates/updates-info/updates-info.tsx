@@ -4,7 +4,6 @@ import { useGetAllUpdatesQuery } from '../../../features/updates';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import { useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import CloseIcon from '@mui/icons-material/Close';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
 import { useEffect, useState } from 'react';

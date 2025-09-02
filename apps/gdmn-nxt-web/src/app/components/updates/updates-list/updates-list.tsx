@@ -1,12 +1,10 @@
-import { Accordion, AccordionDetails, AccordionSummary, CardContent, CardHeader, Divider, IconButton, Skeleton, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, CardContent, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './updates-list.module.less';
 import CardToolbar from '../../Styled/card-toolbar/card-toolbar';
 import { LoadingButton } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { Fragment, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import { useAddUpdateMutation, useDeleteUpdateMutation, useEditUpdateMutation, useGetAllUpdatesQuery } from '../../../features/updates';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';

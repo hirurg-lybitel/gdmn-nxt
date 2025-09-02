@@ -51,6 +51,26 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
     />
   );
 
+  const hint = useMemo(() => {
+    return (
+      <Tooltip title={smallHint ? 'Поддерживаются стили Markdown' : ''}>
+        <a
+          href="https://gist.github.com/Jekins/2bf2d0638163f1294637"
+          target="_blank"
+          rel="noreferrer"
+          style={{ textDecoration: 'none' }}
+        >
+          <Chip
+            icon={<InfoIcon />}
+            label={smallHint ? '' : 'Поддерживаются стили Markdown'}
+            variant="outlined"
+            sx={{ border: 'none', cursor: 'pointer', width: smallHint ? '20px' : undefined, '&:hover': { textDecoration: 'underline' } }}
+          />
+        </a>
+      </Tooltip>
+    );
+  }, [smallHint]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: fullHeight ? '100%' : undefined, gap: rest.label ? '10px' : 0, ...containerStyle }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
