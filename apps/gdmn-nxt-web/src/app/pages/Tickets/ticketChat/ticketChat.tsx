@@ -834,6 +834,7 @@ export default function TicketChat(props: ITicketChatProps) {
             <Button
               color={'error'}
               variant={'outlined'}
+              style={{ width: '100%', textTransform: 'none' }}
               disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
             >
               Завершить заявку
