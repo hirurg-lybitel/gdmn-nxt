@@ -23,7 +23,7 @@ import SortSelect from './sortSelect';
 import { customerApi, useGetCustomerQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { useGetUsersQuery } from '../../../features/systemUsers';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
-import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
+import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
@@ -509,7 +509,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state }: IItemProps
           >
             <div className={classes.openBy}>{closeBy ? closeBy.fullName : sender.fullName}</div>
           </UserTooltip>
-          <Tooltip arrow title={formatFullDateDate(closeAt ?? openAt)}>
+          <Tooltip arrow title={formatToFullDate(closeAt ?? openAt)}>
             <div>
               {timeAgo(closeAt ?? openAt)}
             </div>

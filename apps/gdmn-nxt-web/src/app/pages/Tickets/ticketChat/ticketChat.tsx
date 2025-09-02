@@ -4,7 +4,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
@@ -19,7 +19,7 @@ import { useGetUsersQuery } from '../../../features/systemUsers';
 import { customerApi } from '../../../features/customer/customerApi_new';
 import { useImageDialog } from '@gdmn-nxt/helpers/hooks/useImageDialog';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
-import { formatFullDateDate, timeAgo } from '@gsbelarus/util-useful';
+import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import PhoneDialog from './phoneDialog';
 import { profileSettingsApi, useGetProfileSettingsQuery, useSetProfileSettingsMutation } from '../../../features/profileSettings';
@@ -33,7 +33,6 @@ import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-del
 import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 import { useFormik } from 'formik';
 import TicketHistory from './ticketHistory';
-import { Timeline } from '@mui/lab';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 interface ITicketChatProps {
@@ -225,7 +224,7 @@ export default function TicketChat(props: ITicketChatProps) {
     if (ticket.state.code === ticketStateCodes.needInfo && ticketsUser) {
       return states?.find(state => state.code === ticketStateCodes.inProgress);
     }
-    if (ticket?.state.code < ticketStateCodes.inProgress && !!ticketsUser) {
+    if (ticket?.state.code < ticketStateCodes.inProgress && !ticketsUser) {
       return states?.find(state => state.code === ticketStateCodes.inProgress);
     }
     return;
@@ -631,7 +630,6 @@ export default function TicketChat(props: ITicketChatProps) {
     return (
       <TextField
         variant="standard"
-        disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         value={ticket?.company.FULLNAME ?? ticket?.company.NAME ?? ''}
         label={'Клиент'}
         InputProps={{
@@ -639,13 +637,12 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
+  }, [ticket?.company.FULLNAME, ticket?.company.NAME, ticketsUser]);
 
   const memoUser = useMemo(() => {
     if (ticketsUser && !isAdmin) return;
     return (
       <TextField
-        disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         variant="standard"
         value={ticket?.sender.fullName ?? ''}
         label={'Постановщик'}
@@ -654,7 +651,7 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [isAdmin, ticket?.sender.fullName, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
+  }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
@@ -968,13 +965,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
         <div style={{ display: 'flex', padding: '5px 10px', gap: '16px', alignItems: 'center' }}>
           <></>
           <Typography variant="body2">{isLoading ? '' : message.user.fullName}</Typography>
-          <Typography variant={'caption'}>
-            {(message.sendAt && !isLoading) && <Tooltip arrow title={formatFullDateDate(message.sendAt)}>
-              <div>
-                {timeAgo(message.sendAt)}
-              </div>
-            </Tooltip>}
-          </Typography>
+          {!isLoading && <MessageTime date={message.sendAt} />}
           <div style={{ flex: 1 }} />
           {(message.user.ID === userId && !isLoading) && <MenuBurger
             disabled={updateIsLoading || deleteIsLoading}
@@ -1068,5 +1059,53 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
         </div>}
       </div>
     </div >
+  );
+};
+
+interface IMessageTimeProps {
+  date: Date | undefined;
+}
+
+const MessageTime = ({ date }: IMessageTimeProps) => {
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const calcUpdateInterval = (date: Date | undefined) => {
+    if (!date) return;
+    const pastDate = new Date(date);
+    const now = new Date();
+
+    const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
+
+    if (secondsPassed <= 60) return 1000;
+    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    return;
+  };
+
+  const [updateInterval, setUpdateInterval] = useState(calcUpdateInterval(date));
+
+  useEffect(() => {
+    if (!date || !updateInterval) return;
+
+    const updateTime = setInterval(() => {
+      forceUpdate();
+      const newInterval = calcUpdateInterval(date);
+      if (newInterval !== updateInterval) {
+        setUpdateInterval(newInterval);
+      }
+    }, updateInterval);
+
+    return () => {
+      clearInterval(updateTime);
+    };
+  }, [date, updateInterval]);
+
+  return (
+    <Typography variant={'caption'}>
+      {(date) && <Tooltip arrow title={formatToFullDate(date)}>
+        <div>
+          {timeAgo(date)}
+        </div>
+      </Tooltip>}
+    </Typography>
   );
 };

@@ -1,4 +1,5 @@
 import { startTransaction } from '@gdmn-nxt/db-connection';
+import { NotificationAction } from '@gdmn-nxt/socket';
 import { UserType } from '@gsbelarus/util-api-types';
 
 interface IinsertNotificationParams {
@@ -7,7 +8,7 @@ interface IinsertNotificationParams {
   message: string,
   onDate?: Date,
   actionContent?: string,
-  actionType?: string,
+  actionType?: NotificationAction,
   userIDs: number[];
   type?: UserType;
 }
@@ -30,7 +31,7 @@ export const insertNotification = async (params: IinsertNotificationParams) => {
       message,
       ONDATE: onDate ?? new Date(),
       ACTIONCONTENT: actionContent,
-      ACTIONTYPE: actionType
+      ACTIONTYPE: actionType.toString()
     })));
 
     await releaseTransaction();

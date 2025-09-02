@@ -1,7 +1,7 @@
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import { ITicketHistory, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineSeparator } from '@mui/lab';
-import { Avatar } from '@mui/material';
+import { Avatar, Tooltip } from '@mui/material';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CreateIcon from '@mui/icons-material/Create';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -14,6 +14,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import DoneIcon from '@mui/icons-material/Done';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import InfoIcon from '@mui/icons-material/Info';
+import { useEffect, useReducer, useState } from 'react';
+import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 
 interface ITicketHistoryProps {
   history: ITicketHistory;
@@ -111,8 +113,57 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
           <div>
             {getTextByStateCode(history.state.code)}
           </div>
+          <HistoryTime date={history.changeAt} />
         </TimelineContent>
       </TimelineItem>
     </div>
+  );
+};
+
+interface IHistoryTimeProps {
+  date: Date | undefined;
+}
+
+const HistoryTime = ({ date }: IHistoryTimeProps) => {
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const calcUpdateInterval = (date: Date | undefined) => {
+    if (!date) return;
+    const pastDate = new Date(date);
+    const now = new Date();
+
+    const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
+
+    if (secondsPassed <= 60) return 1000;
+    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    return;
+  };
+
+  const [updateInterval, setUpdateInterval] = useState(calcUpdateInterval(date));
+
+  useEffect(() => {
+    if (!date || !updateInterval) return;
+
+    const updateTime = setInterval(() => {
+      forceUpdate();
+      const newInterval = calcUpdateInterval(date);
+      if (newInterval !== updateInterval) {
+        setUpdateInterval(newInterval);
+      }
+    }, updateInterval);
+
+    return () => {
+      clearInterval(updateTime);
+    };
+  }, [date, updateInterval]);
+
+  if (!date) return;
+
+  return (
+    <Tooltip arrow title={formatToFullDate(date)}>
+      <div>
+        {timeAgo(date)}
+      </div>
+    </Tooltip>
   );
 };

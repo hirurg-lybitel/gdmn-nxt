@@ -4,6 +4,8 @@ import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/servi
 import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';
 import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
+import { insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
+import { NotificationAction } from '@gdmn-nxt/socket';
 
 const findAll = async (
   sessionID: string,
@@ -159,6 +161,18 @@ const createTicket = async (
       );
     }
 
+    if (ticket.performer.ID) {
+      await insertNotification({
+        sessionId: sessionID,
+        title: `Новый тикет №${ticket.ID}`,
+        message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
+        onDate: new Date(),
+        userIDs: [ticket.performer.ID],
+        actionContent: ticket.ID + '',
+        actionType: NotificationAction.JumpToTicket
+      });
+    }
+
     cachedRequets.cacheRequest('customers');
 
     return ticket;
@@ -220,7 +234,9 @@ const updateById = async (
 
     const doneState = ticketStates.find(state => state.code === ticketStateCodes.done);
 
+    // При изменении состояния тикета
     if (body.state.ID && oldTicket.state.ID !== body.state.ID) {
+      // Тикет завершен клиентом до состояния "Закрыт"
       if (body.state.code === ticketStateCodes.confirmed && oldTicket.state.code !== ticketStateCodes.done) {
         await ticketsHistoryService.createHistory(
           sessionID,
@@ -243,7 +259,17 @@ const updateById = async (
           },
           type
         );
+        await insertNotification({
+          sessionId: sessionID,
+          title: `Тикет №${ticket.ID} завершен`,
+          message: 'Клиент завершил тикет',
+          onDate: new Date(),
+          userIDs: [ticket.performer.ID],
+          actionContent: ticket.ID + '',
+          actionType: NotificationAction.JumpToTicket
+        });
       } else {
+        // Сохранение в историю изменения состояния тикета
         await ticketsHistoryService.createHistory(
           sessionID,
           userId,
@@ -255,16 +281,80 @@ const updateById = async (
           },
           type
         );
+        // Отправка уведомления исполнителю после подверждения тикета со стадии "Завершен"
+        if (body.state.code === ticketStateCodes.confirmed) {
+          await insertNotification({
+            sessionId: sessionID,
+            title: `Тикет №${ticket.ID} завершен`,
+            message: 'Клиент подтвердил выполнение тикета',
+            onDate: new Date(),
+            userIDs: [ticket.performer.ID],
+            actionContent: ticket.ID + '',
+            actionType: NotificationAction.JumpToTicket
+          });
+        } else {
+          // Отправка уведомления об изменении состояния тикета исполнителю
+          if (userId !== ticket.performer.ID) {
+            if (type === UserType.Tickets && body.state.code === ticketStateCodes.inProgress) {
+              await insertNotification({
+                sessionId: sessionID,
+                title: `Тикет №${ticket.ID}`,
+                message: 'Выполнение тикета было отклонено клиентом',
+                onDate: new Date(),
+                userIDs: [ticket.performer.ID],
+                actionContent: ticket.ID + '',
+                actionType: NotificationAction.JumpToTicket
+              });
+            } else {
+              await insertNotification({
+                sessionId: sessionID,
+                title: `Тикет №${ticket.ID}`,
+                message: `Статус тикета изменен на "${body.state.name}"`,
+                onDate: new Date(),
+                userIDs: [ticket.performer.ID],
+                actionContent: ticket.ID + '',
+                actionType: NotificationAction.JumpToTicket
+              });
+            }
+          }
+          // Отправка уведомления об изменении состояния тикета клиенту
+          if (ticket.sender.ID !== userId) {
+            if (body.state.code === ticketStateCodes.done) {
+              await insertNotification({
+                sessionId: sessionID,
+                title: `Заявка №${ticket.ID}`,
+                message: 'Заявка была отмечена как завершённая сотрудником технической поддержки. Просим подтвердить выполнение. Если у вас остались вопросы или проблема не решена — вы можете возобновить заявку.',
+                onDate: new Date(),
+                userIDs: [ticket.sender.ID],
+                actionContent: ticket.ID + '',
+                actionType: NotificationAction.JumpToTicket,
+                type: UserType.Tickets
+              });
+            } else {
+              await insertNotification({
+                sessionId: sessionID,
+                title: `Заявка №${ticket.ID}`,
+                message: `Статус заявки изменен на "${body.state.name}"`,
+                onDate: new Date(),
+                userIDs: [ticket.sender.ID],
+                actionContent: ticket.ID + '',
+                actionType: NotificationAction.JumpToTicket,
+                type: UserType.Tickets
+              });
+            }
+          }
+        }
       }
     }
 
+    // При изменении исполнителя
     if ((!oldTicket.performer.ID || oldTicket.performer.ID !== body.performer.ID) && body.performer.ID) {
       if (!oldTicket.performer.ID) {
         await ticketsHistoryService.createHistory(
           sessionID,
           userId,
           {
-            ticketKey: oldTicket.ID,
+            ticketKey: ticket.ID,
             state: assignedState,
             changeAt: new Date(),
             performer: body.performer
@@ -276,13 +366,24 @@ const updateById = async (
           sessionID,
           userId,
           {
-            ticketKey: oldTicket.ID,
+            ticketKey: ticket.ID,
             state: ressignedState,
             changeAt: new Date(),
             performer: body.performer
           },
           type
         );
+      }
+      if (body.performer.ID !== userId) {
+        await insertNotification({
+          sessionId: sessionID,
+          title: 'Вам назначен новый тикет',
+          message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
+          onDate: new Date(),
+          userIDs: [body.performer.ID],
+          actionContent: ticket.ID + '',
+          actionType: NotificationAction.JumpToTicket
+        });
       }
     }
 
