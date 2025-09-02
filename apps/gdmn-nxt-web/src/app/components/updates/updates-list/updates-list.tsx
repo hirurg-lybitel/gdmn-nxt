@@ -1,12 +1,10 @@
-import { Accordion, AccordionDetails, AccordionSummary, CardContent, CardHeader, Divider, IconButton, Skeleton, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, CardContent, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import CustomizedCard from '../../Styled/customized-card/customized-card';
 import styles from './updates-list.module.less';
 import CardToolbar from '../../Styled/card-toolbar/card-toolbar';
 import { LoadingButton } from '@mui/lab';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { Fragment, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import { useAddUpdateMutation, useDeleteUpdateMutation, useEditUpdateMutation, useGetAllUpdatesQuery } from '../../../features/updates';
 import CustomizedScrollBox from '../../Styled/customized-scroll-box/customized-scroll-box';
@@ -16,9 +14,10 @@ import UpdatesEdit from '../updates-edit/updates-edit';
 import { IUpdateHistory } from '@gsbelarus/util-api-types';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
+import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 /* eslint-disable-next-line */
-export interface UpdatesListProps {}
+export interface UpdatesListProps { }
 
 export function UpdatesList(props: UpdatesListProps) {
   const { data: updates = [], isFetching, isLoading } = useGetAllUpdatesQuery();
@@ -129,9 +128,9 @@ export function UpdatesList(props: UpdatesListProps) {
                       </PermissionsGate>
                     </Stack>
                     <Typography variant="body1" component="div">
-                      <ReactMarkdown >
+                      <CustomMarkdown >
                         {u.CHANGES}
-                      </ReactMarkdown>
+                      </CustomMarkdown >
                     </Typography>
                   </AccordionDetails>
                 </Accordion>

@@ -1,13 +1,13 @@
 import styles from './notification-list.module.less';
-import { IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography, useMediaQuery } from '@mui/material';
+import { IconButton, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Stack, Typography, useMediaQuery } from '@mui/material';
 import MessageIcon from '@mui/icons-material/Message';
 import CloseIcon from '@mui/icons-material/Close';
 import { useCallback, useMemo } from 'react';
 import { IMessage, NotificationAction } from '@gdmn-nxt/socket';
-import ReactMarkdown from 'react-markdown';
 import { useSelector } from 'react-redux';
 import { RootState } from 'apps/gdmn-nxt-web/src/app/store';
 import { ColorMode } from '@gsbelarus/util-api-types';
+import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
 /* eslint-disable-next-line */
 export interface NotificationListProps {
@@ -16,7 +16,7 @@ export interface NotificationListProps {
   onClick?: (action?: NotificationAction, actionContent?: string) => void;
 };
 
-export function NotificationList(props: NotificationListProps) {
+export function NotificationList(props: Readonly<NotificationListProps>) {
   const { messages } = props;
   const { onClick, onDelete } = props;
 
@@ -60,11 +60,11 @@ export function NotificationList(props: NotificationListProps) {
             onClick={handleOnClick(message)}
             button
             className={styles['list-item']}
-            // sx={{
-            //   '.list-item:hover .actions': {
-            //     backgroundColor: 'blue !important',
-            //   }
-            // }}
+          // sx={{
+          //   '.list-item:hover .actions': {
+          //     backgroundColor: 'blue !important',
+          //   }
+          // }}
           >
             <ListItemIcon
               className={styles['list-item-icon']}
@@ -79,9 +79,9 @@ export function NotificationList(props: NotificationListProps) {
               >
                 <Typography variant="subtitle1">{message?.title}</Typography>
                 <Typography variant="body1" component="div">
-                  <ReactMarkdown className={styles['markdown']}>
+                  <CustomMarkdown className={styles['markdown']}>
                     {message?.text || ''}
-                  </ReactMarkdown>
+                  </CustomMarkdown >
                 </Typography>
                 {/* <Typography variant="body1">{message?.text}</Typography> */}
                 {/* <Typography
