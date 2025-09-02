@@ -1,7 +1,6 @@
 import { TabContext, TabList } from '@mui/lab';
-import { Box, Chip, Tab, TextField, TextFieldProps, Tooltip, useMediaQuery, useTheme } from '@mui/material';
-import { CSSProperties, useState, ReactNode, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { Box, Chip, Divider, Tab, TextField, TextFieldProps, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { CSSProperties, useState, ReactNode, useEffect, useMemo } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import DropzoneBase, { DropzoneProps as DropzoneBaseProps, ErrorCode } from 'react-dropzone';
 import { FileObject } from '@gdmn-nxt/components/dropzone/types';
@@ -9,11 +8,18 @@ import { convertBytesToMbsOrKbs, readFile } from '@gdmn-nxt/components/dropzone/
 import styles from './mardown-text-filed.module.less';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 import { getFileLimitExceedMessage } from '@gdmn-nxt/components/dropzone/dropzone';
+import EditIcon from '@mui/icons-material/Edit';
+import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
+import CustomMarkdown from '../custom-markdown/custom-markdown';
+
+type breakpoints = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'laptop' | 'ultraWide';
 
 type IMarkdownTextfieldProps = TextFieldProps & {
   containerStyle?: CSSProperties;
   fullHeight?: boolean;
-  smallHintBreakpoint?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'laptop' | 'ultraWide';
+  smallHintBreakpoint?: breakpoints;
+  smallButtonsBreakpoint?: breakpoints;
+  bottomHint?: boolean;
   fileUpload?: boolean;
   onLoadFiles?: (value: File[]) => void;
   maxFileSize?: number;
@@ -22,11 +28,17 @@ type IMarkdownTextfieldProps = TextFieldProps & {
 };
 
 export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
-  const { containerStyle, fullHeight = false, smallHintBreakpoint = 'md', fileUpload = false, onLoadFiles, maxFileSize, filesLimit, maxTotalFilesSize, ...rest } = props;
+  const {
+    containerStyle, fullHeight = false, smallHintBreakpoint = 'md', fileUpload = false, onLoadFiles,
+    maxFileSize, filesLimit, maxTotalFilesSize, bottomHint, smallButtonsBreakpoint = 'sm',
+    ...rest
+  } = props;
+
   const [tab, setTab] = useState('1');
 
   const theme = useTheme();
-  const matchDown = useMediaQuery(theme.breakpoints.down(smallHintBreakpoint));
+  const smallHint = useMediaQuery(theme.breakpoints.down(smallHintBreakpoint));
+  const smallButton = useMediaQuery(theme.breakpoints.down(smallButtonsBreakpoint));
 
   const textField = (
     <TextField
@@ -72,40 +84,29 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
   }, [smallHint]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: fullHeight ? '100%' : undefined, gap: rest.label ? '10px' : 0, ...containerStyle }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: fullHeight ? '100%' : undefined, ...containerStyle }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <TabContext value={tab}>
           <TabList
-            style={{ paddingLeft: '8px' }}
+            style={{ paddingLeft: rest.label ? '0px' : '8px' }}
             onChange={(e, value) => setTab(value)}
           >
             <Tab
-              label="Изменение"
+              label={smallButton ? <EditIcon /> : 'Изменение'}
+              style={{ minWidth: '80px' }}
               value="1"
             />
             <Tab
-              label="Просмотр"
+              label={smallButton ? <RemoveRedEyeOutlinedIcon /> : 'Просмотр'}
+              style={{ minWidth: '80px' }}
               value="2"
             />
           </TabList>
         </TabContext>
-        <Tooltip title={matchDown ? 'Поддерживаются стили Markdown' : ''}>
-          <a
-            href="https://www.markdownguide.org/basic-syntax/"
-            target="_blank"
-            rel="noreferrer"
-            style={{ textDecoration: 'none' }}
-          >
-            <Chip
-              icon={<InfoIcon />}
-              label={matchDown ? '' : 'Поддерживаются стили Markdown'}
-              variant="outlined"
-              sx={{ border: 'none', cursor: 'pointer', width: matchDown ? '20px' : undefined }}
-            />
-          </a>
-        </Tooltip>
+        {!bottomHint && hint}
       </div>
-      <div style={{ width: '100%', position: 'relative', flex: fullHeight ? 1 : undefined }}>
+      {rest.label && <Divider />}
+      <div style={{ width: '100%', position: 'relative', flex: fullHeight ? 1 : undefined, marginTop: rest.label ? '10px' : 0 }}>
         {fileUpload ? <Container
           onChange={onLoadFiles}
           fullHeight={fullHeight}
@@ -121,22 +122,25 @@ export default function MarkdownTextfield(props: IMarkdownTextfieldProps) {
             backgroundColor: 'rgba(0, 0, 0, 0.1)', position: 'absolute',
             inset: 0, opacity: tab === '2' ? '1' : '0',
             visibility: tab === '2' ? 'visible' : 'hidden',
-            padding: '8.5px 14px', lineHeight: 1.3, wordWrap: 'break-word',
+            padding: '8.5px 14px', lineHeight: 1.45, wordWrap: 'break-word',
             borderRadius: 'var(--border-radius)', border: '1px solid var(--color-borders)',
             '& > :first-of-type': {
-              marginTop: 0
+              marginTop: '0 !important'
             },
             '& > :last-of-type': {
-              marginBottom: 0
+              marginBottom: '0 !important'
             },
             overflow: 'auto'
           }}
         >
-          <ReactMarkdown>
+          <CustomMarkdown>
             {rest.value?.toString() ?? ''}
-          </ReactMarkdown>
+          </CustomMarkdown>
         </Box>
       </div>
+      {bottomHint && < div style={{ marginTop: '10px' }}>
+        {hint}
+      </div>}
     </div >
   );
 }
