@@ -3,6 +3,8 @@ import Settings from '@mui/icons-material/Settings';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
+import LabelIcon from '@mui/icons-material/Label';
 
 const ticketSystem: IMenuItem = {
   id: 'ticket system',
@@ -32,6 +34,14 @@ const ticketSystem: IMenuItem = {
         name: 'contacts/tickets',
         method: 'POST'
       }
+    },
+    {
+      id: 'labels',
+      title: 'Метки тикетов',
+      type: 'item',
+      url: 'tickets/labels',
+      icon: <LabelOutlinedIcon color="secondary" />,
+      selectedIcon: <LabelIcon color="secondary" />,
     }
   ]
 };

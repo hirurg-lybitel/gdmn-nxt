@@ -10,7 +10,7 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ILabel, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -553,12 +553,13 @@ export default function TicketChat(props: ITicketChatProps) {
       <Autocomplete
         fullWidth
         size="small"
+        disableClearable
         readOnly={confirmed}
         disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={systemUsers ?? []}
-        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
+        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? undefined}
         getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
         onChange={(e, value) => {
           updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
@@ -655,47 +656,41 @@ export default function TicketChat(props: ITicketChatProps) {
     );
   }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
 
+  const [cachedLabels, setCachedLabels] = useState<ILabel[] | null>(null);
+
+  const handleUpdateLabels = useCallback(async (value: ILabel[] | null) => {
+    if (!value) return;
+
+    setCachedLabels(null);
+
+    await updateTicket({ ...ticket, labels: value });
+  }, [ticket, updateTicket]);
+
   const memoLabels = useMemo(() => {
-    const CustomPopper = (props: any) => {
-      return (
-        <Popper
-          {...props}
-          style={{ width: 'fit-content' }}
-          modifiers={[
-            {
-              name: 'preventOverflow',
-              options: {
-                boundary: 'viewport',
-                padding: 8,
-              },
-            },
-          ]}
-        />
-      );
-    };
     return (
       <LabelsSelect
         type={UserType.Tickets}
         editIconSpace
+        disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+        loading={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         disableCreation={ticketsUser}
         disableEdition={ticketsUser}
-        slotProps={{
-          paper: {
-            style: {
-              width: 'max-content',
-              maxWidth: 'calc(100vw - 40px)'
-            }
-          }
-        }}
-        PopperComponent={CustomPopper}
+        limitTags={undefined}
         textFieldProps={{
           variant: 'standard'
         }}
-        labels={[]}
-        onChange={(newLabels) => console.log(newLabels)}
+        onClose={() => handleUpdateLabels(cachedLabels)}
+        labels={cachedLabels ?? ticket?.labels}
+        onChange={(newLabels, reason) => {
+          if (reason === 'clear') {
+            handleUpdateLabels([]);
+            return;
+          }
+          setCachedLabels(newLabels);
+        }}
       />
     );
-  }, [ticketsUser]);
+  }, [cachedLabels, handleUpdateLabels, ticket?.labels, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
@@ -862,12 +857,12 @@ export default function TicketChat(props: ITicketChatProps) {
           </div>
         </CardContent>
       </CustomizedCard >
-      <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '16px' }}>
+      <div style={{ minWidth: '300px', width: '380px', display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '16px' }}>
         {memoPerformer}
+        {memoLabels}
         {memoStatus}
         {memoCustomer}
         {memoUser}
-        {memoLabels}
         {(ticketsUser && !confirmed) && (
           <Confirmation
             key="delete"

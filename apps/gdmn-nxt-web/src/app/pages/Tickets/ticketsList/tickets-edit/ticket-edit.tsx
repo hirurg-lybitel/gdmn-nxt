@@ -46,7 +46,8 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     },
     needCall: ticket?.needCall ?? false,
     message: '',
-    files: []
+    files: [],
+    labels: []
   }), [ticket?.ID, ticket?.company, ticket?.needCall, ticket?.openAt, ticket?.sender?.ID, ticket?.sender?.fullName, ticket?.state?.ID, ticket?.state?.code, ticket?.state?.name, ticket?.title, user.userProfile?.fullName, user.userProfile?.id]);
 
   const formik = useFormik<ITicket>({

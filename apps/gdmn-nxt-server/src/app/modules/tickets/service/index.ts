@@ -22,7 +22,10 @@ const findAll = async (
       name,
       pageSize,
       pageNo,
+      labels
     } = filter;
+
+    const labelIds = labels?.split(',') ?? [];
 
     let fromRecord = 0;
     let toRecord: number;
@@ -51,6 +54,11 @@ const findAll = async (
       if (name) {
         const lowerName = String(name).toLowerCase();
         checkConditions = checkConditions && ticket.title.toLowerCase().includes(lowerName);
+      }
+
+      if (labels) {
+        checkConditions = checkConditions &&
+          ticket.labels?.some(l => labelIds.includes(l.ID + ''));
       }
 
       if ('active' in filter) {
@@ -385,6 +393,28 @@ const updateById = async (
           actionType: NotificationAction.JumpToTicket
         });
       }
+    }
+
+    const newLabels = !body.labels ? [] : body.labels.filter(label2 =>
+      !(oldTicket.labels ?? []).some(label1 => label1.ID === label2.ID)
+    );
+
+    const removedLabels = !oldTicket.labels ? [] : oldTicket.labels.filter(label1 =>
+      !(body.labels ?? []).some(label2 => label2.ID === label1.ID)
+    );
+
+    if ([...newLabels, ...removedLabels].length > 0) {
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        userId,
+        {
+          ticketKey: ticket.ID,
+          changeAt: new Date(),
+          addedLabels: newLabels,
+          removedLabels: removedLabels
+        },
+        type
+      );
     }
 
     if (oldTicket.closeAt !== ticket.closeAt) cachedRequets.cacheRequest('customers');

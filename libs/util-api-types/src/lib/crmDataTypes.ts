@@ -360,7 +360,7 @@ export interface IKanbanLastUsedFilterDeadline extends IWithID {
   FILTER: IKanbanFilterDeadline;
 }
 
-type RouteMethod = 'POST' | 'GET' | 'PUT' | 'DELETE';
+export type RouteMethod = 'POST' | 'GET' | 'PUT' | 'DELETE';
 export type ActionName =
   'deals' |
   'labels' |
@@ -389,6 +389,7 @@ export type ActionName =
   'reports/revenue' |
   'ticketSystem/tickets' |
   'contacts/tickets' |
+  'ticketSystem/labels' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -714,6 +715,7 @@ export interface ITicket extends IWithID {
   needCall: boolean;
   message?: string;
   files?: ITicketMessageFile[];
+  labels?: ILabel[];
 }
 
 export interface ITicketMessageFile {
@@ -762,9 +764,11 @@ export interface IChangePassword {
 export interface ITicketHistory extends IWithID {
   ticketKey: number,
   user?: ICRMTicketUser,
-  state: ITicketState;
+  state?: ITicketState;
   changeAt: Date;
   performer?: ICRMTicketUser;
+  addedLabels?: ILabel[];
+  removedLabels?: ILabel[];
 }
 
 export enum ticketStateCodes {

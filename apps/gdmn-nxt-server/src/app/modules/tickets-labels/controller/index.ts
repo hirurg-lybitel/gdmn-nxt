@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import { IRequestResult, } from '@gsbelarus/util-api-types';
-import { ticketsLabelsService } from '../service';
 import { resultError } from '@gsbelarus/util-helpers';
+import { ticketsLabelsService } from '../service';
 
 const findAll: RequestHandler = async (req, res) => {
   try {

@@ -1,4 +1,4 @@
-import { ticketStateCodes, UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
+import { ILabel, ticketStateCodes, UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
@@ -81,10 +81,10 @@ const find: FindHandler<ITicket> = async (
         gc.PHONE as PERFORMER_PHONE,
         gups.USR$AVATAR as PERFORMER_AVATAR_BLOB
       FROM USR$CRM_TICKET t
-        JOIN USR$CRM_TICKET_STATE s ON s.ID = t.USR$STATE
+        LEFT JOIN USR$CRM_TICKET_STATE s ON s.ID = t.USR$STATE
 
-        JOIN USR$CRM_USER u ON u.ID = t.USR$USERKEY
-        JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = t.USR$USERKEY
+        LEFT JOIN USR$CRM_USER u ON u.ID = t.USR$USERKEY
+        LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = t.USR$USERKEY
 
         LEFT JOIN GD_USER gu ON gu.ID = USR$PERFORMERKEY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
@@ -106,6 +106,27 @@ const find: FindHandler<ITicket> = async (
     for (const customer of customers) {
       sortedCustomers = { ...sortedCustomers, [customer.ID]: customer };
     }
+
+    const labelsData = await fetchAsObject(`
+      SELECT
+        l.ID,
+        l.USR$NAME,
+        l.USR$COLOR,
+        l.USR$ICON,
+        l.USR$DESCRIPTION,
+        tl.USR$TICKETKEY
+      FROM USR$CRM_TICKET_LABELS tl
+        JOIN USR$CRM_T_LABELS l on l.ID = tl.USR$LABELKEY
+      ORDER BY tl.USR$TICKETKEY`);
+
+    const labels = new Map();
+    labelsData.forEach(label => {
+      if (labels[label['USR$TICKETKEY']]) {
+        labels[label['USR$TICKETKEY']].push({ ...label });
+      } else {
+        labels[label['USR$TICKETKEY']] = [{ ...label }];
+      };
+    });
 
     const tickets: ITicket[] = await Promise.all(result.map(async (data) => {
       const avatarBlob = await getStringFromBlob(attachment, transaction, data['USR$AVATAR']);
@@ -149,7 +170,8 @@ const find: FindHandler<ITicket> = async (
           email: data['CLOSER_EMAIL'],
           avatar: closerAvatar
         } : undefined,
-        needCall: data['USR$NEEDCALL'] === 1
+        needCall: data['USR$NEEDCALL'] === 1,
+        labels: labels[data['ID']]
       };
     }));
 
@@ -175,12 +197,11 @@ interface ITicketSave extends ITicket {
 
 const save: SaveHandler<ITicketSave> = async (
   sessionID,
-  metadata,
-  type
+  metadata
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { title, company, userId, openAt, performer } = metadata;
+  const { title, company, userId, openAt, performer, labels } = metadata;
 
   const ticketStates = await ticketsStateRepository.find(sessionID);
 
@@ -205,6 +226,19 @@ const save: SaveHandler<ITicketSave> = async (
       }
     );
 
+    await Promise.all(labels.map(async (label) => {
+      return await fetchAsSingletonObject<ILabel>(
+        `INSERT INTO USR$CRM_TICKET_LABELS(USR$TICKETKEY, USR$LABELKEY)
+          VALUES(:TICKETKEY, :LABELKEY)
+          RETURNING ID
+        `,
+        {
+          TICKETKEY: ticket.ID,
+          LABELKEY: label.ID
+        }
+      );
+    }));
+
     await releaseTransaction();
 
     return ticket;
@@ -220,7 +254,7 @@ const update: UpdateHandler<ITicket> = async (
   metadata,
   type
 ) => {
-  const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
+  const { fetchAsSingletonObject, releaseTransaction, executeQuery } = await startTransaction(sessionID);
 
   try {
     const ID = id;
@@ -231,7 +265,8 @@ const update: UpdateHandler<ITicket> = async (
       needCall,
       state,
       performer,
-      closeBy
+      closeBy,
+      labels
     } = metadata;
 
     const ticketsUserField = `
@@ -267,6 +302,27 @@ const update: UpdateHandler<ITicket> = async (
         CLOSEDBY: closeBy?.ID
       }
     );
+
+    const deleteLabels = await executeQuery(
+      'DELETE FROM USR$CRM_TICKET_LABELS WHERE USR$TICKETKEY = :TICKETKEY',
+      {
+        TICKETKEY: ID
+      }
+    );
+    deleteLabels.close();
+
+    await Promise.all(labels.map(async (label) => {
+      return await fetchAsSingletonObject<ILabel>(
+        `INSERT INTO USR$CRM_TICKET_LABELS(USR$TICKETKEY, USR$LABELKEY)
+          VALUES(:TICKETKEY, :LABELKEY)
+          RETURNING ID
+        `,
+        {
+          TICKETKEY: ID,
+          LABELKEY: label.ID
+        }
+      );
+    }));
 
     await releaseTransaction();
 
