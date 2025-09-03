@@ -133,7 +133,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
             name={name}
             phone={history.user?.phone}
             email={history.user?.email}
-            avatar={history.user?.avatar ? history.user?.email : undefined}
+            avatar={history.user?.avatar ? history.user?.avatar : undefined}
             customAvatar={history.user?.avatar ? undefined : <div
               style={{
                 height: '40px', width: '40px', zIndex: 2, display: 'flex', flexWrap: 'wrap',

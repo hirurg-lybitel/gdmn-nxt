@@ -195,33 +195,37 @@ const save: SaveHandler<IITicketHistorySave> = async (
       }
     );
 
-    await Promise.all(addedLabels.map(async (label) => {
-      return await fetchAsSingletonObject<ILabel>(
-        `INSERT INTO USR$CRM_TICKET_LABELS_HISTORY(USR$HISTORYKEY, USR$LABELKEY, USR$ISADDED)
+    if (addedLabels) {
+      await Promise.all(addedLabels.map(async (label) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_TICKET_LABELS_HISTORY(USR$HISTORYKEY, USR$LABELKEY, USR$ISADDED)
           VALUES(:HISTORYKEY, :LABELKEY, :ISADDED)
           RETURNING ID
         `,
-        {
-          HISTORYKEY: message.ID,
-          LABELKEY: label.ID,
-          ISADDED: 1
-        }
-      );
-    }));
+          {
+            HISTORYKEY: message.ID,
+            LABELKEY: label.ID,
+            ISADDED: 1
+          }
+        );
+      }));
+    }
 
-    await Promise.all(removedLabels.map(async (label) => {
-      return await fetchAsSingletonObject<ILabel>(
-        `INSERT INTO USR$CRM_TICKET_LABELS_HISTORY(USR$HISTORYKEY, USR$LABELKEY, USR$ISADDED)
+    if (removedLabels) {
+      await Promise.all(removedLabels.map(async (label) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_TICKET_LABELS_HISTORY(USR$HISTORYKEY, USR$LABELKEY, USR$ISADDED)
           VALUES(:HISTORYKEY, :LABELKEY, :ISADDED)
           RETURNING ID
         `,
-        {
-          HISTORYKEY: message.ID,
-          LABELKEY: label.ID,
-          ISADDED: 0
-        }
-      );
-    }));
+          {
+            HISTORYKEY: message.ID,
+            LABELKEY: label.ID,
+            ISADDED: 0
+          }
+        );
+      }));
+    }
 
     await releaseTransaction();
 
