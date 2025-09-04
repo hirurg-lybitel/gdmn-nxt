@@ -147,20 +147,25 @@ export function TicketsList(props: ticketsListProps) {
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
-  const mainColumnSizes = (!ticketsUser || isAdmin) ? [650, 500, 420] : [470, 420, 420];
-  const statusColumnSizes = [200, 120];
-  const customerColumnSizes = ticketsUser ? [] : [200, 160];
-  const performerColumnSizes = [200, 100];
+  const mainColumnSizes = useMemo(() => {
+    if (ticketsUser && !isAdmin) {
+      return [470, 420, 420];
+    }
+    return [650, 500, 420];
+  }, [isAdmin, ticketsUser]);
+  const statusColumnSizes = useMemo(() => [200, 120], []);
+  const customerColumnSizes = useMemo(() => ticketsUser ? [0, 0] : [200, 160], [ticketsUser]);
+  const performerColumnSizes = useMemo(() => [200, 120], []);
 
   const ref = useRef<any>(null);
 
   const [headerWidth, setHeaderWidth] = useState(0);
 
-  function getHiddenSelectors(arrays: number[][]): boolean[] {
+  const getHiddenSelectors = useCallback((arrays: number[][]): boolean[] => {
     let result: number[] = [...arrays[0]];
 
     for (let i = 1; i < arrays.length; i++) {
-      const currentMas = arrays[i].length < 1 ? [0, 0] : arrays[i];
+      const currentMas = arrays[i];
       const temp: number[] = [];
 
       for (let ii = 0; ii < currentMas.length; ii++) {
@@ -177,35 +182,43 @@ export function TicketsList(props: ticketsListProps) {
     }
 
     return result.map((size, index) => (index === 0 ? size : size + 50) > headerWidth);
-  }
+  }, [headerWidth]);
 
-  const [labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden] = getHiddenSelectors([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes]);
+  const hiddenSelectors = useMemo(() => (
+    getHiddenSelectors([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes])
+  ), [customerColumnSizes, getHiddenSelectors, mainColumnSizes, performerColumnSizes, statusColumnSizes]);
 
-  const mainColumnWidth = (() => {
-    if (openerHidden && (!ticketsUser || isAdmin)) return mainColumnSizes[2];
-    if (labelsHidden) return mainColumnSizes[1];
-    return mainColumnSizes[0];
-  })();
-  const statusColumnWidth = statusHidden ? statusColumnSizes[1] : statusColumnSizes[0];
-  const customerColumnWidth = customerHidden ? customerColumnSizes[1] : customerColumnSizes[0];
-  const performerColumnWidth = performerHidden ? performerColumnSizes[1] : performerColumnSizes[0];
+  const [labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden] = hiddenSelectors;
 
-  const mas = (() => {
-    const conMas = [...mainColumnSizes, ...statusColumnSizes, ...customerColumnSizes, ...performerColumnSizes];
+  const getColumnWidth = useCallback((arrays: number[][]): number[] => {
     const result = [];
-    for (let i = 0; i < conMas.length; i++) {
-      result.push(mainColumnSizes[0] + statusColumnSizes[0] + customerColumnSizes[0] + performerColumnSizes[0]);
+    let index = 0;
+    for (const array of arrays) {
+      for (let i = 0; i < array.length; i++) {
+        if (!hiddenSelectors[index] || array.length - 1 === i) {
+          result.push(array[i]);
+          index += array.length - 1 - i;
+          break;
+        }
+        index += 1;
+      }
     }
-  })();
+    return result;
+  }, [hiddenSelectors]);
+
+  const [mainColumnWidth, statusColumnWidth, customerColumnWidth, performerColumnWidth] = useMemo(() => (
+    getColumnWidth([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes])
+  ), [customerColumnSizes, getColumnWidth, mainColumnSizes, performerColumnSizes, statusColumnSizes]);
 
   useEffect(() => {
     const setSize = () => {
       const headerWidth = ref?.current?.getElementsByClassName('MuiDataGrid-columnHeaders')[0]?.getBoundingClientRect().width;
-      setHeaderWidth(headerWidth - 20);
+      setHeaderWidth(headerWidth ? headerWidth - 20 : 0);
     };
+    setSize();
     window.addEventListener('resize', setSize);
     return () => window.removeEventListener('resize', setSize);
-  }, []);
+  }, [isLoading]);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
@@ -310,6 +323,14 @@ export function TicketsList(props: ticketsListProps) {
         }}
         disableCloseOnSelect
         getOptionLabel={opt => opt.USR$NAME}
+        renderTags={() => [<div key={0}>
+          {(filteringData?.labels && filteringData?.labels.length > 0) && (
+            <Chip
+              size="small"
+              label={filteringData?.labels.length}
+            />
+          )}
+        </div>]}
         renderOption={(props, option, { selected }) => (
           <ListItem
             {...props}
@@ -366,10 +387,9 @@ export function TicketsList(props: ticketsListProps) {
           <TextField
             {...params}
             label="Метки"
-            placeholder="Выберите метки"
+            placeholder="Метки"
             InputProps={{
-              ...params.InputProps,
-              startAdornment: undefined
+              ...params.InputProps
             }}
           />
         )}
@@ -508,9 +528,9 @@ export function TicketsList(props: ticketsListProps) {
           </UserTooltip>}
         </div>;
       },
-      renderHeader: () => performerHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ paddingRight: '8px', width: '100%' }}>{performerSelect}</div>
+      renderHeader: () => performerHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ width: '100%' }}>{performerSelect}</div>
     },
-    ...(labelsHidden ? [{
+    ...((labelsHidden && headerWidth !== 0) ? [{
       field: 'sort',
       type: 'actions',
       width: 40,
