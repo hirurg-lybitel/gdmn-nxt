@@ -311,18 +311,20 @@ const update: UpdateHandler<ITicket> = async (
     );
     deleteLabels.close();
 
-    await Promise.all(labels.map(async (label) => {
-      return await fetchAsSingletonObject<ILabel>(
-        `INSERT INTO USR$CRM_TICKET_LABELS(USR$TICKETKEY, USR$LABELKEY)
+    if (labels) {
+      await Promise.all(labels.map(async (label) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_TICKET_LABELS(USR$TICKETKEY, USR$LABELKEY)
           VALUES(:TICKETKEY, :LABELKEY)
           RETURNING ID
         `,
-        {
-          TICKETKEY: ID,
-          LABELKEY: label.ID
-        }
-      );
-    }));
+          {
+            TICKETKEY: ID,
+            LABELKEY: label.ID
+          }
+        );
+      }));
+    }
 
     await releaseTransaction();
 
