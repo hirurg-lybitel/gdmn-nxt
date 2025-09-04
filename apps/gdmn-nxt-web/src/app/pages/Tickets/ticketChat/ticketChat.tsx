@@ -970,7 +970,6 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
     return <FilesView
       files={formik.values.files}
       onDelete={editMode ? (deleteFileIndex) => {
-        console.log(deleteFileIndex);
         const newFiles = formik.values.files?.filter((file, index) => index !== deleteFileIndex);
         formik.setFieldValue('files', newFiles);
       } : undefined}
