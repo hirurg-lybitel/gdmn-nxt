@@ -39,6 +39,8 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
   const sortField = Object.keys(order)[0] ?? 'NAME';
   const sortMode = order[sortField] ?? 'ASC';
 
+  const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
+
   try {
     const labels = new Map();
     const businessProcesses = new Map();
@@ -89,7 +91,6 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
         };
       });
 
-    const { fetchAsObject } = await acquireReadTransaction(sessionID);
     const usersRes = await fetchAsObject<any>(
       `
         SELECT
@@ -310,7 +311,7 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
 
     return contacts;
   } finally {
-    // console.log('');
+    await releaseReadTransaction();
   }
 };
 
