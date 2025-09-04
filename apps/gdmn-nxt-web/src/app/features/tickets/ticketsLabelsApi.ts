@@ -9,8 +9,6 @@ interface ILabels {
 export type LabelsResponse = ILabel[];
 type ILabelsRequestResult = IRequestResult<ILabels>;
 
-type ILabelRequestResult = IRequestResult<{ label: ILabel; }>;
-
 export const ticketsLabelsApi = createApi({
   reducerPath: 'ticketsLabels',
   tagTypes: ['label'],
@@ -33,7 +31,7 @@ export const ticketsLabelsApi = createApi({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: IRequestResult<{ label: ILabel; }>) => response.queries?.label,
+      transformResponse: (response: ILabelsRequestResult) => response.queries?.labels[0],
       invalidatesTags: [{ type: 'label', id: 'LIST' }],
     }),
     updateTicketsLabel: builder.mutation<ILabel, Partial<ILabel>>({

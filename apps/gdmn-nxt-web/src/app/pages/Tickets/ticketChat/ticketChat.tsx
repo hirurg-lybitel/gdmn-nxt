@@ -661,9 +661,9 @@ export default function TicketChat(props: ITicketChatProps) {
   const handleUpdateLabels = useCallback(async (value: ILabel[] | null) => {
     if (!value) return;
 
-    setCachedLabels(null);
-
     await updateTicket({ ...ticket, labels: value });
+
+    setCachedLabels(null);
   }, [ticket, updateTicket]);
 
   const memoLabels = useMemo(() => {
@@ -684,6 +684,10 @@ export default function TicketChat(props: ITicketChatProps) {
         onChange={(newLabels, reason) => {
           if (reason === 'clear') {
             handleUpdateLabels([]);
+            return;
+          }
+          if (reason === 'createOption') {
+            handleUpdateLabels(newLabels);
             return;
           }
           setCachedLabels(newLabels);
