@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -31,6 +31,7 @@ import { useGetTicketsLabelsQuery } from '../../../features/tickets/ticketsLabel
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
+import { te } from 'date-fns/locale';
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -54,7 +55,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     maxWidth: '200px',
     overflow: 'hidden',
-    textOverflow: 'ellipsis'
+    textOverflow: 'ellipsis',
+    textWrap: 'nowrap'
   }
 }));
 
@@ -145,11 +147,65 @@ export function TicketsList(props: ticketsListProps) {
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
-  const matchDownLabels = useMediaQuery('(max-width:1600px)');
-  const matchDownOpener = useMediaQuery('(max-width:1500px)');
-  const matchDownStatus = useMediaQuery('(max-width:1380px)');
-  const matchDownCustomer = useMediaQuery('(max-width:1300px)');
-  const matchDownPerformer = useMediaQuery('(max-width:1260px)');
+  const mainColumnSizes = (!ticketsUser || isAdmin) ? [650, 500, 420] : [470, 420, 420];
+  const statusColumnSizes = [200, 120];
+  const customerColumnSizes = ticketsUser ? [] : [200, 160];
+  const performerColumnSizes = [200, 100];
+
+  const ref = useRef<any>(null);
+
+  const [headerWidth, setHeaderWidth] = useState(0);
+
+  function getHiddenSelectors(arrays: number[][]): boolean[] {
+    let result: number[] = [...arrays[0]];
+
+    for (let i = 1; i < arrays.length; i++) {
+      const currentMas = arrays[i].length < 1 ? [0, 0] : arrays[i];
+      const temp: number[] = [];
+
+      for (let ii = 0; ii < currentMas.length; ii++) {
+        if (ii === 0) {
+          for (const prev of result) {
+            temp.push(prev + currentMas[0]);
+          }
+        } else {
+          temp.push(result[result.length - 1] + currentMas[ii]);
+        }
+      }
+
+      result = temp;
+    }
+
+    return result.map((size, index) => (index === 0 ? size : size + 50) > headerWidth);
+  }
+
+  const [labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden] = getHiddenSelectors([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes]);
+
+  const mainColumnWidth = (() => {
+    if (openerHidden && (!ticketsUser || isAdmin)) return mainColumnSizes[2];
+    if (labelsHidden) return mainColumnSizes[1];
+    return mainColumnSizes[0];
+  })();
+  const statusColumnWidth = statusHidden ? statusColumnSizes[1] : statusColumnSizes[0];
+  const customerColumnWidth = customerHidden ? customerColumnSizes[1] : customerColumnSizes[0];
+  const performerColumnWidth = performerHidden ? performerColumnSizes[1] : performerColumnSizes[0];
+
+  const mas = (() => {
+    const conMas = [...mainColumnSizes, ...statusColumnSizes, ...customerColumnSizes, ...performerColumnSizes];
+    const result = [];
+    for (let i = 0; i < conMas.length; i++) {
+      result.push(mainColumnSizes[0] + statusColumnSizes[0] + customerColumnSizes[0] + performerColumnSizes[0]);
+    }
+  })();
+
+  useEffect(() => {
+    const setSize = () => {
+      const headerWidth = ref?.current?.getElementsByClassName('MuiDataGrid-columnHeaders')[0]?.getBoundingClientRect().width;
+      setHeaderWidth(headerWidth - 20);
+    };
+    window.addEventListener('resize', setSize);
+    return () => window.removeEventListener('resize', setSize);
+  }, []);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
@@ -234,7 +290,7 @@ export function TicketsList(props: ticketsListProps) {
     return (
       <Autocomplete
         loading={labelsFetching || labelsLoading}
-        sx={{ height: '40px', width: '100%', minWidth: '150px', flex: 1, maxWidth: matchDownLabels ? '100%' : '200px' }}
+        sx={{ height: '40px', width: '100%', minWidth: '150px', flex: 1, maxWidth: labelsHidden ? '100%' : '200px' }}
         slotProps={{
           paper: {
             style: {
@@ -319,14 +375,14 @@ export function TicketsList(props: ticketsListProps) {
         )}
       />
     );
-  }, [filteringData?.labels, handleOnFilterChange, labels, labelsFetching, labelsLoading, matchDownLabels]);
+  }, [filteringData?.labels, handleOnFilterChange, labels, labelsFetching, labelsLoading, labelsHidden]);
 
   const columns: GridColDef<ITicket>[] = [
     {
       field: 'title',
       headerName: 'Меню',
       flex: 1,
-      minWidth: matchDownOpener ? 400 : 516,
+      minWidth: mainColumnWidth,
       sortable: false,
       resizable: false,
       renderHeader: () => (
@@ -358,8 +414,8 @@ export function TicketsList(props: ticketsListProps) {
           </Button>
           <div style={{ flex: 1, paddingLeft: '16px', display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '40px', gap: '16px', width: '100%' }}>
-              {!matchDownLabels && labelSelect}
-              {((!ticketsUser || isAdmin) && !matchDownOpener) && openerSelect}
+              {!labelsHidden && labelSelect}
+              {((!ticketsUser || isAdmin) && !openerHidden) && openerSelect}
             </div>
           </div>
         </div>
@@ -376,18 +432,18 @@ export function TicketsList(props: ticketsListProps) {
     {
       field: 'state',
       headerName: 'Статус',
-      width: matchDownStatus ? 120 : 200,
+      width: statusColumnWidth,
       sortable: false,
       resizable: false,
       renderCell: (params) => {
-        return <div style={{ textAlign: matchDownStatus ? undefined : 'center', width: '100%', textOverflow: 'ellipsis', overflow: 'hidden' }}>{params.row.state.name}</div>;
+        return <div style={{ textAlign: statusHidden ? undefined : 'center', width: '100%', textOverflow: 'ellipsis', overflow: 'hidden' }}>{params.row.state.name}</div>;
       },
-      renderHeader: () => matchDownStatus ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Статус</div> : stateSelect
+      renderHeader: () => statusHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Статус</div> : stateSelect
     },
     ...(ticketsUser ? [] : [{
       field: 'company',
       headerName: 'Клиент',
-      width: matchDownCustomer ? 160 : 200,
+      width: customerColumnWidth,
       sortable: false,
       resizable: false,
       renderCell: (params: GridRenderCellParams<ITicket, any, any, GridTreeNodeWithRender>) => {
@@ -430,12 +486,12 @@ export function TicketsList(props: ticketsListProps) {
           </UserTooltip >
         </div>;
       },
-      renderHeader: () => matchDownCustomer ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Клиент</div> : customerSelect
+      renderHeader: () => customerHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Клиент</div> : customerSelect
     }]),
     {
       field: 'performer',
       headerName: 'Исполнитель',
-      width: matchDownPerformer ? 100 : 200,
+      width: performerColumnWidth,
       sortable: false,
       resizable: false,
       renderCell: (params: GridRenderCellParams<ITicket, any, any, GridTreeNodeWithRender>) => {
@@ -452,9 +508,9 @@ export function TicketsList(props: ticketsListProps) {
           </UserTooltip>}
         </div>;
       },
-      renderHeader: () => matchDownPerformer ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ paddingRight: '8px', width: '100%' }}>{performerSelect}</div>
+      renderHeader: () => performerHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ paddingRight: '8px', width: '100%' }}>{performerSelect}</div>
     },
-    ...(matchDownLabels ? [{
+    ...(labelsHidden ? [{
       field: 'sort',
       type: 'actions',
       width: 40,
@@ -463,10 +519,10 @@ export function TicketsList(props: ticketsListProps) {
       renderCell: () => null,
       renderHeader: () => {
         const hasFilters = filteringData?.labels
-          || (matchDownOpener && (!ticketsUser || isAdmin) && filteringData?.userId)
-          || (matchDownStatus && filteringData?.state)
-          || (matchDownCustomer && filteringData?.companyKey)
-          || (matchDownPerformer && filteringData?.performerKey);
+          || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.userId)
+          || (statusHidden && filteringData?.state)
+          || (customerHidden && filteringData?.companyKey && !ticketsUser)
+          || (performerHidden && filteringData?.performerKey);
         return (
           <MenuBurger
             hasFilters={hasFilters}
@@ -477,28 +533,28 @@ export function TicketsList(props: ticketsListProps) {
                   {labelSelect}
                 </div>
               </div>,
-              ...((matchDownOpener && (!ticketsUser || isAdmin)) ? [
+              ...((openerHidden && (!ticketsUser || isAdmin)) ? [
                 <div key="openerSelect">
                   <div style={{ width: '250px' }} >
                     {openerSelect}
                   </div>
                 </div>
               ] : []),
-              ...(matchDownStatus ? [
+              ...(statusHidden ? [
                 <div key="stateSelect">
                   <div style={{ width: '250px' }} >
                     {stateSelect}
                   </div>
                 </div>,
               ] : []),
-              ...(matchDownCustomer ? [
+              ...((customerHidden && !ticketsUser) ? [
                 <div key="customerSelect">
                   <div style={{ width: '250px' }} >
                     {customerSelect}
                   </div>
                 </div>
               ] : []),
-              ...(matchDownPerformer ? [
+              ...(performerHidden ? [
                 <div key="performerSelect">
                   <div style={{ width: '250px' }} >
                     {performerSelect}
@@ -532,8 +588,9 @@ export function TicketsList(props: ticketsListProps) {
           searchValue={filteringData?.name?.[0]}
         />
         <Divider />
-        <CardContent style={{ padding: 0 }}>
+        <CardContent ref={ref} style={{ padding: 0 }}>
           <StyledGrid
+            getRowHeight={() => 'auto'}
             columnHeaderHeight={60}
             rowHeight={85}
             columns={columns}
@@ -556,14 +613,6 @@ export function TicketsList(props: ticketsListProps) {
               },
               '& .MuiDataGrid-columnHeader': {
                 padding: '8px'
-              },
-              '& .MuiDataGrid-cell--withRenderer': {
-                maxHeight: '100% !important',
-                minHeight: '100% !important'
-              },
-              '& .MuiDataGrid-row': {
-                maxHeight: '100%!important',
-                minHeight: '100% !important'
               }
             }}
             pagination
@@ -621,9 +670,9 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: II
   const openCloseWord = ticketsUser ? ['Открыта', 'Закрыта'] : ['Закрыт', 'Открыт'];
 
   return (
-    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '0px 8px' }}>
+    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '0px 8px', width: '100%' }}>
       {ticketIcon}
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Link to={ID + ''} className={classes.itemTitle} >
           {title}
         </Link>
