@@ -5,8 +5,11 @@ import systemUsers from '../../controllers/systemUsers';
 
 const router = express.Router();
 
-router.get('/sql-editor/history', sqlEditor.getHistory);
-router.post('/sql-editor', sqlEditor.executeScript);
+if (process.env.NODE_ENV === 'development') {
+  router.get('/sql-editor/history', sqlEditor.getHistory);
+  router.post('/sql-editor', sqlEditor.executeScript);
+}
+
 router.get('/users', systemUsers.get);
 router.get('/users/:id', systemUsers.get);
 
