@@ -108,7 +108,7 @@ const update: UpdateHandler<ISystemSettings> = async (
         SMTP_USER: smtpUser,
         SMTP_PASSWORD: smtpPassword,
         SMTP_PORT: smtpPort,
-        PERFORMERS_GROUPS: performersGroup.ID
+        PERFORMERS_GROUPS: performersGroup?.ID
       }
     );
 
