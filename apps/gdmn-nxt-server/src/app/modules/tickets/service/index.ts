@@ -218,7 +218,7 @@ const createTicket = async (
         actionType: NotificationAction.JumpToTicket
       });
     } else {
-      const users = ticket.performer.ID ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID);
+      const users = (ticket.performer.ID || !performersGroup?.ID) ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID);
 
       try {
         await Promise.all(users.map(async (user) => {
