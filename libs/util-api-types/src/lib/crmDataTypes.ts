@@ -313,6 +313,7 @@ export interface IUser extends IWithID {
   DISABLED?: boolean;
   isActivated?: boolean;
   AVATAR?: string;
+  EMAIL?: string;
 };
 
 export interface IPermissionsView extends IWithID {

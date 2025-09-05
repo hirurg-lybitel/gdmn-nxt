@@ -6,7 +6,7 @@ dotenv.config({ path: '../../..' });
 
 export type IAttachment = Mail.Attachment;
 
-const securePorts = [465, 587];
+const securePorts = [];
 
 export type SmtpOptions = {
   host?: string;

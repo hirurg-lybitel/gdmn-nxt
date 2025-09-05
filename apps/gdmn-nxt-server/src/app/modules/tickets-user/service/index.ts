@@ -4,6 +4,7 @@ import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { config } from '@gdmn-nxt/config';
 import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { PermissionsController } from '@gdmn-nxt/controllers/permissions';
 
 const findAll = async (
   sessionID: string,

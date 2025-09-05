@@ -16,9 +16,15 @@ const findOne: FindOneHandler<ISystemSettings> = async (
         s.USR$SMTP_HOST SMTP_HOST,
         s.USR$SMTP_USER SMTP_USER,
         s.USR$SMTP_PASSWORD SMTP_PASSWORD,
-        s.USR$SMTP_PORT SMTP_PORT
+        s.USR$SMTP_PORT SMTP_PORT,
+        s.USR$T_PERFORMERS_GROUPS,
+        ug.ID AS PG_ID,
+        ug.USR$NAME AS PG_NAME,
+        ug.USR$DESCRIPTION AS PG_DESCRIPTION,
+        ug.USR$REQUIRED_2FA AS PG_REQUIRED_2FA
       FROM USR$CRM_SYSTEM_SETTINGS s
-      LEFT JOIN GD_CONTACT con ON con.ID = s.USR$OURCOMPANY`;
+      LEFT JOIN GD_CONTACT con ON con.ID = s.USR$OURCOMPANY
+      LEFT JOIN USR$CRM_PERMISSIONS_USERGROUPS ug on ug.ID = s.USR$T_PERFORMERS_GROUPS`;
 
     const settings = await fetchAsSingletonObject<ISystemSettings>(sql);
 
@@ -40,6 +46,20 @@ const findOne: FindOneHandler<ISystemSettings> = async (
     delete settings['SMTP_USER'];
     delete settings['SMTP_PASSWORD'];
     delete settings['SMTP_PORT'];
+
+    if (settings['PG_ID']) {
+      settings.performersGroup = {
+        ID: settings['PG_ID'],
+        NAME: settings['PG_NAME'],
+        DESCRIPTION: settings['PG_DESCRIPTION'],
+        REQUIRED_2FA: settings['PG_REQUIRED_2FA']
+      };
+    }
+
+    delete settings['PG_ID'];
+    delete settings['PG_NAME'];
+    delete settings['PG_DESCRIPTION'];
+    delete settings['PG_REQUIRED_2FA'];
 
     return settings;
   } finally {
@@ -71,23 +91,25 @@ const update: UpdateHandler<ISystemSettings> = async (
       smtpUser = settings.smtpUser,
       smtpPassword = settings.smtpPassword,
       smtpPort = settings.smtpPort,
+      performersGroup = settings.performersGroup
     } = metadata;
 
-    const result = await fetchAsSingletonObject<ISystemSettings>(`
-      UPDATE OR INSERT INTO USR$CRM_SYSTEM_SETTINGS(ID, USR$CONTRACTTYPE, USR$OURCOMPANY,
-        USR$SMTP_HOST, USR$SMTP_USER, USR$SMTP_PASSWORD, USR$SMTP_PORT)
-      VALUES(:ID, :CONTRACTTYPE, :OURCOMPANY, :SMTP_HOST, :SMTP_USER, :SMTP_PASSWORD, :SMTP_PORT)
+    const result = await fetchAsSingletonObject<ISystemSettings>(
+      `UPDATE OR INSERT INTO USR$CRM_SYSTEM_SETTINGS(ID, USR$CONTRACTTYPE, USR$OURCOMPANY,
+        USR$SMTP_HOST, USR$SMTP_USER, USR$SMTP_PASSWORD, USR$SMTP_PORT, USR$T_PERFORMERS_GROUPS)
+      VALUES(:ID, :CONTRACTTYPE, :OURCOMPANY, :SMTP_HOST, :SMTP_USER, :SMTP_PASSWORD, :SMTP_PORT, :PERFORMERS_GROUPS)
       MATCHING(ID)
       RETURNING ID`,
-    {
-      ID,
-      CONTRACTTYPE,
-      OURCOMPANY: OURCOMPANY?.ID ?? null,
-      SMTP_HOST: smtpHost,
-      SMTP_USER: smtpUser,
-      SMTP_PASSWORD: smtpPassword,
-      SMTP_PORT: smtpPort
-    }
+      {
+        ID,
+        CONTRACTTYPE,
+        OURCOMPANY: OURCOMPANY?.ID ?? null,
+        SMTP_HOST: smtpHost,
+        SMTP_USER: smtpUser,
+        SMTP_PASSWORD: smtpPassword,
+        SMTP_PORT: smtpPort,
+        PERFORMERS_GROUPS: performersGroup.ID
+      }
     );
 
     await releaseTransaction();
@@ -112,13 +134,14 @@ const save: SaveHandler<ISystemSettings> = async (
     smtpUser,
     smtpPassword,
     smtpPort,
+    performersGroup
   } = metadata;
 
   try {
     const result = await fetchAsSingletonObject<ISystemSettings>(
       `INSERT INTO USR$CRM_SYSTEM_SETTINGS(USR$CONTRACTTYPE, USR$OURCOMPANY,
-        USR$SMTP_HOST, USR$SMTP_USER, USR$SMTP_PASSWORD, USR$SMTP_PORT)
-      VALUES(:CONTRACTTYPE, :OURCOMPANY, :SMTP_HOST, :SMTP_USER, :SMTP_PASSWORD, :SMTP_PORT)
+        USR$SMTP_HOST, USR$SMTP_USER, USR$SMTP_PASSWORD, USR$SMTP_PORT, USR$T_PERFORMERS_GROUPS)
+      VALUES(:CONTRACTTYPE, :OURCOMPANY, :SMTP_HOST, :SMTP_USER, :SMTP_PASSWORD, :SMTP_PORT, :PERFORMERS_GROUPS)
       RETURNING ID`,
       {
         CONTRACTTYPE,
@@ -126,7 +149,8 @@ const save: SaveHandler<ISystemSettings> = async (
         SMTP_HOST: smtpHost,
         SMTP_USER: smtpUser,
         SMTP_PASSWORD: smtpPassword,
-        SMTP_PORT: smtpPort
+        SMTP_PORT: smtpPort,
+        PERFORMERS_GROUPS: performersGroup.ID
       }
     );
 

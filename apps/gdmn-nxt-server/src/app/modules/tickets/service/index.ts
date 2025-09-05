@@ -9,6 +9,7 @@ import { NotificationAction } from '@gdmn-nxt/socket';
 import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { config } from '@gdmn-nxt/config';
+import { PermissionsController } from '@gdmn-nxt/controllers/permissions';
 
 const findAll = async (
   sessionID: string,
@@ -172,11 +173,11 @@ const createTicket = async (
       );
     }
 
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup } = await systemSettingsRepository.findOne(sessionID);
+
     // Отправка уведомления усполнителю на почту и в систему при создании тикета
     if (ticket.performer.ID) {
       if (ticket.performer.email) {
-        const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
-
         const smtpOpt: SmtpOptions = {
           host: smtpHost,
           port: smtpPort,
@@ -213,6 +214,55 @@ const createTicket = async (
         message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
         onDate: new Date(),
         userIDs: [ticket.performer.ID],
+        actionContent: ticket.ID + '',
+        actionType: NotificationAction.JumpToTicket
+      });
+    } else {
+      const users = ticket.performer.ID ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID);
+
+      try {
+        await Promise.all(users.map(async (user) => {
+          if (user.USER.EMAIL) {
+            const smtpOpt: SmtpOptions = {
+              host: smtpHost,
+              port: smtpPort,
+              user: smtpUser,
+              password: smtpPassword
+            };
+
+            const messageText = `
+           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.USER.CONTACT.NAME}</strong>!</div>
+             <div style="font-size:20px;font-weight:bold;color:#1976d2">Создан новый тикет №${ticket.ID}</div>
+             <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+               <div style="color:#666">${ticket.title}</div>
+             </div>
+             <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+               <a href="${config.origin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
+               <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+             </div>
+           </div>
+         `;
+
+            await sendEmail({
+              from: 'Тикет система',
+              to: user.USER.EMAIL,
+              subject: 'Новый тикет',
+              html: messageText,
+              options: { ...smtpOpt }
+            });
+          }
+        }));
+      } catch (error) {
+        console.log('createTicket_sendMail_Error', error);
+      }
+
+      await insertNotification({
+        sessionId: sessionID,
+        title: `Новый тикет №${ticket.ID}`,
+        message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
+        onDate: new Date(),
+        userIDs: users.map(user => user.USER.ID),
         actionContent: ticket.ID + '',
         actionType: NotificationAction.JumpToTicket
       });

@@ -1,4 +1,4 @@
-import { ContractType, ICustomer } from './crmDataTypes';
+import { ContractType, ICustomer, IUserGroup } from './crmDataTypes';
 
 export type FieldDataType = 'date' | 'timestamp' | 'curr' | 'boolean' | 'array';
 
@@ -121,6 +121,7 @@ export interface ISystemSettings extends IWithID {
   smtpUser?: string;
   smtpPassword?: string;
   smtpPort?: number;
+  performersGroup?: IUserGroup;
 }
 
 export enum ColorMode {
