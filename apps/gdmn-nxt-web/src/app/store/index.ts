@@ -43,6 +43,8 @@ import { securityApi } from '../features/security/securityApi';
 import { dealFeedbackApi } from '../features/deal-feedback';
 import { reportsApi } from '../features/reports/reportsApi';
 import { ticketsApi } from '../features/tickets/ticketsApi';
+import { ticketsLabelsApi } from '../features/tickets/ticketsLabelsApi';
+import { ticketsUserApi } from '../features/tickets/ticketsUserApi';
 
 const reducers = combineReducers({
   viewForms: viewFormsReducer,
@@ -86,7 +88,9 @@ const reducers = combineReducers({
   [securityApi.reducerPath]: securityApi.reducer,
   [dealFeedbackApi.reducerPath]: dealFeedbackApi.reducer,
   [reportsApi.reducerPath]: reportsApi.reducer,
-  [ticketsApi.reducerPath]: ticketsApi.reducer
+  [ticketsApi.reducerPath]: ticketsApi.reducer,
+  [ticketsLabelsApi.reducerPath]: ticketsLabelsApi.reducer,
+  [ticketsUserApi.reducerPath]: ticketsUserApi.reducer
 });
 
 const rootReducer = (state: ReturnType<typeof reducers> | undefined, action: Action) => {
@@ -146,6 +150,8 @@ export const store = configureStore({
     .concat(dealFeedbackApi.middleware)
     .concat(reportsApi.middleware)
     .concat(ticketsApi.middleware)
+    .concat(ticketsLabelsApi.middleware)
+    .concat(ticketsUserApi.middleware)
 });
 
 setupListeners(store.dispatch);

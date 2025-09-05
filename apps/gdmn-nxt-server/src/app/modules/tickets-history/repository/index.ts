@@ -1,5 +1,5 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
-import { FindHandler, FindOneHandler, FindOperator, ITicketHistory, ITicketState, SaveHandler, UserType } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, FindOperator, ILabel, ITicketHistory, ITicketState, SaveHandler, UserType } from '@gsbelarus/util-api-types';
 import { bin2String } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
 
@@ -83,6 +83,31 @@ const find: FindHandler<ITicketHistory> = async (
 
     const result = await fetchAsObject<any>(sql, params);
 
+    const labelsData = await fetchAsObject(`
+      SELECT
+        l.ID,
+        l.USR$NAME,
+        l.USR$COLOR,
+        l.USR$ICON,
+        l.USR$DESCRIPTION,
+        tlh.USR$HISTORYKEY,
+        tlh.USR$ISADDED
+      FROM USR$CRM_TICKET_LABELS_HISTORY tlh
+        JOIN USR$CRM_T_LABELS l on l.ID = tlh.USR$LABELKEY
+      ORDER BY tlh.USR$HISTORYKEY`);
+
+    const addedLabels = new Map();
+    const removedLabels = new Map();
+
+    labelsData.forEach(label => {
+      const labelMas = label['USR$ISADDED'] === 1 ? addedLabels : removedLabels;
+      if (labelMas[label['USR$HISTORYKEY']]) {
+        labelMas[label['USR$HISTORYKEY']].push({ ...label });
+      } else {
+        labelMas[label['USR$HISTORYKEY']] = [{ ...label }];
+      };
+    });
+
     const ticketsHistory: ITicketHistory[] = await Promise.all(result.map(async (data) => {
       const avatarBlob = await getStringFromBlob(attachment, transaction, data['AVATAR']);
       const avatar = bin2String(avatarBlob.split(','));
@@ -103,11 +128,14 @@ const find: FindHandler<ITicketHistory> = async (
           }
         } : {}),
         changeAt: data['USR$CHANGEAT'],
-        state: {
-          ID: data['STATEID'],
-          name: data['STATE_NAME'],
-          code: data['STATE_CODE']
-        },
+        ...(data['STATEID'] ? {
+          state: {
+            ID: data['STATEID'],
+            name: data['STATE_NAME'],
+            code: data['STATE_CODE']
+          },
+        } : {}
+        ),
         ...(data['PERFORMER_ID'] ? {
           performer: {
             ID: data['PERFORMER_ID'],
@@ -116,7 +144,9 @@ const find: FindHandler<ITicketHistory> = async (
             email: data['PERFORMER_EMAIL'],
             avatar: perforemrAvatar
           }
-        } : {})
+        } : {}),
+        addedLabels: addedLabels[data['ID']],
+        removedLabels: removedLabels[data['ID']]
       };
     }));
 
@@ -147,7 +177,7 @@ const save: SaveHandler<IITicketHistorySave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { ticketKey, userId, state, changeAt, performer } = metadata;
+  const { ticketKey, userId, state, changeAt, performer, addedLabels, removedLabels } = metadata;
 
   const fieldName = type === UserType.Tickets ? 'USR$CUSTOMER' : 'USR$SUPPORT';
 
@@ -164,6 +194,38 @@ const save: SaveHandler<IITicketHistorySave> = async (
         PERFORMER: performer?.ID
       }
     );
+
+    if (addedLabels) {
+      await Promise.all(addedLabels.map(async (label) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_TICKET_LABELS_HISTORY(USR$HISTORYKEY, USR$LABELKEY, USR$ISADDED)
+          VALUES(:HISTORYKEY, :LABELKEY, :ISADDED)
+          RETURNING ID
+        `,
+          {
+            HISTORYKEY: message.ID,
+            LABELKEY: label.ID,
+            ISADDED: 1
+          }
+        );
+      }));
+    }
+
+    if (removedLabels) {
+      await Promise.all(removedLabels.map(async (label) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_TICKET_LABELS_HISTORY(USR$HISTORYKEY, USR$LABELKEY, USR$ISADDED)
+          VALUES(:HISTORYKEY, :LABELKEY, :ISADDED)
+          RETURNING ID
+        `,
+          {
+            HISTORYKEY: message.ID,
+            LABELKEY: label.ID,
+            ISADDED: 0
+          }
+        );
+      }));
+    }
 
     await releaseTransaction();
 

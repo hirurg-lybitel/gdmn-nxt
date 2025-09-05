@@ -13,7 +13,7 @@ export interface ContactsFilterProps {
   onClose: () => void;
   filteringData: IFilteringData;
   onFilteringDataChange: (arg: IFilteringData) => void;
-  filterClear: () => void
+  filterClear: () => void;
 }
 
 export function ContactsFilter({
@@ -91,12 +91,14 @@ export function ContactsFilter({
         <LabelsSelect
           onChange={(value) => handleOnChange('LABELS', value)}
           labels={filteringData?.LABELS as ILabel[] ?? []}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="end">
-                <TagIcon />
-              </InputAdornment>
-            ),
+          textFieldProps={{
+            InputProps: {
+              startAdornment: (
+                <InputAdornment position="end">
+                  <TagIcon />
+                </InputAdornment>
+              ),
+            }
           }}
         />
       </Stack>

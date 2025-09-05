@@ -4,6 +4,7 @@ import { ticketsStatesController } from '@gdmn-nxt/modules/tickets-state/control
 import { ticketsMessagesController } from '@gdmn-nxt/modules/tickets-messages/controller';
 import { ticketsUserController } from '@gdmn-nxt/modules/tickets-user/controller';
 import { ticketsHistoryController } from '@gdmn-nxt/modules/tickets-history/controller';
+import { ticketsLabelsController } from '@gdmn-nxt/modules/tickets-labels/controller';
 
 const router = express.Router();
 const parentRouter = express.Router();
@@ -27,5 +28,10 @@ router.post('/users', ticketsUserController.create);
 router.delete('/users/:id', ticketsUserController.removeById);
 
 router.get('/history/:ticketId', ticketsHistoryController.findAll);
+
+router.get('/labels', ticketsLabelsController.findAll);
+router.post('/labels', ticketsLabelsController.createLabel);
+router.put('/labels/:id', ticketsLabelsController.updateById);
+router.delete('/labels/:id', ticketsLabelsController.removeById);
 
 export const ticketsRouter = parentRouter;

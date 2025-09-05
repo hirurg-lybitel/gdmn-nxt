@@ -1,12 +1,12 @@
 import styles from './customer-edit.module.less';
-import { Autocomplete, Skeleton, TextField, Typography } from '@mui/material';
-import { ICustomer, IUser } from '@gsbelarus/util-api-types';
+import { Autocomplete, TextField } from '@mui/material';
+import { ICustomer } from '@gsbelarus/util-api-types';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
-import { useGetAllTicketUserQuery } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsApi';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
 import { Form, FormikProvider, useFormik } from 'formik';
 import UserInfo from '../user-info/user-Info';
+import { useGetAllTicketUserQuery } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsUserApi';
 
 export interface CustomerEditProps {
   open: boolean;

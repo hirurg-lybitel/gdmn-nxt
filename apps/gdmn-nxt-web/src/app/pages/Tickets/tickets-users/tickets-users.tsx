@@ -14,9 +14,9 @@ import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useGetCustomerQuery } from '../../../features/customer/customerApi_new';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
-import { useAddTicketUserMutation, useDeleteTicketUserMutation, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsApi';
 import TicketsUserEdit from './tickets-users-edit/tickets-users-edit';
 import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
+import { useAddTicketUserMutation, useDeleteTicketUserMutation, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {

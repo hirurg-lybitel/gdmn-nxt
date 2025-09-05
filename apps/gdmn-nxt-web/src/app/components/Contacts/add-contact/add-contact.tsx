@@ -373,12 +373,14 @@ export function AddContact({
             <LabelsSelect
               labels={formik.values.LABELS}
               onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="end">
-                    <TagIcon />
-                  </InputAdornment>
-                ),
+              textFieldProps={{
+                InputProps: {
+                  startAdornment: (
+                    <InputAdornment position="end">
+                      <TagIcon />
+                    </InputAdornment>
+                  ),
+                }
               }}
             />
             <CustomerSelect

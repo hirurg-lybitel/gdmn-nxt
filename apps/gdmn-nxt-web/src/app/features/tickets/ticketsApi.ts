@@ -11,7 +11,7 @@ export type ITicketHistoryRequestResult = IRequestResult<{ ticketsHistory: ITick
 
 export const ticketsApi = createApi({
   reducerPath: 'ticketSystem',
-  tagTypes: ['tickets', 'ticketsStates', 'users', 'messages'],
+  tagTypes: ['tickets', 'ticketsStates', 'messages'],
   baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<{ tickets: ITicket[], count: number, closed: number, open: number; }, Partial<{ active: boolean; } & IQueryOptions> | void>({
@@ -106,33 +106,6 @@ export const ticketsApi = createApi({
       }),
       invalidatesTags: ['messages']
     }),
-    getAllTicketUser: builder.query<{ users: ITicketUser[], count: number; }, Partial<IQueryOptions> | void>({
-      query: (options) => {
-        const params = queryOptionsToParamsString(options);
-
-        return {
-          url: `/users${params ? `?${params}` : ''}`,
-          method: 'GET'
-        };
-      },
-      transformResponse: (response: ITicketUsersRequestResult) => response.queries ?? { users: [], count: 0 },
-      providesTags: ['users']
-    }),
-    addTicketUser: builder.mutation<ITicketUserRequestResult, ITicketUser>({
-      query: (body) => ({
-        url: '/users',
-        body: body,
-        method: 'POST'
-      }),
-      invalidatesTags: ['users']
-    }),
-    deleteTicketUser: builder.mutation<IAuthResult, number>({
-      query: (id) => ({
-        url: `/users/${id}`,
-        method: 'DELETE'
-      }),
-      invalidatesTags: ['users']
-    }),
     getAllTicketHistory: builder.query<ITicketHistory[], Partial<{ id: string; } & IQueryOptions>>({
       query: (options) => {
         const { id } = options;
@@ -158,9 +131,6 @@ export const {
   useGetAllTicketMessagesQuery,
   useAddTicketMessageMutation,
   useUpdateTicketMutation,
-  useGetAllTicketUserQuery,
-  useAddTicketUserMutation,
-  useDeleteTicketUserMutation,
   useUpdateTicketMessageMutation,
   useDeleteTicketMessageMutation,
   useGetAllTicketHistoryQuery

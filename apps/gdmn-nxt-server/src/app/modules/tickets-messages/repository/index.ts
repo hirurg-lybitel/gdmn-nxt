@@ -3,6 +3,7 @@ import { FindHandler, FindOneHandler, FindOperator, ITicketMessage, ITicketMessa
 import { bin2String } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
 import { buckets, getBase64MinioFile, minioClient, putBase64MinioFile } from '@gdmn/minio';
+
 const find: FindHandler<ITicketMessage> = async (
   sessionID,
   clause = {},
@@ -243,12 +244,12 @@ const update: UpdateHandler<ITicketMessage> = async (
 
     const oldMessage = await findOne(sessionID, { id: id }, type);
 
-    const fileNames = new Set(files.map(obj => obj.fileName));
+    const fileNames = new Set((files ?? []).map(obj => obj.fileName));
 
     const deleteFiles = oldMessage.files.filter(obj => !fileNames.has(obj.fileName));
 
     if (minioClient) {
-      await Promise.all(deleteFiles.map(async (file) => {
+      await Promise.all(deleteFiles?.map(async (file) => {
         return await minioClient?.removeObject(buckets.ticketMessages, file.fileName);
       }));
     } else {
