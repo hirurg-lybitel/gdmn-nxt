@@ -1,11 +1,14 @@
-import { InternalServerErrorException, UserType, NotFoundException, ITicket, ForbiddenException, ticketStateCodes } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, ITicket, ForbiddenException, ticketStateCodes, ICRMTicketUser } from '@gsbelarus/util-api-types';
 import { ticketsRepository } from '../repository';
 import { ticketsMessagesService } from '@gdmn-nxt/modules/tickets-messages/service';
 import { cachedRequets } from '@gdmn-nxt/server/utils/cachedRequests';
 import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
-import { insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
+import { IinsertNotificationParams, insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
 import { NotificationAction } from '@gdmn-nxt/socket';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { config } from '@gdmn-nxt/config';
 
 const findAll = async (
   sessionID: string,
@@ -169,7 +172,41 @@ const createTicket = async (
       );
     }
 
+    // Отправка уведомления усполнителю на почту и в систему при создании тикета
     if (ticket.performer.ID) {
+      if (ticket.performer.email) {
+        const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+
+        const smtpOpt: SmtpOptions = {
+          host: smtpHost,
+          port: smtpPort,
+          user: smtpUser,
+          password: smtpPassword
+        };
+
+        const messageText = `
+          <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+            <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${ticket.performer.fullName}</strong>!</div>
+            <div style="font-size:20px;font-weight:bold;color:#1976d2">Создан новый тикет №${ticket.ID}</div>
+            <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+              <div style="color:#666">${ticket.title}</div>
+            </div>
+            <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+              <a href="${config.origin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
+              <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+            </div>
+          </div>
+        `;
+
+        await sendEmail({
+          from: 'Тикет система',
+          to: ticket.performer.email,
+          subject: 'Вам назначен новый тикет',
+          html: messageText,
+          options: { ...smtpOpt }
+        });
+      }
+
       await insertNotification({
         sessionId: sessionID,
         title: `Новый тикет №${ticket.ID}`,
@@ -242,6 +279,61 @@ const updateById = async (
 
     const doneState = ticketStates.find(state => state.code === ticketStateCodes.done);
 
+    interface ISendNotification extends Omit<IinsertNotificationParams, 'userIDs' | 'sessionId'> {
+      user: ICRMTicketUser;
+    }
+
+    const sendNotification = async (params: ISendNotification) => {
+      const { user, title, message, type = UserType.Gedemin, ...rest } = params;
+      if (user.email) {
+        const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+
+        const smtpOpt: SmtpOptions = {
+          host: smtpHost,
+          port: smtpPort,
+          user: smtpUser,
+          password: smtpPassword
+        };
+
+        const link = `${config.origin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${ticket.ID}?disableSavedPath=true`;
+        const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
+
+        const messageText = `
+          <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+            <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.fullName}</strong>!</div>
+            <div style="font-size:20px;font-weight:bold;color:#1976d2">${title}</div>
+            <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+              <div style="color:#666">${message}</div>
+            </div>
+            <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+              <a href="${link}" style="color:#1976d2">${linkMessage}</a>
+              <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+            </div>
+          </div>
+        `;
+
+        await sendEmail({
+          from: type === UserType.Tickets ? 'Система заявок' : 'Тикет система',
+          to: user.email,
+          subject: title,
+          html: messageText,
+          options: { ...smtpOpt }
+        });
+      }
+
+      return await insertNotification({
+        title: title,
+        message: message,
+        type: type,
+        sessionId: sessionID,
+        onDate: new Date(),
+        userIDs: [user.ID],
+        actionContent: ticket.ID + '',
+        actionType: NotificationAction.JumpToTicket,
+        ...rest,
+      });
+    };
+
     // При изменении состояния тикета
     if (body.state.ID && oldTicket.state.ID !== body.state.ID) {
       // Тикет завершен клиентом до состояния "Закрыт"
@@ -267,14 +359,10 @@ const updateById = async (
           },
           type
         );
-        await insertNotification({
-          sessionId: sessionID,
+        await sendNotification({
           title: `Тикет №${ticket.ID} завершен`,
           message: 'Клиент завершил тикет',
-          onDate: new Date(),
-          userIDs: [ticket.performer.ID],
-          actionContent: ticket.ID + '',
-          actionType: NotificationAction.JumpToTicket
+          user: ticket.performer,
         });
       } else {
         // Сохранение в историю изменения состояния тикета
@@ -291,62 +379,42 @@ const updateById = async (
         );
         // Отправка уведомления исполнителю после подверждения тикета со стадии "Завершен"
         if (body.state.code === ticketStateCodes.confirmed) {
-          await insertNotification({
-            sessionId: sessionID,
+          await sendNotification({
             title: `Тикет №${ticket.ID} завершен`,
             message: 'Клиент подтвердил выполнение тикета',
-            onDate: new Date(),
-            userIDs: [ticket.performer.ID],
-            actionContent: ticket.ID + '',
-            actionType: NotificationAction.JumpToTicket
+            user: ticket.performer,
           });
         } else {
           // Отправка уведомления об изменении состояния тикета исполнителю
           if (userId !== ticket.performer.ID) {
             if (type === UserType.Tickets && body.state.code === ticketStateCodes.inProgress) {
-              await insertNotification({
-                sessionId: sessionID,
+              await sendNotification({
                 title: `Тикет №${ticket.ID}`,
                 message: 'Выполнение тикета было отклонено клиентом',
-                onDate: new Date(),
-                userIDs: [ticket.performer.ID],
-                actionContent: ticket.ID + '',
-                actionType: NotificationAction.JumpToTicket
+                user: ticket.performer,
               });
             } else {
-              await insertNotification({
-                sessionId: sessionID,
+              await sendNotification({
                 title: `Тикет №${ticket.ID}`,
                 message: `Статус тикета изменен на "${body.state.name}"`,
-                onDate: new Date(),
-                userIDs: [ticket.performer.ID],
-                actionContent: ticket.ID + '',
-                actionType: NotificationAction.JumpToTicket
+                user: ticket.performer,
               });
             }
           }
           // Отправка уведомления об изменении состояния тикета клиенту
           if (ticket.sender.ID !== userId) {
             if (body.state.code === ticketStateCodes.done) {
-              await insertNotification({
-                sessionId: sessionID,
+              await sendNotification({
                 title: `Заявка №${ticket.ID}`,
                 message: 'Заявка была отмечена как завершённая сотрудником технической поддержки. Просим подтвердить выполнение. Если у вас остались вопросы или проблема не решена — вы можете возобновить заявку.',
-                onDate: new Date(),
-                userIDs: [ticket.sender.ID],
-                actionContent: ticket.ID + '',
-                actionType: NotificationAction.JumpToTicket,
+                user: ticket.sender,
                 type: UserType.Tickets
               });
             } else {
-              await insertNotification({
-                sessionId: sessionID,
+              await sendNotification({
                 title: `Заявка №${ticket.ID}`,
                 message: `Статус заявки изменен на "${body.state.name}"`,
-                onDate: new Date(),
-                userIDs: [ticket.sender.ID],
-                actionContent: ticket.ID + '',
-                actionType: NotificationAction.JumpToTicket,
+                user: ticket.sender,
                 type: UserType.Tickets
               });
             }
@@ -382,15 +450,11 @@ const updateById = async (
           type
         );
       }
-      if (body.performer.ID !== userId) {
-        await insertNotification({
-          sessionId: sessionID,
+      if (ticket.performer.ID !== userId) {
+        await sendNotification({
           title: 'Вам назначен новый тикет',
           message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
-          onDate: new Date(),
-          userIDs: [body.performer.ID],
-          actionContent: ticket.ID + '',
-          actionType: NotificationAction.JumpToTicket
+          user: ticket.performer,
         });
       }
     }

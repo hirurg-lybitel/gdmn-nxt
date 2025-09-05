@@ -8,7 +8,7 @@ import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmplo
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setAppOptions, setColorMode } from './store/settingsSlice';
@@ -59,6 +59,8 @@ export default function App(props: AppProps) {
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     (async function () {
       switch (loginStage) {
@@ -93,7 +95,11 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
-          navigate('/');
+          const disableSavedPath = searchParams.get('disableSavedPath') === 'true';
+
+          if (!disableSavedPath) {
+            navigate('/');
+          }
 
           /** Получение последнего url клиента */
           const res = await fetch(`${baseUrlApi}filters/menu`, { method: 'GET', credentials: 'include' });
