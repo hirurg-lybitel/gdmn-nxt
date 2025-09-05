@@ -1,30 +1,35 @@
 import { RequestHandler } from 'express';
 import { startTransaction } from '@gdmn-nxt/db-connection';
 import { parseIntDef } from '@gsbelarus/util-useful';
-import { ActionName, Permissions, UserType } from '@gsbelarus/util-api-types';
+import { ActionMethod, ActionName, Permissions, RouteMethod, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
 import { config } from '@gdmn-nxt/config';
 import { ERROR_MESSAGES } from '../constants/messages';
 import { cacheManager } from '@gdmn-nxt/cache-manager';
 
-const ticketsUserRoutes = [
-  'profile-settings/userId',
-  'security/active-sessions',
-  'security/closeSessionBySessionId',
-  'filters',
-  'filters/menu',
-  'ticketSystem/tickets',
-  'ticketSystem/states',
-  'ticketSystem/messages',
-  'system/users',
-  'contacts/customerId',
-  'ticketSystem/history'
-];
+type TicketsPermissions = {
+  [key: string]: Partial<Record<RouteMethod | 'ALL', boolean>>;
+};
 
-const ticketsAdminRoutes = [
+const ticketsUserRoutes: TicketsPermissions = {
+  'profile-settings/userId': { ALL: true },
+  'security/active-sessions': { ALL: true },
+  'security/closeSessionBySessionId': { ALL: true },
+  'filters': { ALL: true },
+  'filters/menu': { ALL: true },
+  'ticketSystem/tickets': { ALL: true },
+  'ticketSystem/states': { ALL: true },
+  'ticketSystem/messages': { ALL: true },
+  'system/users': { GET: true },
+  'contacts/customerId': { ALL: true },
+  'ticketSystem/history': { ALL: true },
+  'ticketSystem/labels': { GET: true }
+};
+
+const ticketsAdminRoutes: TicketsPermissions = {
   ...ticketsUserRoutes,
-  'ticketSystem/users'
-];
+  'ticketSystem/users': { ALL: true }
+};
 
 export const checkPermissions: RequestHandler = (req, res, next) => {
   const apiAccessKey = req.headers['x-api-key'] as string;
@@ -38,9 +43,11 @@ export const checkPermissions: RequestHandler = (req, res, next) => {
 
   const { url, method } = req;
   if (req.user['type'] === UserType.Tickets) {
-    for (const name of (req.user['isAdmin'] ? ticketsAdminRoutes : ticketsUserRoutes)) {
+    const permissions = req.user['isAdmin'] ? ticketsAdminRoutes : ticketsUserRoutes;
+    for (const name of Object.keys(permissions)) {
+      const methods = permissions[name];
       const regEx = new RegExp(`\\/[^\\/]*\\b${name}\\b\\/?[\\w-]*$`);
-      if (regEx.test(url.split('?')[0])) return next();
+      if (regEx.test(url.split('?')[0]) && (method in methods || 'ALL' in methods)) return next();
     }
     return res.status(403).send(resultError('У вас недостаточно прав'));
   }

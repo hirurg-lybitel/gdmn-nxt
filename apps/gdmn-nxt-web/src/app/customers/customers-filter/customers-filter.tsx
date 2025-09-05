@@ -82,7 +82,7 @@ export function CustomersFilter(props: CustomersFilterProps) {
 
   const handleMethodOnChange = (e: any, checked: any) => {
     const name: string = e.target.name;
-    const methods: {[key: string]: any} = filteringData && { ...filteringData['METHODS'] } || {};
+    const methods: { [key: string]: any; } = filteringData && { ...filteringData['METHODS'] } || {};
     delete methods[name];
 
     const newMethods = Object.assign(methods, { [name]: checked ? 'OR' : 'AND' });
@@ -188,12 +188,14 @@ export function CustomersFilter(props: CustomersFilterProps) {
         <LabelsSelect
           onChange={(value) => handleOnChange('LABELS', value)}
           labels={filteringData?.LABELS as ILabel[] ?? []}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="end">
-                <TagIcon />
-              </InputAdornment>
-            ),
+          textFieldProps={{
+            InputProps: {
+              startAdornment: (
+                <InputAdornment position="end">
+                  <TagIcon />
+                </InputAdornment>
+              ),
+            }
           }}
         />
         <BusinessProcessesSelect

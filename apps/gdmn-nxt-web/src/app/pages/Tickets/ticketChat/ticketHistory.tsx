@@ -1,10 +1,9 @@
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
-import { ITicketHistory, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { ILabel, ITicketHistory, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineSeparator } from '@mui/lab';
 import { Avatar, Tooltip } from '@mui/material';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CreateIcon from '@mui/icons-material/Create';
-import AdjustIcon from '@mui/icons-material/Adjust';
 import { useSelector } from 'react-redux';
 import { RootState } from '@gdmn-nxt/store';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
@@ -16,6 +15,8 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 import InfoIcon from '@mui/icons-material/Info';
 import { useEffect, useReducer, useState } from 'react';
 import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
+import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
+import LabelIcon from '@mui/icons-material/Label';
 
 interface ITicketHistoryProps {
   history: ITicketHistory;
@@ -36,12 +37,22 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
     }
   };
 
+  const getHistoryIcon = (history: ITicketHistory) => {
+    if (history.addedLabels || history.removedLabels) {
+      return <LabelIcon color={'action'} />;
+    }
+    if (history.state) {
+      return getIconByStateCode(history.state.code);
+    }
+    return <Brightness1Icon color={'action'} />;
+  };
+
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
   const getTextByStateCode = (code: number) => {
     switch (code) {
       case 1: return `создал(a) ${ticketsUser ? 'заявку' : 'тикет'} №${ticketId}`;
-      case 2: return <span>{'назначил(a) '} <UserTooltip
+      case 2: return <span>назначил(a) <UserTooltip
         name={history.performer?.fullName ?? ''}
         phone={history.performer?.phone}
         email={history.performer?.email}
@@ -50,7 +61,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         <span>{history.performer?.fullName}</span>
       </UserTooltip>
       </span>;
-      case 3: return <span>{'переназначил(a) '}<UserTooltip
+      case 3: return <span>переназначил(a)<UserTooltip
         name={history.performer?.fullName ?? ''}
         phone={history.performer?.phone}
         email={history.performer?.email}
@@ -59,8 +70,43 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         <span>{history.performer?.fullName}</span>
       </UserTooltip>
       </span>;
-      default: return `изменил(a) статус ${ticketsUser ? 'заявки' : 'тикета'} на "${history.state.name}"`;
+      default: return `изменил(a) статус ${ticketsUser ? 'заявки' : 'тикета'} на "${history.state?.name}"`;
     }
+  };
+
+  const getHistoryText = (history: ITicketHistory) => {
+    const labelsToJSX = (labels: ILabel[]) => labels.map((label, index) => <LabelMarker key={index} label={label} />);
+
+    if (history.addedLabels && history.removedLabels) {
+      return (
+        <>
+          Добавил(а)
+          {labelsToJSX(history.addedLabels)}
+          и убрал(а)
+          {labelsToJSX(history.removedLabels)}
+        </>
+      );
+    }
+    if (history.addedLabels) {
+      return (
+        <>
+          Добавил(а)
+          {labelsToJSX(history.addedLabels)}
+        </>
+      );
+    }
+    if (history.removedLabels) {
+      return (
+        <>
+          Убрал(а)
+          {labelsToJSX(history.removedLabels)}
+        </>
+      );
+    }
+    if (history.state) {
+      return getTextByStateCode(history.state?.code);
+    }
+    return '';
   };
 
   const name = history.user?.fullName ?? 'Система';
@@ -78,16 +124,16 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         <TimelineSeparator>
           <TimelineConnector style={{ background: 'var(--color-card-bg)' }} />
           <TimelineDot style={{ margin: '4px 0px', background: 'var(--color-card-bg)' }}>
-            {getIconByStateCode(history.state.code)}
+            {getHistoryIcon(history)}
           </TimelineDot>
-          <TimelineConnector style={{ background: 'var(--color-card-bg)', visibility: history.state.code !== ticketStateCodes.confirmed ? 'visible' : 'hidden' }} />
+          <TimelineConnector style={{ background: 'var(--color-card-bg)', visibility: history.state?.code !== ticketStateCodes.confirmed ? 'visible' : 'hidden' }} />
         </TimelineSeparator>
         <TimelineContent style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', padding: '8px 16px' }}>
           <UserTooltip
             name={name}
             phone={history.user?.phone}
             email={history.user?.email}
-            avatar={history.user?.avatar ? history.user?.email : undefined}
+            avatar={history.user?.avatar ? history.user?.avatar : undefined}
             customAvatar={history.user?.avatar ? undefined : <div
               style={{
                 height: '40px', width: '40px', zIndex: 2, display: 'flex', flexWrap: 'wrap',
@@ -110,9 +156,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
               {name}
             </div>
           </UserTooltip>
-          <div>
-            {getTextByStateCode(history.state.code)}
-          </div>
+          {getHistoryText(history)}
           <HistoryTime date={history.changeAt} />
         </TimelineContent>
       </TimelineItem>

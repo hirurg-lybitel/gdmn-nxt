@@ -1,28 +1,50 @@
 import CustomPaperComponent from '@gdmn-nxt/helpers/custom-paper-component/custom-paper-component';
-import { Autocomplete, AutocompleteProps, Box, Button, Checkbox, createFilterOptions, InputAdornment, ListItem, Stack, TextField, TextFieldProps, Typography, useMediaQuery } from '@mui/material';
-import { MouseEvent, useEffect, useMemo, useState } from 'react';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteProps, Box, Button, Checkbox, createFilterOptions, ListItem, Stack, TextField, TextFieldProps, Typography, useMediaQuery } from '@mui/material';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import { useAddLabelMutation, useGetLabelsQuery, useUpdateLabelMutation } from '../../../features/labels';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
-import { ILabel } from '@gsbelarus/util-api-types';
+import { ILabel, UserType } from '@gsbelarus/util-api-types';
 import LabelMarker from '../../Labels/label-marker/label-marker';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import LabelListItemEdit from '../../Labels/label-list-item-edit/label-list-item-edit';
-import TagIcon from '@mui/icons-material/Tag';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
 import { maxVirtualizationList } from '@gdmn/constants/client';
+import { useAddTicketsLabelMutation, useGetTicketsLabelsQuery, useUpdateTicketsLabelMutation } from '../../../features/tickets/ticketsLabelsApi';
 
-interface LabelsSelectProps extends Pick<TextFieldProps, 'InputProps'> {
+interface LabelsSelectProps extends Omit<
+  AutocompleteProps<any, boolean | undefined, boolean | undefined, false>,
+  'value' | 'options' | 'renderInput' | 'renderOption' | 'onChange'
+> {
   labels?: ILabel[];
-  onChange: (value: ILabel[]) => void;
+  onChange: (value: ILabel[], reason: AutocompleteChangeReason) => void;
+  textFieldProps?: TextFieldProps;
+  editIconSpace?: boolean;
+  disableCreation?: boolean;
+  disableEdition?: boolean;
+  type?: UserType;
 };
 
-export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<LabelsSelectProps>) {
-  const [addLabel, { isLoading: addIsLoading, data: addedLabel }] = useAddLabelMutation();
-  const [updateLabel, { isLoading: editIsLoading }] = useUpdateLabelMutation();
-  const { data: labelsData = [], isFetching: labelsFetching, isLoading: labelsLoading } = useGetLabelsQuery();
+export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSpace = false, disableCreation, disableEdition, type, ...rest }: Readonly<LabelsSelectProps>) {
+  const [addSystemLabel, { isLoading: systemLabelAddIsLoading, data: systemAddedLabel }] = useAddLabelMutation();
+  const [updateSystemLabel, { isLoading: systemLabelEditIsLoading }] = useUpdateLabelMutation();
+
+  const [addTicketsLabel, { isLoading: ticketsLabelAddIsLoading, data: ticketsAddedLabel }] = useAddTicketsLabelMutation();
+  const [updateTicketsLabel, { isLoading: ticketsLabelEditIsLoading }] = useUpdateTicketsLabelMutation();
+
+  const addLabel = type === UserType.Tickets ? addTicketsLabel : addSystemLabel;
+  const updateLabel = type === UserType.Tickets ? updateTicketsLabel : updateSystemLabel;
+  const addIsLoading = type === UserType.Tickets ? ticketsLabelAddIsLoading : systemLabelAddIsLoading;
+  const addedLabel = type === UserType.Tickets ? ticketsAddedLabel : systemAddedLabel;
+  const editIsLoading = type === UserType.Tickets ? ticketsLabelEditIsLoading : systemLabelEditIsLoading;
+
+  const { data: systemLabelsData = [], isFetching: systemLabelsFetching, isLoading: systemLabelsLoading } = useGetLabelsQuery(undefined, { skip: type === UserType.Tickets });
+  const { data: ticketsLabelsData = [], isFetching: ticketsLabelsFetching, isLoading: ticketsLabelsLoading } = useGetTicketsLabelsQuery(undefined, { skip: type !== UserType.Tickets });
+
+  const labelsData = type === UserType.Tickets ? ticketsLabelsData : systemLabelsData;
+  const labelsFetching = type === UserType.Tickets ? ticketsLabelsFetching : systemLabelsFetching;
+  const labelsLoading = type === UserType.Tickets ? ticketsLabelsLoading : systemLabelsLoading;
 
   const [upsertLabel, setUpsertLabel] = useState<{
     open: boolean;
@@ -31,15 +53,15 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
     open: false
   });
 
-  const isFetching = useMemo(() =>
-    editIsLoading || addIsLoading || labelsFetching || labelsLoading,
-  [addIsLoading, editIsLoading, labelsFetching, labelsLoading]);
+  const isFetching = useMemo(() => (
+    editIsLoading || addIsLoading || labelsFetching || labelsLoading
+  ), [addIsLoading, editIsLoading, labelsFetching, labelsLoading]);
 
   useEffect(() => {
     if (!addedLabel) return;
 
     const newLabels = [...labels, addedLabel];
-    onChange(newLabels);
+    onChange(newLabels, 'createOption');
   }, [addedLabel]);
 
   const handleOpenLabelAdd = () => {
@@ -61,7 +83,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
 
   const handleCloseLabel = () => setUpsertLabel(prev => ({ ...prev, open: false }));
 
-  const handleOnSubmit = (newLabel: ILabel) => {
+  const handleOnSubmit = useCallback((newLabel: ILabel) => {
     if (newLabel.ID > 0) {
       handleCloseLabel();
       updateLabel(newLabel);
@@ -69,28 +91,28 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
     }
     handleCloseLabel();
     addLabel(newLabel);
-  };
+  }, [addLabel, updateLabel]);
 
-  const memoPaperFooter = useMemo(() =>
+  const memoPaperFooter = useMemo(() => (
     <div>
-      <Button
+      {<Button
         disabled={isFetching}
         startIcon={<AddCircleRoundedIcon />}
         onClick={handleOpenLabelAdd}
       >
         Создать метку
-      </Button>
-    </div>,
-  [isFetching]);
+      </Button>}
+    </div>
+  ), [isFetching]);
 
-  const labelEditComponent = useMemo(() =>
+  const labelEditComponent = useMemo(() => (
     <LabelListItemEdit
       open={upsertLabel.open}
       label={upsertLabel.label}
       onSubmit={handleOnSubmit}
       onCancelClick={handleCloseLabel}
     />
-  , [upsertLabel]);
+  ), [handleOnSubmit, upsertLabel.label, upsertLabel.open]);
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
@@ -105,13 +127,14 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
     <>
       {labelEditComponent}
       <Autocomplete
+        {...rest}
         filterOptions={filterOptions}
         multiple
-        limitTags={2}
+        limitTags={'limitTags' in rest ? rest.limitTags : 2}
         disableCloseOnSelect
-        PaperComponent={CustomPaperComponent({ footer: memoPaperFooter })}
-        onChange={(e, value) => {
-          onChange(value);
+        PaperComponent={disableCreation ? undefined : CustomPaperComponent({ footer: memoPaperFooter })}
+        onChange={(e, value, reason) => {
+          onChange(value, reason);
         }}
         value={
           labelsData.filter(label => labels?.find(el => el.ID === label.ID))
@@ -126,9 +149,13 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
             key={option.ID}
             disablePadding
             sx={{
+              dusplay: 'flex',
+              gap: '8px',
               py: '2px !important',
               '&:hover .action': {
                 display: 'inline-flex !important',
+                opacity: '1 !important',
+                visibility: 'visible !important',
               }
             }}
           >
@@ -166,10 +193,12 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
                 <Typography variant="caption">{option.USR$DESCRIPTION}</Typography>
               </Stack>
             </div>
-            <div
+            {!disableEdition && <div
               className="action"
               style={{
-                display: mobile ? 'inline-flex' : 'none'
+                display: (mobile || editIconSpace) ? undefined : 'none',
+                opacity: editIconSpace ? 0 : 1,
+                visibility: editIconSpace ? 'hidden' : 'visible'
               }}
             >
               <ItemButtonEdit
@@ -177,7 +206,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
                 disabled={isFetching}
                 onClick={handleOpenLabelEdit(option)}
               />
-            </div>
+            </div>}
           </ListItem>
         )}
         renderInput={(params) => (
@@ -185,14 +214,16 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
             {...params}
             label="Метки"
             placeholder="Выберите метки"
+            {...textFieldProps}
+            sx={{
+              ...textFieldProps?.sx,
+              '& .MuiInputBase-input': {
+                ...(textFieldProps?.sx as any)?.['& .MuiInputBase-input'],
+                minWidth: '100% !important'
+              }
+            }}
             InputProps={{
-              ...params.InputProps,
-              // ...InputProps
-              // startAdornment: (
-              //   <InputAdornment position="end">
-              //     <TagIcon />
-              //   </InputAdornment>
-              // ),
+              ...params.InputProps
             }}
           />
         )}
@@ -202,7 +233,7 @@ export function LabelsSelect({ labels = [], onChange, InputProps }: Readonly<Lab
               key={index}
               pr={0.5}
             >
-              <LabelMarker label={option} {...getTagProps({ index })}/>
+              <LabelMarker label={option} {...getTagProps({ index })} />
             </Box>
           )
         }

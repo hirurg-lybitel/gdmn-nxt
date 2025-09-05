@@ -71,7 +71,7 @@ export function SegmentUpsert({
     let labelsFields: ILabel[] = [];
     let workTypesFields: IWorkType[] = [];
 
-    for (let i = 0;i < values.length;i++) {
+    for (let i = 0; i < values.length; i++) {
       switch (values[i].NAME as FieldName) {
         case 'BUSINESSPROCESSES': {
           businessProcessesFields = findValue(businessProcesses, values[i].VALUE);
@@ -111,7 +111,7 @@ export function SegmentUpsert({
     DEPARTMENTS: IContactWithID[],
     LABELS: ILabel[],
     WORKTYPES: IWorkType[],
-    CUSTOMERS: ICustomer[]
+    CUSTOMERS: ICustomer[];
   }
 
   const initValue = {
@@ -221,7 +221,7 @@ export function SegmentUpsert({
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
               >
-                    Список полей для фильтрации клиентов
+                Список полей для фильтрации клиентов
               </AccordionSummary>
               <AccordionDetails>
                 <Stack spacing={2}>
@@ -255,12 +255,14 @@ export function SegmentUpsert({
                   <LabelsSelect
                     labels={formik.values.LABELS}
                     onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="end">
-                          <TagIcon />
-                        </InputAdornment>
-                      ),
+                    textFieldProps={{
+                      InputProps: {
+                        startAdornment: (
+                          <InputAdornment position="end">
+                            <TagIcon />
+                          </InputAdornment>
+                        ),
+                      }
                     }}
                   />
                   <BusinessProcessesSelect

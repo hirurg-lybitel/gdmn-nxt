@@ -66,6 +66,7 @@ import TicketsList from './app/pages/Tickets/ticketsList/ticketsList';
 import TicketChat from './app/pages/Tickets/ticketChat/ticketChat';
 import TicketsCustomers from './app/pages/Tickets/tickets-customers/tickets-customers';
 import TicketsUsers from './app/pages/Tickets/tickets-users/tickets-users';
+import TicketsLabelList from './app/pages/Tickets/tickets-labels/tickets-label-list/tickets-label-list';
 
 registerMUI();
 
@@ -208,6 +209,7 @@ const Main = () => {
                                 <Route path="list" element={<TicketsList />} />
                                 <Route path="list/:id" element={<TicketChat />} />
                                 <Route path="customers" element={<TicketsCustomers />} />
+                                <Route path="labels" element={<TicketsLabelList />} />
                               </Route>
                               <Route path="system">
                                 <Route path="settings">

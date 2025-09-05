@@ -1,8 +1,8 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Popper, Skeleton, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetAllTicketUserQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
+import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,7 +10,7 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ILabel, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -34,6 +34,8 @@ import useConfirmation from '@gdmn-nxt/helpers/hooks/useConfirmation';
 import { useFormik } from 'formik';
 import TicketHistory from './ticketHistory';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
+import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
+import { ticketsUserApi, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
 
 interface ITicketChatProps {
 
@@ -488,7 +490,7 @@ export default function TicketChat(props: ITicketChatProps) {
     setPhoneDialogOpen(false);
     if (!settings || !userProfile?.id) return;
     await setSettings({ userId: userProfile?.id, body: { ...settings, PHONE: value } });
-    dispatch(ticketsApi.util.invalidateTags(['users']));
+    dispatch(ticketsUserApi.util.invalidateTags(['users']));
     dispatch(profileSettingsApi.util.invalidateTags(['settings']));
   }, [dispatch, setSettings, settings, userProfile?.id]);
 
@@ -551,12 +553,13 @@ export default function TicketChat(props: ITicketChatProps) {
       <Autocomplete
         fullWidth
         size="small"
+        disableClearable
         readOnly={confirmed}
         disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={systemUsers ?? []}
-        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
+        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? undefined}
         getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
         onChange={(e, value) => {
           updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
@@ -652,6 +655,46 @@ export default function TicketChat(props: ITicketChatProps) {
       />
     );
   }, [isAdmin, ticket?.sender.fullName, ticketsUser]);
+
+  const [cachedLabels, setCachedLabels] = useState<ILabel[] | null>(null);
+
+  const handleUpdateLabels = useCallback(async (value: ILabel[] | null) => {
+    if (!value) return;
+
+    await updateTicket({ ...ticket, labels: value });
+
+    setCachedLabels(null);
+  }, [ticket, updateTicket]);
+
+  const memoLabels = useMemo(() => {
+    return (
+      <LabelsSelect
+        type={UserType.Tickets}
+        editIconSpace
+        disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+        loading={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
+        disableCreation={ticketsUser}
+        disableEdition={ticketsUser}
+        limitTags={undefined}
+        textFieldProps={{
+          variant: 'standard'
+        }}
+        onClose={() => handleUpdateLabels(cachedLabels)}
+        labels={cachedLabels ?? ticket?.labels}
+        onChange={(newLabels, reason) => {
+          if (reason === 'clear') {
+            handleUpdateLabels([]);
+            return;
+          }
+          if (reason === 'createOption') {
+            handleUpdateLabels(newLabels);
+            return;
+          }
+          setCachedLabels(newLabels);
+        }}
+      />
+    );
+  }, [cachedLabels, handleUpdateLabels, ticket?.labels, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
@@ -818,8 +861,9 @@ export default function TicketChat(props: ITicketChatProps) {
           </div>
         </CardContent>
       </CustomizedCard >
-      <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '16px' }}>
+      <div style={{ minWidth: '300px', width: '380px', display: 'flex', flexDirection: 'column', gap: '16px', paddingLeft: '16px' }}>
         {memoPerformer}
+        {memoLabels}
         {memoStatus}
         {memoCustomer}
         {memoUser}
@@ -930,7 +974,6 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
     return <FilesView
       files={formik.values.files}
       onDelete={editMode ? (deleteFileIndex) => {
-        console.log(deleteFileIndex);
         const newFiles = formik.values.files?.filter((file, index) => index !== deleteFileIndex);
         formik.setFieldValue('files', newFiles);
       } : undefined}
