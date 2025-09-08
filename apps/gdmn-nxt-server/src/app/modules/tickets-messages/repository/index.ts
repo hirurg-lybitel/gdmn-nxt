@@ -58,6 +58,7 @@ const find: FindHandler<ITicketMessage> = async (
         r.USR$STATE,
         r.USR$TICKETKEY,
         r.USR$SENDAT,
+        r.USR$ISEDITED,
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE
@@ -115,7 +116,8 @@ const find: FindHandler<ITicketMessage> = async (
           code: data['STATE_CODE']
         },
         sendAt: data['USR$SENDAT'],
-        files: await getFilesById(data['ID'])
+        files: await getFilesById(data['ID']),
+        isEdited: data['USR$ISEDITED'] === 1
       };
     }));
 
@@ -189,13 +191,14 @@ const save: SaveHandler<ITicketMessageSave> = async (
       const fileName = `${message.ID}/${file.fileName}`;
 
       await fetchAsSingletonObject<ITicketMessageSave>(
-        `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME)
-          VALUES(:TICKETRECKEY, :NAME)
+        `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME, USR$ISEDITED)
+          VALUES(:TICKETRECKEY, :NAME, ISEDITED)
           RETURNING ID
         `,
         {
           TICKETRECKEY: message?.ID,
           NAME: fileName,
+          ISEDITED: 0
         }
       );
 
@@ -232,13 +235,15 @@ const update: UpdateHandler<ITicketMessage> = async (
     const updatedMessage = await fetchAsSingletonObject<ITicketMessage>(
       `UPDATE USR$CRM_TICKETREC
       SET
-        USR$BODY = :BODY
+        USR$BODY = :BODY,
+        USR$ISEDITED = :ISEDITED
       WHERE
         ID = :ID
       RETURNING ID`,
       {
         ID,
         BODY: blobBody,
+        ISEDITED: 1
       }
     );
 
@@ -278,8 +283,7 @@ const update: UpdateHandler<ITicketMessage> = async (
 
 const remove: RemoveOneHandler = async (
   sessionID,
-  id,
-  type
+  id
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, attachment, transaction } = await startTransaction(sessionID);
 

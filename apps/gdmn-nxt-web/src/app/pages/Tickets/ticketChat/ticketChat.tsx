@@ -1010,6 +1010,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
           <></>
           <Typography variant="body2">{isLoading ? '' : message.user.fullName}</Typography>
           {!isLoading && <MessageTime date={message.sendAt} />}
+          {message.isEdited && <Typography variant={'caption'}>(Изменено)</Typography>}
           <div style={{ flex: 1 }} />
           {(message.user.ID === userId && !isLoading) && <MenuBurger
             disabled={updateIsLoading || deleteIsLoading}

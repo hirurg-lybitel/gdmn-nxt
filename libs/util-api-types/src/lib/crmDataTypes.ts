@@ -732,6 +732,7 @@ export interface ITicketMessage extends IWithID {
   state: ITicketState;
   sendAt: Date;
   files?: ITicketMessageFile[];
+  isEdited?: boolean;
 }
 
 export interface ICustomerTickets {
