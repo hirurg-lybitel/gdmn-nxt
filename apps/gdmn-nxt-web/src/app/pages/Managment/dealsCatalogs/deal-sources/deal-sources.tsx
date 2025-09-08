@@ -92,7 +92,7 @@ export function DealSources(props: DealSourcesProps) {
         addButtonHint="Создать источник заявок"
         refetch
         onRefetch={refetch}
-        isFetching={isFetching || insertDealSourceIsLoading || updateDealSourceIsLoading || deleteDealSourceIsLoading}
+        isFetching={isFetching}
         isLoading={isLoading}
       />
       <Divider />

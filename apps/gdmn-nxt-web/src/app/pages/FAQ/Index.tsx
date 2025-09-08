@@ -79,7 +79,7 @@ export default function FAQ() {
           title={'База знаний'}
           addButton={userPermissions?.faq.POST}
           isLoading={isLoading}
-          isFetching={isFetching || addIsLoading || editIsLoading || deleteIsLoading}
+          isFetching={isFetching}
           onAddClick={handleOpenAddPopup}
           addButtonHint="Добавить вопрос с ответом"
         />

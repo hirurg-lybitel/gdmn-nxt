@@ -104,7 +104,7 @@ export function TicketsLabelList(props: LabelListProps) {
           addButtonHint="Создать метку"
           refetch
           onRefetch={refetch}
-          isFetching={dataIsFetching || addIsLoading || deleteIsLoading || editIsLoading}
+          isFetching={dataIsFetching}
           isLoading={dataIsLoading}
         />
         <Divider />

@@ -362,7 +362,7 @@ export function TaskTypes(props: TaskTypesProps) {
           addButtonHint="Создать тип задач"
           refetch
           onRefetch={refetch}
-          isFetching={isFetching || insertIsLoading || updateIsLoading || deleteIsLoading}
+          isFetching={isFetching}
           isLoading={isLoading}
         />
         <Divider />

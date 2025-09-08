@@ -75,7 +75,7 @@ export function UpdatesList(props: UpdatesListProps) {
         addButton={userPermissions?.updates?.POST}
         onAddClick={handleEditSource()}
         addButtonHint="Добавить обновление в историю"
-        isFetching={isFetching || editIsLoading || addIsLoading || deleteIsLoading}
+        isFetching={isFetching}
         isLoading={isLoading}
       />
       <Divider />

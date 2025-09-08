@@ -93,7 +93,7 @@ export function DenyReasons(props: DenyReasonsProps) {
         addButtonHint="Создать причину отказа"
         refetch
         onRefetch={refetch}
-        isFetching={isFetching || insertDenyReasonIsLoading || updateDenyReasonIsLoading || deleteDenyReasonIsLoading}
+        isFetching={isFetching}
         isLoading={isLoading}
       />
       <Divider />

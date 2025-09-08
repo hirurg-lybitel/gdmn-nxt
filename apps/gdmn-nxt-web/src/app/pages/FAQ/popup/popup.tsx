@@ -1,14 +1,11 @@
-import { useState, useCallback } from 'react';
-import { Box, Stack, Tab } from '@mui/material';
+import { useCallback } from 'react';
+import { Stack } from '@mui/material';
 import style from './popup.module.less';
 import TextField from '@mui/material/TextField';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import PerfectScrollbar from 'react-perfect-scrollbar';
 import { fullFaq } from '../../../features/FAQ/faqApi';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import EditDialog from '@gdmn-nxt/components/edit-dialog/edit-dialog';
-import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 
