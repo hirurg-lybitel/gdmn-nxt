@@ -1,8 +1,8 @@
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
 import styles from './task-types.module.less';
-import { Button, CardContent, CardHeader, Divider, IconButton, TextField, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from '@mui/material';
+import { CardContent, Divider, IconButton, TextField, Tooltip, TooltipProps, styled, tooltipClasses } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import { GridActionsCellItem, GridCellParams, GridColDef, GridPreProcessEditCellProps, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridCellParams, GridColDef, GridRenderCellParams, GridRenderEditCellParams, GridRowId, GridRowModes, GridRowParams, MuiEvent, useGridApiContext, useGridApiRef } from '@mui/x-data-grid-pro';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -11,21 +11,17 @@ import { ChangeEvent, KeyboardEvent, useCallback, useMemo, useState, MouseEvent,
 import { useAddTaskTypeMutation, useDeleteTaskTypeMutation, useGetTaskTypesQuery, useUpdateTaskTypeMutation } from 'apps/gdmn-nxt-web/src/app/features/kanban/kanbanCatalogsApi';
 import { ITaskType } from '@gsbelarus/util-api-types';
 import ConfirmDialog from 'apps/gdmn-nxt-web/src/app/confirm-dialog/confirm-dialog';
-import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
-import AddIcon from '@mui/icons-material/Add';
-import { DESTRUCTION } from 'dns';
-import { Description } from '@mui/icons-material';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
-export interface TaskTypesProps {}
+export interface TaskTypesProps { }
 
 
 interface IErrors {
-  [key: string]: string | undefined
+  [key: string]: string | undefined;
 }
 interface IErrorsObject {
-  [key: GridRowId]: IErrors
+  [key: GridRowId]: IErrors;
 }
 interface ValidationShema {
   [key: string]: (value: string) => string;
@@ -59,11 +55,11 @@ const validationShema: ValidationShema = {
 
 interface CustomCellEditFormProps extends GridRenderEditCellParams {
   errors: IErrorsObject,
-  clearError: (name: string, id: GridRowId) => void
+  clearError: (name: string, id: GridRowId) => void;
 }
 
 const CustomCellEditForm = (props: CustomCellEditFormProps) => {
-  const { colDef, value, id, field, error, errors, clearError } = props;
+  const { colDef, value, id, field, errors, clearError } = props;
 
   const errorMessage = errors[`${id}`]?.[`${field}`];
 
@@ -71,7 +67,7 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
 
   const handleCellOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    apiRef.current.setEditCellValue({ id, field, value });apiRef.current.forceUpdate();
+    apiRef.current.setEditCellValue({ id, field, value }); apiRef.current.forceUpdate();
   }, [apiRef, field, id]);
 
   return (
@@ -90,22 +86,23 @@ const CustomCellEditForm = (props: CustomCellEditFormProps) => {
   );
 };
 
+interface ITitleAndMethod {
+  title: string,
+  text: string,
+  mode: ConfirmationMode,
+  method: () => void;
+}
+
 export function TaskTypes(props: TaskTypesProps) {
   const apiRef = useGridApiRef();
-  const { data: taskTypes = [], isFetching, isLoading } = useGetTaskTypesQuery();
-  const [insertTaskType] = useAddTaskTypeMutation();
-  const [updateTaskType] = useUpdateTaskTypeMutation();
-  const [deleteTaskType] = useDeleteTaskTypeMutation();
+  const { data: taskTypes = [], isFetching, isLoading, refetch } = useGetTaskTypesQuery();
+  const [insertTaskType, { isLoading: insertIsLoading }] = useAddTaskTypeMutation();
+  const [updateTaskType, { isLoading: updateIsLoading }] = useUpdateTaskTypeMutation();
+  const [deleteTaskType, { isLoading: deleteIsLoading }] = useDeleteTaskTypeMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [titleAndMethod, setTitleAndMethod] = useState<{
-    title: string,
-    text: string,
-    mode: ConfirmationMode,
-    method: () => void
-      }>({
-        title: '', text: '', mode: 'cancel', method: () => {}
-      });
+  const [titleAndMethod, setTitleAndMethod] = useState<ITitleAndMethod>({ title: '', text: '', mode: 'cancel', method: () => { } });
   const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
   const handleSetTitleAndMethod = (mode: ConfirmationMode, method: () => void) => {
     const title = (() => {
       switch (mode) {
@@ -228,12 +225,11 @@ export function TaskTypes(props: TaskTypesProps) {
       newErrors[`${id}`] = {};
       setErrors(newErrors);
       api.current.stopRowEditMode({ id, ignoreModifications: true });
-      if (api.current.getRow(id)!.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
+      if (api.current.getRow(id)?.ID === 0) apiRef.current.updateRows([{ ID: id, _action: 'delete' }]);
       forceUpdate();
     };
 
     if (isInEditMode) {
-      const rowModel = apiRef.current.getRowModels();
       return (
         <>
           <IconButton
@@ -341,7 +337,7 @@ export function TaskTypes(props: TaskTypesProps) {
     forceUpdate();
   };
 
-  const memoConfirmDialog = useMemo(() =>
+  const memoConfirmDialog = useMemo(() => (
     <ConfirmDialog
       open={confirmOpen}
       title={titleAndMethod.title}
@@ -350,7 +346,7 @@ export function TaskTypes(props: TaskTypesProps) {
       confirmClick={titleAndMethod.method}
       cancelClick={() => setConfirmOpen(false)}
     />
-  , [confirmOpen, titleAndMethod]);
+  ), [confirmOpen, titleAndMethod]);
 
 
   return (
@@ -359,19 +355,17 @@ export function TaskTypes(props: TaskTypesProps) {
       <CustomizedCard
         className={styles.card}
       >
-        <CustomCardHeader title={'Типы задач'} />
+        <CustomCardHeader
+          title={'Типы задач'}
+          addButton
+          onAddClick={handleAddSource}
+          addButtonHint="Создать тип задач"
+          refetch
+          onRefetch={refetch}
+          isFetching={isFetching || insertIsLoading || updateIsLoading || deleteIsLoading}
+          isLoading={isLoading}
+        />
         <Divider />
-        <CardToolbar>
-          <Button
-            className={styles.addButton}
-            variant="contained"
-            startIcon={<AddIcon />}
-            disabled={isFetching}
-            onClick={handleAddSource}
-          >
-            Добавить
-          </Button>
-        </CardToolbar>
         <CardContent
           className={styles.cardContent}
         >

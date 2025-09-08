@@ -20,10 +20,10 @@ import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-m
 export interface UpdatesListProps { }
 
 export function UpdatesList(props: UpdatesListProps) {
-  const { data: updates = [], isFetching, isLoading } = useGetAllUpdatesQuery();
-  const [editUpdate] = useEditUpdateMutation();
-  const [addUpdate] = useAddUpdateMutation();
-  const [deleteUpdate] = useDeleteUpdateMutation();
+  const { data: updates = [], isFetching, isLoading, refetch } = useGetAllUpdatesQuery();
+  const [editUpdate, { isLoading: editIsLoading }] = useEditUpdateMutation();
+  const [addUpdate, { isLoading: addIsLoading }] = useAddUpdateMutation();
+  const [deleteUpdate, { isLoading: deleteIsLoading }] = useDeleteUpdateMutation();
 
   const [expanded, setExpanded] = useState<string>('');
   const [upsert, setUpsert] = useState(false);
@@ -47,46 +47,38 @@ export function UpdatesList(props: UpdatesListProps) {
       addUpdate(update);
     };
     setUpsert(false);
-  }, []);
+  }, [addUpdate, editUpdate]);
 
   const handleDelete = useCallback((id: number) => {
     deleteUpdate(id);
     setUpsert(false);
-  }, []);
+  }, [deleteUpdate]);
 
   const handleCancel = useCallback(() => setUpsert(false), []);
 
-  const memoUpsertDealSource = useMemo(() =>
+  const memoUpsertDealSource = useMemo(() => (
     <UpdatesEdit
       open={upsert}
       update={update}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       onDelete={handleDelete}
-    />, [upsert, update]);
+    />
+  ), [upsert, update, handleSubmit, handleCancel, handleDelete]);
 
   return (
     <CustomizedCard
       className={styles.card}
     >
-      <CustomCardHeader title={'История обновлений'} />
+      <CustomCardHeader
+        title={'История обновлений'}
+        addButton={userPermissions?.updates?.POST}
+        onAddClick={handleEditSource()}
+        addButtonHint="Добавить обновление в историю"
+        isFetching={isFetching || editIsLoading || addIsLoading || deleteIsLoading}
+        isLoading={isLoading}
+      />
       <Divider />
-      <CardToolbar>
-        <div className={styles.cardToolbarContent}>
-          <PermissionsGate actionAllowed={userPermissions?.updates?.POST}>
-            <LoadingButton
-              className={styles.loadingButton}
-              loading={isFetching}
-              loadingPosition="start"
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={handleEditSource()}
-            >
-              Добавить
-            </LoadingButton>
-          </PermissionsGate>
-        </div>
-      </CardToolbar>
       <CardContent style={{ marginRight: '-16px' }}>
         <CustomizedScrollBox style={{ paddingRight: '16px' }}>
           {isLoading

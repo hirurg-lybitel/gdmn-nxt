@@ -6,18 +6,16 @@ import { useCallback, useMemo, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DenyReasonsUpsert from 'apps/gdmn-nxt-web/src/app/components/Kanban/deny-reasons-upsert/deny-reasons-upsert';
 import CustomizedCard from 'apps/gdmn-nxt-web/src/app/components/Styled/customized-card/customized-card';
-import { Box, Button, CardContent, CardHeader, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { CardContent, Divider, IconButton } from '@mui/material';
 import StyledGrid from 'apps/gdmn-nxt-web/src/app/components/Styled/styled-grid/styled-grid';
-import CardToolbar from 'apps/gdmn-nxt-web/src/app/components/Styled/card-toolbar/card-toolbar';
-import AddIcon from '@mui/icons-material/Add';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 
 /* eslint-disable-next-line */
-export interface DenyReasonsProps {}
+export interface DenyReasonsProps { }
 
 export function DenyReasons(props: DenyReasonsProps) {
-  const { data = [], isLoading, isFetching } = useGetDenyReasonsQuery(undefined, { pollingInterval: 5 * 60 * 1000 });
-  const [insertDenyReason] = useAddDenyReasonMutation();
+  const { data = [], isLoading, isFetching, refetch } = useGetDenyReasonsQuery(undefined, { pollingInterval: 5 * 60 * 1000 });
+  const [insertDenyReason, { isLoading: insertDenyReasonIsLoading }] = useAddDenyReasonMutation();
   const [updateDenyReason, { isLoading: updateDenyReasonIsLoading }] = useUpdateDenyReasonMutation();
   const [deleteDenyReason, { isLoading: deleteDenyReasonIsLoading }] = useDeleteDenyReasonMutation();
 
@@ -43,12 +41,12 @@ export function DenyReasons(props: DenyReasonsProps) {
       insertDenyReason(denyReason);
     };
     setUpsertDenyReason(false);
-  }, []);
+  }, [insertDenyReason, updateDenyReason]);
 
   const handleDelete = useCallback((id: number) => {
     deleteDenyReason(id);
     setUpsertDenyReason(false);
-  }, []);
+  }, [deleteDenyReason]);
 
   const columns: GridColDef[] = [
     { field: 'NAME', headerName: 'Наименование', flex: 1, cellClassName: styles.ColName, },
@@ -73,35 +71,32 @@ export function DenyReasons(props: DenyReasonsProps) {
     }
   ];
 
-  const memoUpsertDenyReason = useMemo(() =>
+  const memoUpsertDenyReason = useMemo(() => (
     <DenyReasonsUpsert
       open={upsertDenyReason}
       denyReason={denyReason}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       onDelete={handleDelete}
-    />, [upsertDenyReason, denyReason]);
+    />
+  ), [upsertDenyReason, denyReason, handleSubmit, handleCancel, handleDelete]);
 
 
   return (
     <CustomizedCard
       className={styles.Card}
     >
-      <CustomCardHeader title={'Причины отказа'} />
+      <CustomCardHeader
+        title={'Причины отказа'}
+        addButton
+        onAddClick={handleAddSource}
+        addButtonHint="Создать причину отказа"
+        refetch
+        onRefetch={refetch}
+        isFetching={isFetching || insertDenyReasonIsLoading || updateDenyReasonIsLoading || deleteDenyReasonIsLoading}
+        isLoading={isLoading}
+      />
       <Divider />
-      <CardToolbar>
-        <Stack direction="row">
-          <Box flex={1} />
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            disabled={isLoading}
-            onClick={handleAddSource}
-          >
-            Добавить
-          </Button>
-        </Stack>
-      </CardToolbar>
       <CardContent
         className={styles.CardContent}
       >

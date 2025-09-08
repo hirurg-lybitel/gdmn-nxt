@@ -60,10 +60,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 /* eslint-disable-next-line */
-export interface LabelListProps {}
+export interface LabelListProps { }
 
 export function LabelList(props: LabelListProps) {
-  const { data: labels, isFetching: dataIsFetching, isLoading: dataIsLoading } = useGetLabelsQuery(undefined, { refetchOnMountOrArgChange: true });
+  const { data: labels, isFetching: dataIsFetching, isLoading: dataIsLoading, refetch } = useGetLabelsQuery(undefined, { refetchOnMountOrArgChange: true });
 
   const [openEditForm, setOpenEditForm] = useState(false);
   const [addLabel, { isLoading: addIsLoading }] = useAddLabelMutation();
@@ -96,24 +96,17 @@ export function LabelList(props: LabelListProps) {
       <CustomizedCard
         style={{ height: '100%' }}
       >
-        <CustomCardHeader title={'Метки'} />
+        <CustomCardHeader
+          title={'Метки'}
+          addButton={userPermissions?.labels.POST}
+          onAddClick={() => setOpenEditForm(true)}
+          addButtonHint="Создать метку"
+          refetch
+          onRefetch={refetch}
+          isFetching={dataIsFetching || addIsLoading || deleteIsLoading || editIsLoading}
+          isLoading={dataIsLoading}
+        />
         <Divider />
-        <CardToolbar>
-          <div style={{ display: 'flex' }}>
-            <Box flex={1} />
-            <PermissionsGate actionAllowed={userPermissions?.labels.POST}>
-              <LoadingButton
-                loading={dataIsFetching || addIsLoading || editIsLoading || deleteIsLoading}
-                loadingPosition="start"
-                startIcon={<AddIcon />}
-                variant="contained"
-                onClick={() => setOpenEditForm(true)}
-              >
-                Добавить
-              </LoadingButton>
-            </PermissionsGate>
-          </div>
-        </CardToolbar>
         <CardContent style={{ paddingRight: '5px' }}>
           <CustomizedScrollBox>
             <div style={{ paddingRight: '10px' }}>

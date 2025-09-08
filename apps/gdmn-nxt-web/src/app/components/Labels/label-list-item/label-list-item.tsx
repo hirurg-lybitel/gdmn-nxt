@@ -108,7 +108,10 @@ export function LabelListItem(props: Readonly<LabelListItemProps>) {
                   title="Удалить метку"
                   text={`Вы действительно хотите удалить метку "${NAME}"?`}
                   dangerous
-                  onConfirm={handleDelete}
+                  onConfirm={() => {
+                    handleDelete();
+                    closeMenu();
+                  }}
                   onClose={closeMenu}
                 >
                   <ItemButtonDelete

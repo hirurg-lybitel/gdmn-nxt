@@ -1,217 +1,137 @@
-import { Box, CardContent, Stack } from '@mui/material';
+import { CardContent, Stack } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Typography, Divider, Skeleton } from '@mui/material';
-import style from './faq.module.less';
-import * as React from 'react';
+import styles from './faq.module.less';
+import { Fragment, useCallback } from 'react';
 import { useState, useMemo } from 'react';
 import CustomizedCard from '../../components/Styled/customized-card/customized-card';
 import Popup from './popup/popup';
 import { faqApi, fullFaq } from '../../features/FAQ/faqApi';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
 import PermissionsGate from '../../components/Permissions/permission-gate/permission-gate';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
-import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  accordion: {
-    width: '100%',
-    '& .MuiSvgIcon-root': {
-      color: theme.palette.primary.main
-    }
-  },
-}));
-
 export default function FAQ() {
   const { data: faqs = [], isFetching, isLoading } = faqApi.useGetAllfaqsQuery();
-  const [expanded, setExpanded] = React.useState<string | false>(false);
-  const [isOpenedEditPopup, setIsOpenedEditPopup] = React.useState<boolean>(false);
-  const [isOpenedAddPopup, setIsOpenedAddPopup] = React.useState<boolean>(false);
+  const [expanded, setExpanded] = useState<string | false>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [faq, setFaq] = useState<fullFaq>();
-  const [addFaq, addFaqObj] = faqApi.useAddfaqMutation();
-  const [editFaq, editFaqObj] = faqApi.useEditFaqMutation();
-  const [deleteFaq, deleteFaqObj] = faqApi.useDeleteFaqMutation();
+  const [addFaq, { isLoading: addIsLoading }] = faqApi.useAddfaqMutation();
+  const [editFaq, { isLoading: editIsLoading }] = faqApi.useEditFaqMutation();
+  const [deleteFaq, { isLoading: deleteIsLoading }] = faqApi.useDeleteFaqMutation();
   const userPermissions = usePermissions();
 
-  const componentIsFetching = isFetching;
-
-  const addFaqHandler = (values: fullFaq) => {
+  const addFaqHandler = useCallback((values: fullFaq) => {
     addFaq(values);
-  };
-  const editFaqHandler = (values: fullFaq) => {
+  }, [addFaq]);
+
+  const editFaqHandler = useCallback((values: fullFaq) => {
     editFaq([values, values.ID]);
-  };
-  const deleteFaqHandler = (id: number) => {
-    deleteFaq(id);
-  };
+  }, [editFaq]);
 
   const handleOpenAddPopup = () => {
-    setIsOpenedAddPopup(true);
+    setFaq(undefined);
+    setOpen(true);
   };
 
-  const handleCloseAddPopup = (): void => {
-    setIsOpenedAddPopup(false);
+  const handleClose = (): void => {
+    setOpen(false);
   };
 
   const handleOpenEditPopup = (editableFaq: fullFaq) => () => {
     setFaq(editableFaq);
-    setIsOpenedEditPopup(true);
+    setOpen(true);
   };
 
-  const handleCloseEditPopup = () => {
-    setIsOpenedEditPopup(false);
-  };
-
-  const handleDeleteClick = (deletedFaq: fullFaq) => () => {
-    deleteFaqHandler(deletedFaq.ID);
-  };
+  const handleDeleteClick = useCallback((deletedFaq: fullFaq) => {
+    handleClose();
+    deleteFaq(deletedFaq.ID);
+  }, [deleteFaq]);
 
   const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
 
-  const skeletonItems = useMemo(() => (count: number): fullFaq[] => {
-    const skeletonFaqItems: fullFaq[] = [];
-    const skeletonFaqItem = {} as fullFaq;
-    for (let i = 0; i < count; i++) {
-      skeletonFaqItems.push(
-        { ...skeletonFaqItem, ID: i }
-      );
-    }
-
-    return skeletonFaqItems;
-  }, []);
-
-  const skeletonFaqsCount: fullFaq[] = skeletonItems(10);
-
-
-  const classes = useStyles();
-
-  const buttons = userPermissions?.faq.PUT || userPermissions?.faq.DELETE;
+  const memoPopup = useMemo(() => {
+    return (
+      <Popup
+        close={handleClose}
+        open={open}
+        addFaq={addFaqHandler}
+        faq={faq}
+        editFaq={editFaqHandler}
+        deleteFaq={handleDeleteClick}
+      />
+    );
+  }, [addFaqHandler, editFaqHandler, faq, handleDeleteClick, open]);
 
   return (
     <>
-      {!componentIsFetching &&
-        <>
-          <Popup
-            close={handleCloseEditPopup}
-            open={isOpenedEditPopup}
-            isAddPopup={false}
-            faq={faq}
-            editFaq={editFaqHandler}
-          />
-          <Popup
-            close={handleCloseAddPopup}
-            open={isOpenedAddPopup}
-            isAddPopup={true}
-            addFaq={addFaqHandler}
-          />
-        </>
-      }
+      {memoPopup}
       <CustomizedCard sx={{ width: '100%' }}>
         <CustomCardHeader
           title={'База знаний'}
           addButton={userPermissions?.faq.POST}
           isLoading={isLoading}
-          isFetching={componentIsFetching || addFaqObj.isLoading}
+          isFetching={isFetching || addIsLoading || editIsLoading || deleteIsLoading}
           onAddClick={handleOpenAddPopup}
-          addButtonHint="Добавить запись"
+          addButtonHint="Добавить вопрос с ответом"
         />
         <Divider />
         <CardContent sx={{ paddingRight: '0' }}>
           <CustomizedScrollBox style={{ paddingRight: '20px' }}>
-            {(componentIsFetching ? skeletonFaqsCount : faqs).map(item =>
-              <div key={item.ID}>
-                {(componentIsFetching ? skeletonFaqsCount : faqs)?.indexOf(item) !== 0 && <Divider />}
-                <div className={style.faqList}>
-                  {componentIsFetching ?
-                    <div style={{ margin: '20px', width: '100%' }}>
+            {isLoading
+              ? [...Array(5)].map((u, idx) => (
+                <Fragment key={idx}>
+                  <Accordion disableGutters>
+                    <AccordionSummary >
                       <Skeleton
                         variant="text"
                         width={'100%'}
                         height={'40px'}
                       />
-                    </div>
-                    :
-                    <Accordion
-                      expanded={expanded === `panel${item.ID}`}
-                      onChange={handleChange(`panel${item.ID}`)}
-                      className={classes.accordion}
+                    </AccordionSummary>
+                  </Accordion>
+                </Fragment>
+              ))
+              : faqs.map(faq =>
+                <Fragment key={faq.ID}>
+                  <Accordion
+                    TransitionProps={{ unmountOnExit: true }}
+                    expanded={expanded === `panel${faq.ID}`}
+                    onChange={handleChange(`panel${faq.ID}`)}
+                  >
+                    <AccordionSummary
+                      className={styles.accordionSummary}
+                      expandIcon={<ExpandMoreIcon />}
                     >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        sx={{
-                          '& .MuiAccordionSummary-content': {
-                            marginTop: buttons ? { xs: '25px', sm: '12px' } : {},
-                          },
-                          '& .MuiAccordionSummary-expandIconWrapper': {
-                            marginTop: buttons ? { xs: '12.5px', sm: '0px' } : {},
-                          }
-                        }}
-                      >
-                        <Stack
-                          direction={{ xs: 'column', sm: 'row' }}
-                          flex={1}
-                          alignItems={{ xs: 'flex-start', sm: 'center' }}
-                        >
-                          <Typography variant="h6" sx={{ fontSize: { xs: '15px', sm: '1.25rem' } }}>
-                            <CustomMarkdown >
-                              {item.USR$QUESTION}
-                            </CustomMarkdown >
-                          </Typography>
-                          <Box flex={1} />
-                          {!componentIsFetching &&
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                gap: '5px',
-                                marginRight: '5px',
-                                marginLeft: { xs: 0, sm: '10px' },
-                                position: { xs: 'absolute', sm: 'initial' },
-                                right: '6px',
-                                top: '5px'
-                              }}
-                            >
-                              <PermissionsGate actionAllowed={userPermissions?.faq.PUT}>
-                                <ItemButtonEdit
-                                  button
-                                  className={style.button}
-                                  disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                                  onClick={handleOpenEditPopup(item)}
-                                />
-                              </PermissionsGate>
-                              <PermissionsGate actionAllowed={userPermissions?.faq.DELETE}>
-                                <ItemButtonDelete
-                                  button
-                                  className={style.button}
-                                  disabled={deleteFaqObj.isLoading || editFaqObj.isLoading}
-                                  onClick={handleDeleteClick(item)}
-                                />
-                              </PermissionsGate>
-                            </Box>
-                          }
+                      <Typography variant="subtitle1">{faq.USR$QUESTION}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails >
+                      <PermissionsGate actionAllowed={userPermissions?.updates.PUT}>
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography variant="body2" />
+                          <ItemButtonEdit
+                            button
+                            size="small"
+                            onClick={handleOpenEditPopup(faq)}
+                          />
                         </Stack>
-                      </AccordionSummary>
-                      <AccordionDetails className={style.details}>
-                        <Typography variant="body1" component="div">
-                          <CustomMarkdown >
-                            {item.USR$ANSWER}
-                          </CustomMarkdown >
-                        </Typography>
-                      </AccordionDetails>
-                    </Accordion>
-                  }
-                </div>
-              </div>
-            )
-            }
+                      </PermissionsGate>
+                      <Typography variant="body1" component="div">
+                        <CustomMarkdown >
+                          {faq.USR$ANSWER}
+                        </CustomMarkdown >
+                      </Typography>
+                    </AccordionDetails>
+                  </Accordion>
+                </Fragment>)}
           </CustomizedScrollBox>
         </CardContent>
       </CustomizedCard>
