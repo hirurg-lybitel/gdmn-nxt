@@ -1,16 +1,15 @@
-import { baseUrlApi } from '@gdmn/constants/client';
-import { IPaginationData, IQueryOptions, IRequestResult, ITemplate, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
+import { IQueryOptions, IRequestResult, ITemplate, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
+import { createApi } from '@reduxjs/toolkit/query/react';
 
-
-export type ITemplateRequestResult = IRequestResult<{templates: ITemplate[], count: number}>;
+export type ITemplateRequestResult = IRequestResult<{ templates: ITemplate[], count: number; }>;
 
 export const templateApi = createApi({
   reducerPath: 'template',
   tagTypes: ['template'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'marketing/', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'marketing/', credentials: 'include' }),
   endpoints: (builder) => ({
-    getAllTemplate: builder.query<{templates: ITemplate[], count: number}, Partial<IQueryOptions> | void>({
+    getAllTemplate: builder.query<{ templates: ITemplate[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
@@ -35,7 +34,7 @@ export const templateApi = createApi({
     }),
     getTemplateById: builder.query<ITemplate, number>({
       query: (id) => `templates/${id}`,
-      transformResponse: (response: IRequestResult<{templates: ITemplate[]}>) => response.queries?.templates[0],
+      transformResponse: (response: IRequestResult<{ templates: ITemplate[]; }>) => response.queries?.templates[0],
     }),
     addTemplate: builder.mutation<ITemplateRequestResult, ITemplate>({
       query: (body) => ({

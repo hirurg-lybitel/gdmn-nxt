@@ -1,10 +1,10 @@
-import { baseUrlApi } from '@gdmn/constants/client';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 import { IDealFeedback, IDealFeedbackCompetence, IDealFeedbackResult, IDealFeedbackSatisfaction, IDealFeedbackSatisfactionRate, IResponse } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
 
 export const dealFeedbackApi = createApi({
   reducerPath: 'dealFeedback',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'deal-feedback', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'deal-feedback', credentials: 'include' }),
   tagTypes: ['DealFeedback'],
   endpoints: (builder) => ({
     getDealFeedback: builder.query<IDealFeedback, number>({

@@ -1,8 +1,8 @@
 import { IRequestResult, IBusinessProcess } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-interface IBusinessProcesses{
+interface IBusinessProcesses {
   businessProcesses: IBusinessProcess[];
 };
 
@@ -12,9 +12,9 @@ type IBusinessProcessesRequestResult = IRequestResult<IBusinessProcesses>;
 export const businessProcessesApi = createApi({
   reducerPath: 'businessProcesses',
   tagTypes: ['businessProcess'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
-    getBusinessProcesses: builder.query<IBusinessProcess[], void >({
+    getBusinessProcesses: builder.query<IBusinessProcess[], void>({
       query: () => 'business-processes',
       transformResponse: (response: IBusinessProcessesRequestResult) => response.queries?.businessProcesses || [],
       providesTags: (result, error) =>

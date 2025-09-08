@@ -1,29 +1,29 @@
 
 import { IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-interface IFaqs{
+interface IFaqs {
   faqs: fullFaq[];
 };
 
 export interface faq {
   USR$QUESTION: string,
-  USR$ANSWER: string
+  USR$ANSWER: string;
 }
 
 export interface fullFaq {
   USR$QUESTION: string,
   USR$ANSWER: string,
-  ID: number
+  ID: number;
 }
 
 type FaqResponse = fullFaq[];
-type IFaqRequestResult = IRequestResult<IFaqs>
+type IFaqRequestResult = IRequestResult<IFaqs>;
 
 export const faqApi = createApi({
   reducerPath: 'faq',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   tagTypes: ['faq'],
   endpoints: (builder) => ({
     getAllfaqs: builder.query<FaqResponse, void>({

@@ -1,13 +1,11 @@
 import { config } from '@gdmn-nxt/config';
-import { KanbanEvent, SocketRoom, getSocketClient, setSocketClient } from '@gdmn-nxt/socket';
-import { IContactWithID, IDenyReason, IKanbanCard, IKanbanCardStatus, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
-import { createEntityAdapter } from '@reduxjs/toolkit';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { io } from 'socket.io-client';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { KanbanEvent, SocketRoom, setSocketClient } from '@gdmn-nxt/socket';
+import { IKanbanCard, IKanbanCardStatus, IKanbanColumn, IKanbanHistory, IKanbanTask, IRequestResult, MailAttachment } from '@gsbelarus/util-api-types';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
 import { getTaskStage } from '@gsbelarus/util-useful';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-interface IKanban{
+interface IKanban {
   columns: IKanbanColumn[];
   cards: IKanbanCard[];
   tasks: IKanbanTask[];
@@ -15,13 +13,11 @@ interface IKanban{
 
 type IKanbanRequestResult = IRequestResult<IKanban>;
 
-interface IHistory{
+interface IHistory {
   history: IKanbanHistory[];
 };
 
 type IKanbanHistoryRequestResult = IRequestResult<IHistory>;
-
-type IDenyReasonRequestResult = IRequestResult<{ denyReasons: IDenyReason[] }>;
 
 interface IFilteringData {
   [name: string]: any;
@@ -45,7 +41,7 @@ socketClient.emit('joinToRoom', SocketRoom.KanbanBoard);
 export const kanbanApi = createApi({
   reducerPath: 'kanban',
   tagTypes: ['Kanban', 'Column', 'Card', 'Task'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getKanbanDeals: builder.query<IKanbanColumn[], IDealsQueryOptions | void>({
       query(options) {
@@ -341,7 +337,7 @@ export const kanbanApi = createApi({
             : [{ type: 'Column', id: 'LIST' }];
       }
     }),
-    deleteColumn: builder.mutation<{id: number}, number>({
+    deleteColumn: builder.mutation<{ id: number; }, number>({
       query(id) {
         return {
           url: `kanban/columns/${id}`,
@@ -436,7 +432,7 @@ export const kanbanApi = createApi({
             : [{ type: 'Column', id: 'LIST' }];
       }
     }),
-    deleteCard: builder.mutation<{ID: number, USR$MASTERKEY: number}, Partial<IKanbanCard>>({
+    deleteCard: builder.mutation<{ ID: number, USR$MASTERKEY: number; }, Partial<IKanbanCard>>({
       query({ ID }) {
         return {
           url: `kanban/cards/${ID}`,
@@ -530,7 +526,7 @@ export const kanbanApi = createApi({
       }
     }),
     updateTask: builder.mutation<IKanbanTask, IKanbanTask>({
-      query (body) {
+      query(body) {
         const { ID: id } = body;
         return {
           url: `kanban/tasks/${id}`,
@@ -561,7 +557,7 @@ export const kanbanApi = createApi({
             : [{ type: 'Task', id: 'LIST' }];
       },
     }),
-    deleteTask: builder.mutation<{ID: number}, number>({
+    deleteTask: builder.mutation<{ ID: number; }, number>({
       query(id) {
         return {
           url: `kanban/tasks/${id}`,
@@ -708,7 +704,7 @@ export const kanbanApi = createApi({
       },
       invalidatesTags: [{ type: 'Column', id: 'LIST' }, { type: 'Task', id: 'LIST' }]
     }),
-    getDealsFiles: builder.query< MailAttachment[], number>({
+    getDealsFiles: builder.query<MailAttachment[], number>({
       query: (id) => `kanban/cards/files/${id}`,
       // transformResponse: (response: IRequestResult<{cards: MailAttachment[]}>) => response.queries?.cards,
     }),

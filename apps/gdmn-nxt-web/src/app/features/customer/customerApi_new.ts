@@ -1,6 +1,6 @@
 import { ICustomer, ICustomerCross, ICustomerTickets, IFavoriteContact, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 export interface ISortingData {
   field: string;
@@ -26,7 +26,7 @@ const cachedOptions: Partial<IQueryOptions>[] = [];
 export const customerApi = createApi({
   reducerPath: 'customer',
   tagTypes: ['Customers'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getCustomer: builder.query<ICustomer, { customerId: number; }>({
       query({ customerId }) {

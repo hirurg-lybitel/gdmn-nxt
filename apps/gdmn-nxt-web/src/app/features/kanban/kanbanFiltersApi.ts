@@ -1,13 +1,13 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
 import { IKanbanFilterDeadline, IRequestResult } from '@gsbelarus/util-api-types';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-type IFilterDeadlineRequestResult = IRequestResult<{filters: IKanbanFilterDeadline[]}>;
+type IFilterDeadlineRequestResult = IRequestResult<{ filters: IKanbanFilterDeadline[]; }>;
 // type ILastUsedFilterDeadlineRequestResult = IRequestResult<{filter: IKanbanFilterDeadline}>;
 
 export const kanbanFiltersApi = createApi({
   reducerPath: 'kanbanFilters',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: builder => ({
     getFiltersDeadline: builder.query<IKanbanFilterDeadline[], void>({
       query: () => 'kanban/filters/deadline',
@@ -17,7 +17,7 @@ export const kanbanFiltersApi = createApi({
       query: (userId) => `kanban/filters/deadline/${userId}`,
       transformResponse: (response: IFilterDeadlineRequestResult) => response.queries.filters.length > 0 ? response.queries.filters[0] : undefined,
     }),
-    postLastUsedFilterDeadline: builder.mutation<IKanbanFilterDeadline, { filter: IKanbanFilterDeadline, userId: number }>({
+    postLastUsedFilterDeadline: builder.mutation<IKanbanFilterDeadline, { filter: IKanbanFilterDeadline, userId: number; }>({
       query({ filter, userId }) {
         return {
           url: `kanban/filters/deadline/${userId}`,

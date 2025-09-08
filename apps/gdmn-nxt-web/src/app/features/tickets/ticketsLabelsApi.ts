@@ -1,6 +1,6 @@
 import { ILabel, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 interface ILabels {
   labels: ILabel[];
@@ -12,7 +12,7 @@ type ILabelsRequestResult = IRequestResult<ILabels>;
 export const ticketsLabelsApi = createApi({
   reducerPath: 'ticketsLabels',
   tagTypes: ['label'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getTicketsLabels: builder.query<LabelsResponse, void>({
       query: () => 'labels',
