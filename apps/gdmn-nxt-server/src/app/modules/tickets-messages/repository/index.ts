@@ -156,15 +156,16 @@ const save: SaveHandler<ITicketMessageSave> = async (
 
   try {
     const message = await fetchAsSingletonObject<ITicketMessageSave>(
-      `INSERT INTO USR$CRM_TICKETREC(USR$TICKETKEY, USR$BODY, USR$STATE, USR$SENDAT, ${fieldName})
-      VALUES(:TICKETKEY, :BODY, :STATE, :SENDAT, :SENDER)
+      `INSERT INTO USR$CRM_TICKETREC(USR$TICKETKEY, USR$BODY, USR$STATE, USR$SENDAT, USR$ISEDITED, ${fieldName})
+      VALUES(:TICKETKEY, :BODY, :STATE, :SENDAT, :ISEDITED, :SENDER)
       RETURNING ID`,
       {
         TICKETKEY: ticketKey,
         BODY: blobBody,
         STATE: state?.ID,
-        SENDER: userId,
-        SENDAT: sendAt ? new Date(sendAt) : new Date()
+        SENDAT: sendAt ? new Date(sendAt) : new Date(),
+        ISEDITED: 0,
+        SENDER: userId
       }
     );
 
