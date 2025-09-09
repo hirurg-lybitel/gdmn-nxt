@@ -192,7 +192,7 @@ const save: SaveHandler<ITicketMessageSave> = async (
 
       await fetchAsSingletonObject<ITicketMessageSave>(
         `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME, USR$ISEDITED)
-          VALUES(:TICKETRECKEY, :NAME, ISEDITED)
+          VALUES(:TICKETRECKEY, :NAME, :ISEDITED)
           RETURNING ID
         `,
         {
