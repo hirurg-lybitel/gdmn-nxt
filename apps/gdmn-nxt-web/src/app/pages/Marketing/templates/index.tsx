@@ -136,7 +136,7 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
 
   const loadingData = (size: number) => {
     const mas = [];
-    for (let i = 0;i < size;i++) {
+    for (let i = 0; i < size; i++) {
       mas.push(0);
     }
     return mas;
@@ -158,7 +158,7 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
           refetch
           title={'Шаблоны'}
           isLoading={isLoading || filtersIsLoading}
-          isFetching={isFetching || filtersIsFetching || updateIsLoading || addIsLoading || deleteIsLoading}
+          isFetching={isFetching || filtersIsFetching}
           onCancelSearch={cancelSearch}
           onRequestSearch={requestSearch}
           searchValue={filterData?.name?.[0]}
@@ -190,9 +190,11 @@ const EmailTemplateList = (props: EmailTemplateListProps) => {
                       : templatesData.templates.map((template: any, index: number) =>
                         <li key={index} className={styles.item}>
                           <Box
-                            sx={{ '& html,body': {
-                              height: 'min-content'
-                            } }}
+                            sx={{
+                              '& html,body': {
+                                height: 'min-content'
+                              }
+                            }}
                             className={styles.card}
                           >
                             <EmailTemplateListItem
