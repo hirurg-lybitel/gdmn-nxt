@@ -223,7 +223,7 @@ export function EditContact({
   const onClose = () => {
     onCancel();
     formik.resetForm();
-  } ;
+  };
 
   useEffect(() => {
     if (!open) formik.resetForm();
@@ -277,6 +277,7 @@ export function EditContact({
               editEmpty={false}
               editComponent={
                 <TelephoneInput
+                  fullWidth
                   name={`PHONE${index}`}
                   autoFocus={!firstElement}
                   value={USR$PHONENUMBER ?? ''}
@@ -439,7 +440,7 @@ export function EditContact({
           spacing={2}
           alignItems="center"
         >
-          <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange}/>
+          <EditableAvatar value={formik.values.PHOTO} onChange={handleAvatarChange} />
           <ContactName
             value={formik.values.nameInfo}
             onChange={handleNameInfoChange}
@@ -463,7 +464,7 @@ export function EditContact({
             startIcon: <ManageAccountsIcon />
           }}
         />
-        <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)}/>
+        <LabelsSelect labels={formik.values.LABELS} onChange={(newLabels) => formik.setFieldValue('LABELS', newLabels)} />
         <CustomerSelect
           value={formik.values.COMPANY}
           onChange={handleCustomerChange}
