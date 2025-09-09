@@ -104,7 +104,7 @@ export function UserGroupSelect({
           variant={textFieldVariant}
           required={required}
           label={label}
-          placeholder={placeholder ?? (multiple ? 'Выберите группу' : 'Выберите группу')}
+          placeholder={placeholder ?? (multiple ? 'Выберите группу' : 'Выберите группы')}
         />
       )}
       loading={userGroupsIsFetching}
