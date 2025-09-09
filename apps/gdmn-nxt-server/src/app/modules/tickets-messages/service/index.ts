@@ -203,7 +203,7 @@ const removeById = async (
       console.error('minioClient не определен');
     }
 
-    return await ticketsMessagesRepository.remove(sessionID, id, type);
+    return await ticketsMessagesRepository.remove(sessionID, id);
   } catch (error) {
     throw InternalServerErrorException(error.message);
   }
