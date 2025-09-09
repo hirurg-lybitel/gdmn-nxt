@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -63,6 +63,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 export function TicketsList(props: ticketsListProps) {
   const [addTicket] = useAddTicketMutation();
 
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+
   const [openEdit, setOpenEdit] = useState(false);
   const filterEntityName = 'ticketsUsers';
   const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { 'active': true });
@@ -81,9 +83,26 @@ export function TicketsList(props: ticketsListProps) {
     pageSize: 20
   });
 
+  const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
+  const hiddenActiveStates = useMemo(() => ticketsUser ? [ticketStateCodes.confirmed] : [ticketStateCodes.done, ticketStateCodes.confirmed], [ticketsUser]);
+
+  const stateFilter = useMemo(() => {
+    if (!filteringData?.active && ticketsUser) {
+      return undefined;
+    }
+    if (filteringData?.state) {
+      const filterStateCode = states?.find((state => state.ID === filteringData?.state))?.code;
+      const includesHiddenActive = filterStateCode && hiddenActiveStates.includes(filterStateCode);
+      if ((filteringData?.active ? includesHiddenActive : !includesHiddenActive)) {
+        return undefined;
+      }
+    }
+    return filteringData?.state;
+  }, [filteringData?.active, filteringData?.state, hiddenActiveStates, states, ticketsUser]);
+
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
-    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: filteringData?.active ? filteringData?.state : undefined } } : {}),
+    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter } } : {}),
   });
 
   const handleRequestSearch = (value: string) => {
@@ -144,7 +163,6 @@ export function TicketsList(props: ticketsListProps) {
     />
   ), [company, handleSubmit, openEdit]);
 
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const mainColumnSizes = useMemo(() => {
@@ -260,10 +278,6 @@ export function TicketsList(props: ticketsListProps) {
       />
     );
   }, [customersIsFetching, customersIsLoading, customersResponse?.data, filteringData, handleOnFilterChange]);
-
-  const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
-
-  const hiddenActiveStates = useMemo(() => ticketsUser ? [ticketStateCodes.confirmed] : [ticketStateCodes.done, ticketStateCodes.confirmed], [ticketsUser]);
 
   const stateSelect = useMemo(() => {
     return (
@@ -409,6 +423,8 @@ export function TicketsList(props: ticketsListProps) {
     );
   }, [filteringData?.labels, handleOnFilterChange, labels, labelsFetching, labelsLoading, labelsHidden]);
 
+  console.log(stateFilter);
+
   const columns: GridColDef<ITicket>[] = [
     {
       field: 'title',
@@ -552,7 +568,7 @@ export function TicketsList(props: ticketsListProps) {
       renderHeader: () => {
         const hasFilters = filteringData?.labels
           || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.userId)
-          || (statusHidden && filteringData?.state)
+          || (statusHidden && stateFilter)
           || (customerHidden && filteringData?.companyKey && !ticketsUser)
           || (performerHidden && filteringData?.performerKey);
         return (
