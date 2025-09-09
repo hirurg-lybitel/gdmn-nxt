@@ -58,6 +58,7 @@ const find: FindHandler<ITicketMessage> = async (
         r.USR$STATE,
         r.USR$TICKETKEY,
         r.USR$SENDAT,
+        r.USR$ISEDITED,
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE
@@ -115,7 +116,8 @@ const find: FindHandler<ITicketMessage> = async (
           code: data['STATE_CODE']
         },
         sendAt: data['USR$SENDAT'],
-        files: await getFilesById(data['ID'])
+        files: await getFilesById(data['ID']),
+        isEdited: data['USR$ISEDITED'] === 1
       };
     }));
 
@@ -154,15 +156,16 @@ const save: SaveHandler<ITicketMessageSave> = async (
 
   try {
     const message = await fetchAsSingletonObject<ITicketMessageSave>(
-      `INSERT INTO USR$CRM_TICKETREC(USR$TICKETKEY, USR$BODY, USR$STATE, USR$SENDAT, ${fieldName})
-      VALUES(:TICKETKEY, :BODY, :STATE, :SENDAT, :SENDER)
+      `INSERT INTO USR$CRM_TICKETREC(USR$TICKETKEY, USR$BODY, USR$STATE, USR$SENDAT, USR$ISEDITED, ${fieldName})
+      VALUES(:TICKETKEY, :BODY, :STATE, :SENDAT, :ISEDITED, :SENDER)
       RETURNING ID`,
       {
         TICKETKEY: ticketKey,
         BODY: blobBody,
         STATE: state?.ID,
-        SENDER: userId,
-        SENDAT: sendAt ? new Date(sendAt) : new Date()
+        SENDAT: sendAt ? new Date(sendAt) : new Date(),
+        ISEDITED: 0,
+        SENDER: userId
       }
     );
 
@@ -195,7 +198,7 @@ const save: SaveHandler<ITicketMessageSave> = async (
         `,
         {
           TICKETRECKEY: message?.ID,
-          NAME: fileName,
+          NAME: fileName
         }
       );
 
@@ -232,13 +235,15 @@ const update: UpdateHandler<ITicketMessage> = async (
     const updatedMessage = await fetchAsSingletonObject<ITicketMessage>(
       `UPDATE USR$CRM_TICKETREC
       SET
-        USR$BODY = :BODY
+        USR$BODY = :BODY,
+        USR$ISEDITED = :ISEDITED
       WHERE
         ID = :ID
       RETURNING ID`,
       {
         ID,
         BODY: blobBody,
+        ISEDITED: 1
       }
     );
 
@@ -278,8 +283,7 @@ const update: UpdateHandler<ITicketMessage> = async (
 
 const remove: RemoveOneHandler = async (
   sessionID,
-  id,
-  type
+  id
 ) => {
   const { fetchAsSingletonObject, releaseTransaction, attachment, transaction } = await startTransaction(sessionID);
 

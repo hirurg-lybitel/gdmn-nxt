@@ -445,11 +445,8 @@ const getActions: RequestHandler = async (req, res) => {
   };
 };
 
-const getUserGroupLine: RequestHandler = async (req, res) => {
-  const { attachment, transaction } = await getReadTransaction(req.sessionID);
-
-  const groupId = parseInt(req.params.groupId);
-  if (isNaN(groupId)) return res.status(422).send(resultError('Поле "groupId" не указано или неверного типа'));
+const getUserGroupLine = async (sessionID, groupId: number, sessionStore?: Express.SessionStore) => {
+  const { attachment, transaction } = await getReadTransaction(sessionID);
 
   try {
     const _schema = {};
@@ -478,7 +475,8 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
           con.PHONE CONTACT_PHONE,
           ul.USR$REQUIRED_2FA AS REQUIRED_2FA,
           IIF(ps.ID IS NULL, 0, 1) AS IsActivated,
-          ps.USR$AVATAR as AVATAR_BLOB
+          ps.USR$AVATAR as AVATAR_BLOB,
+          con.email as EMAIL
         FROM USR$CRM_PERMISSIONS_USERGROUPS ug
         JOIN USR$CRM_PERMISSIONS_UG_LINES ul ON ul.USR$GROUPKEY = ug.ID
         JOIN GD_USER u ON u.ID = ul.USR$USERKEY
@@ -509,7 +507,8 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         DISABLED: user['USER_DISABLED'],
         isActivated: user['ISACTIVATED'] === 1,
         CONTACT: { ...CONTACT },
-        AVATAR: bin2String(avatarBlob.split(','))
+        AVATAR: bin2String(avatarBlob.split(',')),
+        EMAIL: user['EMAIL']
       };
 
       const USERGROUP = {
@@ -517,7 +516,7 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         NAME: user['GROUP_NAME'],
       };
 
-      const sessions: any = await req.sessionStore.all(async (err, sessions) => await getSessionsIdsByUserId(user['USER_ID'], sessions));
+      const sessions: any = !sessionStore ? [] : await sessionStore.all(async (err, sessions) => await getSessionsIdsByUserId(user['USER_ID'], sessions));
 
       users.push({
         ID: user['ID'],
@@ -527,6 +526,23 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
         STATUS: sessions?.length > 0
       });
     });
+
+    return users;
+  } catch (error) {
+    throw error.message;
+  } finally {
+    await releaseReadTransaction(sessionID);
+  }
+};
+
+const getUserGroupLineController: RequestHandler = async (req, res) => {
+  const groupId = parseInt(req.params.groupId);
+  if (isNaN(groupId)) return res.status(422).send(resultError('Поле "groupId" не указано или неверного типа'));
+
+  try {
+    const _schema = {};
+
+    const users = await getUserGroupLine(req.sessionID, groupId, req.sessionStore);
 
     const result: IRequestResult = {
       queries: {
@@ -539,8 +555,6 @@ const getUserGroupLine: RequestHandler = async (req, res) => {
     return res.status(200).send(result);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
-  } finally {
-    await releaseReadTransaction(req.sessionID);
   }
 };
 
@@ -892,8 +906,9 @@ export const PermissionsController = {
   getUserByGroup,
   upsertUserGroupLine,
   removeUserGroupLine,
-  getUserGroupLine,
+  getUserGroupLineController,
   getPermissionByUser,
   upsertUsersGroupLine,
-  closeUserSessionById
+  closeUserSessionById,
+  getUserGroupLine
 };

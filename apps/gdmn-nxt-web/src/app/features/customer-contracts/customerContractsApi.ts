@@ -1,13 +1,13 @@
 import { ICustomerContract, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-type ICustomerContractsRequestResult = IRequestResult<{ customerContracts: ICustomerContract[] }>;
+type ICustomerContractsRequestResult = IRequestResult<{ customerContracts: ICustomerContract[]; }>;
 
 export const customerContractsApi = createApi({
   reducerPath: 'customerContracts',
   tagTypes: ['CustomerContracts'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getCustomerContracts: builder.query<ICustomerContract[], number | void>({
       query: (id) => `customerContracts${id ? `/${id}` : ''}`,
@@ -62,7 +62,7 @@ export const customerContractsApi = createApi({
           ]
           : [{ type: 'CustomerContracts', id: 'LIST' }],
     }),
-    deleteCustomerContract: builder.mutation<{id: number}, number>({
+    deleteCustomerContract: builder.mutation<{ id: number; }, number>({
       // async onQueryStarted(id){console.log('⏩ request', 'DELETE', `${baseUrlApi}customerContracts/${id}`)},
       query(id) {
         return {

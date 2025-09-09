@@ -1,8 +1,8 @@
 import { IChartSumByperiod, IChartBusinessDirection, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-interface IChartData{
+interface IChartData {
   sumByperiod?: IChartSumByperiod[];
   businessDirection?: IChartBusinessDirection[];
 };
@@ -10,12 +10,12 @@ interface IChartData{
 type IChartDataRequestResult = IRequestResult<IChartData>;
 
 export interface IChartFilter {
-  [key: string]: any
+  [key: string]: any;
 };
 
 export const chartDataApi = createApi({
   reducerPath: 'chartData',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getSumByPeriod: builder.query<IChartSumByperiod[], IChartFilter>({
       query: (options) => {
@@ -26,7 +26,7 @@ export const chartDataApi = createApi({
         };
 
         return ({
-          url: `${baseUrlApi}charts/sumbyperiod?${params.join('&')}`,
+          url: `charts/sumbyperiod?${params.join('&')}`,
           method: 'GET',
         });
       },
@@ -49,7 +49,7 @@ export const chartDataApi = createApi({
           params.push(`${name}=${Array.isArray(value) ? value.join(',') : value}`);
         };
         return {
-          url: `${baseUrlApi}charts/businessDirection?${params.join('&')}`,
+          url: `charts/businessDirection?${params.join('&')}`,
         };
       },
       transformResponse: (response: IChartDataRequestResult) => response.queries.businessDirection || []

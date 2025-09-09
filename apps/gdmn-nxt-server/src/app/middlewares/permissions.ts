@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import { startTransaction } from '@gdmn-nxt/db-connection';
 import { parseIntDef } from '@gsbelarus/util-useful';
-import { ActionMethod, ActionName, Permissions, RouteMethod, UserType } from '@gsbelarus/util-api-types';
+import { ActionName, Permissions, RouteMethod, UserType } from '@gsbelarus/util-api-types';
 import { resultError } from '../responseMessages';
 import { config } from '@gdmn-nxt/config';
 import { ERROR_MESSAGES } from '../constants/messages';

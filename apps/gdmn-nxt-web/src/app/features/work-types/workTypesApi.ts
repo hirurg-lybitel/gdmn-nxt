@@ -1,8 +1,8 @@
 import { IWorkType, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-interface IWorkTypes{
+interface IWorkTypes {
   workTypes: IWorkType[];
 };
 
@@ -16,11 +16,10 @@ interface IParams {
 export const workTypesApi = createApi({
   reducerPath: 'workTypes',
   tagTypes: ['workType'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
-    getWorkTypes: builder.query<IWorkType[], IParams | void >({
+    getWorkTypes: builder.query<IWorkType[], IParams | void>({
       query: (params) => {
-
         const { id, contractJob } = (() => {
           if (params) {
             const id = params['id'];

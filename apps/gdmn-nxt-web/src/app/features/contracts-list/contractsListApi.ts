@@ -1,24 +1,25 @@
 import { ContractType, IContract, IContractDetail, IQueryOptions, IRequestResult, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { FetchBaseQueryError, createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';import { RootState } from '../../store';
+import { FetchBaseQueryError, createApi } from '@reduxjs/toolkit/dist/query/react';
+import { RootState } from '../../store';
 import { MaybePromise } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import { QueryReturnValue } from '@reduxjs/toolkit/dist/query/baseQueryTypes';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 ;
 
-interface IContracts{
+interface IContracts {
   contracts: IContract[];
   rowCount: number;
 };
 
 type IContractsRequestResult = IRequestResult<IContracts>;
-type IContractDetailsRequestResult = IRequestResult<{ contractDetails: IContractDetail[] }>;
+type IContractDetailsRequestResult = IRequestResult<{ contractDetails: IContractDetail[]; }>;
 
 export const contractsListApi = createApi({
   reducerPath: 'contractsList',
   tagTypes: ['ConList'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
-    getContractsList: builder.query<{records: IContract[], count?: number}, Partial<IQueryOptions> | void>({
+    getContractsList: builder.query<{ records: IContract[], count?: number; }, Partial<IQueryOptions> | void>({
       queryFn: async (options, api, extraOptions, baseQuery) => {
         const state = api.getState() as RootState;
         const systemSettings = state.settings.system;

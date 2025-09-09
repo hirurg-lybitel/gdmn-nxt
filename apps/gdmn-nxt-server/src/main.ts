@@ -151,10 +151,6 @@ if (config.serverStaticMode) {
 
 app.use(express.json({ limit: bodySize }));
 app.use(express.urlencoded({ extended: true }));
-const apiRoot = {
-  v1: '/api/v1',
-  v2: '/api/v2'
-};
 
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
@@ -314,18 +310,33 @@ const sessionStore = new RedisStore({
   ttl: 24 * 60 * 60
 });
 
+// Сессия для обычных пользователей
+const userSession = session({
+  name: 'Sid',
+  secret: config.jwtSecret,
+  resave: false,
+  saveUninitialized: true,
+  store: sessionStore,
+  cookie: {
+    maxAge: COOKIE_AGE,
+    secure: true
+  },
+});
+
+// Сессия для тикет-пользователей
+const ticketSession = session({
+  name: 'ticketsSid',
+  secret: config.jwtSecret,
+  resave: false,
+  saveUninitialized: true,
+  store: sessionStore,
+  cookie: {
+    maxAge: COOKIE_AGE,
+    secure: true
+  },
+});
+
 const appMiddlewares = [
-  session({
-    name: 'Sid',
-    secret: config.jwtSecret,
-    resave: false,
-    saveUninitialized: true,
-    store: sessionStore,
-    cookie: {
-      maxAge: COOKIE_AGE,
-      secure: true
-    },
-  }),
   cookieParser(),
   passport.initialize(),
   passport.session(),
@@ -343,15 +354,19 @@ const routerMiddlewares = [
 
 const router = express.Router();
 
-export const apiVersion = apiRoot.v1;
+const apiRoot = {
+  api: '/api',
+  ticketsApi: '/ticketsApi'
+};
+
+const apiVersion = '/v1';
 
 router.use(authRouter);
 /** Подключаем мидлвар после роутов, на которые он не должен распространятсься */
 router.use(routerMiddlewares);
 
-app.use(appMiddlewares);
-
-app.use(apiVersion, router);
+app.use(`${apiRoot.api}${apiVersion}`, userSession, appMiddlewares, router);
+app.use(`${apiRoot.ticketsApi}${apiVersion}`, ticketSession, appMiddlewares, router);
 
 /** Write permissions to cache when server is starting */
 setPermissonsCache();

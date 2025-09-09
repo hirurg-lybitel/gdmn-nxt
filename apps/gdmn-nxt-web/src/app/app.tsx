@@ -8,15 +8,15 @@ import { queryLogin, selectMode, signedInCustomer, signedInEmployee, signInEmplo
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Divider, Typography, Stack, useTheme } from '@mui/material';
 import CreateCustomerAccount from './create-customer-account/create-customer-account';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { CircularIndeterminate } from '@gdmn-nxt/helpers/circular-indeterminate/circular-indeterminate';
 import { InitData } from './store/initData';
 import { setAppOptions, setColorMode } from './store/settingsSlice';
-import { baseUrlApi } from './constants';
 import { saveFilterData } from './store/filtersSlice';
 import { getPublicIP } from '@gdmn-nxt/ip-info';
 import bowser from 'bowser';
 import ChangePassword from './components/change-password/change-password';
+import { getBaseUrlByUserType } from './store/baseUrl';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -27,7 +27,7 @@ const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<
     if (response) {
       return { result: 'ERROR', message: error.message } as T;
     } else if (request) {
-      return { result: 'ERROR', message: `Can't reach server ${baseUrlApi}: ${message}` } as T;
+      return { result: 'ERROR', message: `Can't reach server ${config.baseURL}: ${message}` } as T;
     } else {
       return { result: 'ERROR', message: error.message } as T;
     }
@@ -59,6 +59,16 @@ export default function App(props: AppProps) {
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
 
+  const tickets = pathName[0] === 'tickets';
+  const baseUrl = getBaseUrlByUserType(tickets ? UserType.Tickets : UserType.Gedemin);
+
+  const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
+  function get<T = IAuthResult>(url: string) {
+    return query<T>({ method: 'get', url, baseURL: baseUrl, withCredentials: true });
+  };
+
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     (async function () {
       switch (loginStage) {
@@ -78,7 +88,7 @@ export default function App(props: AppProps) {
           break;
 
         case 'QUERY_LOGIN': {
-          const response = await fetch(`${baseUrlApi}user`, { method: 'GET', credentials: 'include' });
+          const response = await fetch(`${baseUrl}user`, { method: 'GET', credentials: 'include' });
           if (!response.ok) {
             dispatch(selectMode());
             return;
@@ -93,10 +103,14 @@ export default function App(props: AppProps) {
 
           setUser(data.user);
 
-          navigate('/');
+          const disableSavedPath = searchParams.get('disableSavedPath') === 'true';
+
+          if (!disableSavedPath) {
+            navigate('/');
+          }
 
           /** Получение последнего url клиента */
-          const res = await fetch(`${baseUrlApi}filters/menu`, { method: 'GET', credentials: 'include' });
+          const res = await fetch(`${baseUrl}filters/menu`, { method: 'GET', credentials: 'include' });
           if (res.ok) {
             const pathnameData = await res.json();
 
@@ -390,6 +404,3 @@ export default function App(props: AppProps) {
     </div>;
   return result;
 };
-
-const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrlApi, data, withCredentials: true });
-const get = <T = IAuthResult>(url: string) => query<T>({ method: 'get', url, baseURL: baseUrlApi, withCredentials: true });

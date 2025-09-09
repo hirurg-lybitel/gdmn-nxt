@@ -313,6 +313,7 @@ export interface IUser extends IWithID {
   DISABLED?: boolean;
   isActivated?: boolean;
   AVATAR?: string;
+  EMAIL?: string;
 };
 
 export interface IPermissionsView extends IWithID {
@@ -731,6 +732,7 @@ export interface ITicketMessage extends IWithID {
   state: ITicketState;
   sendAt: Date;
   files?: ITicketMessageFile[];
+  isEdited?: boolean;
 }
 
 export interface ICustomerTickets {
