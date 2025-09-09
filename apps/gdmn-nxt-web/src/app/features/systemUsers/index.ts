@@ -1,8 +1,7 @@
 import { IUser, IRequestResult, IChangePassword, IAuthResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-type UsersResponse = IUser[];
 type IUsersRequestResult = IRequestResult<{ users: IUser[]; }>;
 
 type IUserRequestResult = IRequestResult<{ user: IUser; }>;
@@ -10,7 +9,7 @@ type IUserRequestResult = IRequestResult<{ user: IUser; }>;
 export const systemUsers = createApi({
   reducerPath: 'systemUsers',
   tagTypes: ['Users'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getUsers: builder.query<IUser[], void>({
       query: () => 'system/users',

@@ -1,6 +1,6 @@
 import { IBaseContact, IRequestResult, IWithID, IContactWithID, IContactPerson, IEmployee, IQueryOptions, IFavoriteContact, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 export interface IContacts {
   contacts: (IBaseContact & IWithID)[];
@@ -26,15 +26,15 @@ const cachedOptions: Partial<IQueryOptions>[] = [];
 export const contactApi = createApi({
   reducerPath: 'contact',
   tagTypes: ['Persons'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getAllContacts: builder.query<IContactRequestResult, void>({
       query: () => 'contacts'
     }),
-    getContactByTaxId: builder.query<IContactRequestResult, { taxId: string }>({
+    getContactByTaxId: builder.query<IContactRequestResult, { taxId: string; }>({
       query: ({ taxId }) => `contacts/taxId/${taxId}`
     }),
-    getContactPersons: builder.query<{ records: IContactPerson[], count: number }, Partial<IQueryOptions> | void>({
+    getContactPersons: builder.query<{ records: IContactPerson[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
         /** Сохраняем параметры запроса */
         const lastOptions: Partial<IQueryOptions> = { ...options };
@@ -215,9 +215,6 @@ export const contactApi = createApi({
         method: 'GET'
       }),
       transformResponse: (response: IEmployeesRequestResult) => response.queries?.employees || [],
-      onQueryStarted(id) {
-        console.info('⏩ request', 'GET', `${baseUrlApi}contacts/employees${id ? `/${id}` : ''}`);
-      },
     }),
     addFavorite: builder.mutation<IFavoriteContact, number>({
       query: (contactID) => ({

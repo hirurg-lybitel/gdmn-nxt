@@ -1,21 +1,17 @@
 import { IClientHistory, IClientHistoryType, IDealDocument, IDealSource, IDenyReason, IRequestResult, ITaskType } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
-
-// type IKanbanDealSource = {
-//   dealSources: IDealSource[];
-// };
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 type IKanbanDealSourcesRequestResult = IRequestResult<{
-  dealSources: IDealSource[]
+  dealSources: IDealSource[];
 }>;
 
 type IDenyReasonRequestResult = IRequestResult<{
-  denyReasons: IDenyReason[]
+  denyReasons: IDenyReason[];
 }>;
 
 type ITaskTypesRequestResult = IRequestResult<{
-  taskTypes: ITaskType[]
+  taskTypes: ITaskType[];
 }>;
 
 type IDealDocumentsRequestResult = IRequestResult<{
@@ -41,7 +37,7 @@ type IClientHistoryTypesMutationRequestResult = IRequestResult<{
 export const kanbanCatalogsApi = createApi({
   reducerPath: 'kanbanCatalogs',
   tagTypes: ['DealSource', 'DenyReasons', 'TaskTypes', 'ClientHistory'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: builder => ({
     getDealSources: builder.query<IDealSource[], void>({
       query: () => ({ url: 'kanban/catalogs/dealsource' }),
@@ -56,7 +52,7 @@ export const kanbanCatalogsApi = createApi({
             ? [{ type: 'DealSource', id: 'ERROR' }]
             : [{ type: 'DealSource', id: 'LIST' }]
     }),
-    deleteDealSource: builder.mutation<{ID: number}, number>({
+    deleteDealSource: builder.mutation<{ ID: number; }, number>({
       query(id) {
         return {
           url: `kanban/catalogs/dealsource/${id}`,
@@ -88,7 +84,7 @@ export const kanbanCatalogsApi = createApi({
       }
     }),
     updateDealSource: builder.mutation<IDealSource, Partial<IDealSource>>({
-      query (body) {
+      query(body) {
         const { ID: id } = body;
         return {
           url: `kanban/catalogs/dealsource/${id}`,
@@ -124,7 +120,7 @@ export const kanbanCatalogsApi = createApi({
             ? [{ type: 'DenyReasons', id: 'ERROR' }]
             : [{ type: 'DenyReasons', id: 'LIST' }]
     }),
-    deleteDenyReason: builder.mutation<{ID: number}, number>({
+    deleteDenyReason: builder.mutation<{ ID: number; }, number>({
       query(id) {
         return {
           url: `kanban/catalogs/denyreasons/${id}`,
@@ -156,7 +152,7 @@ export const kanbanCatalogsApi = createApi({
       }
     }),
     updateDenyReason: builder.mutation<IDenyReason, Partial<IDenyReason>>({
-      query (body) {
+      query(body) {
         const { ID: id } = body;
         return {
           url: `kanban/catalogs/denyreasons/${id}`,
@@ -192,7 +188,7 @@ export const kanbanCatalogsApi = createApi({
             ? [{ type: 'TaskTypes', id: 'ERROR' }]
             : [{ type: 'TaskTypes', id: 'LIST' }]
     }),
-    deleteTaskType: builder.mutation<{ID: number}, number>({
+    deleteTaskType: builder.mutation<{ ID: number; }, number>({
       query(id) {
         return {
           url: `kanban/catalogs/tasktypes/${id}`,
@@ -224,7 +220,7 @@ export const kanbanCatalogsApi = createApi({
       }
     }),
     updateTaskType: builder.mutation<ITaskType, Partial<ITaskType>>({
-      query (body) {
+      query(body) {
         const { ID: id } = body;
         return {
           url: `kanban/catalogs/tasktypes/${id}`,
@@ -271,7 +267,7 @@ export const kanbanCatalogsApi = createApi({
       invalidatesTags: (result, error) => [{ type: 'ClientHistory', id: 'LIST' }]
     }),
     updateClientHistory: builder.mutation<IClientHistory, Partial<IClientHistory>>({
-      query (body) {
+      query(body) {
         const { ID: id, ...rest } = body;
         return {
           url: `kanban/catalogs/client-history/${id}`,
@@ -287,7 +283,7 @@ export const kanbanCatalogsApi = createApi({
       transformResponse: (response: IClientHistoryTypesRequestResult) => response.queries.clientHistoryTypes || [],
     }),
     updateClientHistoryType: builder.mutation<IClientHistoryType, Partial<IClientHistoryType>>({
-      query (body) {
+      query(body) {
         const { ID, ...rest } = body;
         return {
           url: `kanban/catalogs/client-history-types/${ID}`,

@@ -1,6 +1,6 @@
 import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser, IChangePassword, IAuthResult, ITicketHistory } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[], count: number, closed: number, open: number; }>;
 export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicketState[]; }>;
@@ -12,7 +12,7 @@ export type ITicketHistoryRequestResult = IRequestResult<{ ticketsHistory: ITick
 export const ticketsApi = createApi({
   reducerPath: 'ticketSystem',
   tagTypes: ['tickets', 'ticketsStates', 'messages'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'ticketSystem', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<{ tickets: ITicket[], count: number, closed: number, open: number; }, Partial<{ active: boolean; } & IQueryOptions> | void>({
       query: (options) => {

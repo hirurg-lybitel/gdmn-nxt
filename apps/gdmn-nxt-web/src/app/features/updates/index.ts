@@ -1,29 +1,24 @@
 
 import { IRequestResult, IUpdateHistory } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
-
-interface IUpdatess{
-  updates: fullUpdate[];
-};
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 export interface updates {
   USR$VERSION: string,
-  USR$CHANGES: string
+  USR$CHANGES: string;
 }
 
 export interface fullUpdate {
   USR$VERSION: string,
   USR$CHANGES: string,
-  ID: number
+  ID: number;
 }
 
-// type UpdatesResponse = IUpdateHistory[];
-type IUpdatesRequestResult = IRequestResult<{ updates: IUpdateHistory[] }>
+type IUpdatesRequestResult = IRequestResult<{ updates: IUpdateHistory[]; }>;
 
 export const updatesApi = createApi({
   reducerPath: 'updates',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   tagTypes: ['updates'],
   endpoints: (builder) => ({
     getAllUpdates: builder.query<IUpdateHistory[], void>({

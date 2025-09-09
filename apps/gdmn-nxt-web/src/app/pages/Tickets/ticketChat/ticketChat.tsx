@@ -553,13 +553,20 @@ export default function TicketChat(props: ITicketChatProps) {
       <Autocomplete
         fullWidth
         size="small"
-        disableClearable
         readOnly={confirmed}
+        sx={{
+          '& .MuiInputBase-root': {
+            paddingRight: '40px !important'
+          },
+          '& .MuiAutocomplete-clearIndicator': {
+            display: 'none'
+          }
+        }}
         disabled={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loading={systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loadingText="Загрузка данных..."
         options={systemUsers ?? []}
-        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? undefined}
+        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
         getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
         onChange={(e, value) => {
           updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
@@ -702,6 +709,15 @@ export default function TicketChat(props: ITicketChatProps) {
   const theme = useTheme();
   const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const chatRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!messagesAndHistory || messagesAndHistory.length <= 0) return;
+    requestAnimationFrame(() => {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    });
+  }, [messagesAndHistory]);
+
   return (
     <>
       {fileDialog}
@@ -778,7 +794,7 @@ export default function TicketChat(props: ITicketChatProps) {
                   </div>
                 </div>
               )}
-            <div style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
+            <div ref={chatRef} style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
               <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
                 {(isLoading ? fakeMessages : messagesAndHistory).map((item, index) => {
                   if (item.type === 'message') {
@@ -1006,8 +1022,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
           marginLeft: '10px'
         }}
       >
-        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px', alignItems: 'center' }}>
-          <></>
+        <div style={{ display: 'flex', padding: '5px 10px', gap: '16px', alignItems: 'center', background: message.user.ID === userId ? 'rgba(33, 150, 243, 0.1)' : undefined }}>
           <Typography variant="body2">{isLoading ? '' : message.user.fullName}</Typography>
           {!isLoading && <MessageTime date={message.sendAt} />}
           {message.isEdited && <Typography variant={'caption'}>(Изменено)</Typography>}
@@ -1068,7 +1083,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
             ]}
           />}
         </div>
-        {!isLoading && <Divider />}
+        {(!isLoading && message.user.ID !== userId) && <Divider />}
         {(!isLoading && memoFiles) && (
           <div
             style={{

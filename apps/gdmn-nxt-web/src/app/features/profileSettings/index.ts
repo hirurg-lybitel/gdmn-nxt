@@ -1,15 +1,15 @@
 import { IProfileSettings, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-type IProfileSettingsRequestResult = IRequestResult<{ settings: IProfileSettings }>;
+type IProfileSettingsRequestResult = IRequestResult<{ settings: IProfileSettings; }>;
 
 export const profileSettingsApi = createApi({
   reducerPath: 'profileSettings',
   tagTypes: ['settings'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
-    getProfileSettings: builder.query<IProfileSettings, number >({
+    getProfileSettings: builder.query<IProfileSettings, number>({
       query: (userId) => `profile-settings/userId/${userId}`,
       transformResponse: (response: IProfileSettingsRequestResult) => response.queries?.settings || {},
       providesTags: (result, error) =>
@@ -19,7 +19,7 @@ export const profileSettingsApi = createApi({
             ? [{ type: 'settings', id: 'ERROR' }]
             : [{ type: 'settings', id: 'LIST' }]
     }),
-    setProfileSettings: builder.mutation<IProfileSettings, { userId: number, body: Partial<IProfileSettings>}>({
+    setProfileSettings: builder.mutation<IProfileSettings, { userId: number, body: Partial<IProfileSettings>; }>({
       query({ userId, body }) {
         return {
           url: `profile-settings/userId/${userId}`,

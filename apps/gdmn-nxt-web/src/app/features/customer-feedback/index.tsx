@@ -1,13 +1,13 @@
-import { baseUrlApi } from '@gdmn/constants/client';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 import { ICustomerFeedback, IRequestResult } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
 
-type IFeedbackRequestResult = IRequestResult<{ feedback: ICustomerFeedback[] }>;
+type IFeedbackRequestResult = IRequestResult<{ feedback: ICustomerFeedback[]; }>;
 
 export const customerFeedbackApi = createApi({
   reducerPath: 'customerFeedback',
   tagTypes: ['CustomerFeedback'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'feedback', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'feedback', credentials: 'include' }),
   endpoints: (builder) => ({
     getFeedbackByCustomer: builder.query<ICustomerFeedback[], number>({
       query: (customerId) => `/customerId/${customerId}`,

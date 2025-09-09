@@ -1,13 +1,13 @@
 import { IERModel } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 export const erModelApi = createApi({
   reducerPath: 'erModel',
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getErModel: builder.query<IERModel, void>({
-      query: () => `er-model`
+      query: () => 'er-model'
     }),
   }),
 });
