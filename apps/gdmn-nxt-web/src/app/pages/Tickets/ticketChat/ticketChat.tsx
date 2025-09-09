@@ -36,6 +36,7 @@ import TicketHistory from './ticketHistory';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
 import { ticketsUserApi, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 
 interface ITicketChatProps {
 
@@ -673,6 +674,8 @@ export default function TicketChat(props: ITicketChatProps) {
     setCachedLabels(null);
   }, [ticket, updateTicket]);
 
+  const userPermissions = usePermissions();
+
   const memoLabels = useMemo(() => {
     return (
       <LabelsSelect
@@ -680,7 +683,7 @@ export default function TicketChat(props: ITicketChatProps) {
         editIconSpace
         disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
         loading={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
-        disableCreation={ticketsUser}
+        disableCreation={ticketsUser || !userPermissions?.['ticketSystem/labels']?.POST}
         disableEdition={ticketsUser}
         limitTags={undefined}
         textFieldProps={{
@@ -701,7 +704,7 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [cachedLabels, handleUpdateLabels, ticket?.labels, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
+  }, [cachedLabels, handleUpdateLabels, ticket?.labels, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userPermissions]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);

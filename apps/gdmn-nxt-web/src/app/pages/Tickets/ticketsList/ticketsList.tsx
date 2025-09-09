@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -210,15 +210,20 @@ export function TicketsList(props: ticketsListProps) {
     getColumnWidth([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes])
   ), [customerColumnSizes, getColumnWidth, mainColumnSizes, performerColumnSizes, statusColumnSizes]);
 
+  const [sizeUpdate, setSizeUpdate] = useState(0);
+
   useEffect(() => {
     const setSize = () => {
       const headerWidth = ref?.current?.getElementsByClassName('MuiDataGrid-columnHeaders')[0]?.getBoundingClientRect().width;
       setHeaderWidth(headerWidth ? headerWidth - 20 : 0);
     };
     setSize();
+    if (!isLoading && headerWidth === 0) {
+      setSizeUpdate(sizeUpdate + 1);
+    }
     window.addEventListener('resize', setSize);
     return () => window.removeEventListener('resize', setSize);
-  }, [isLoading]);
+  }, [headerWidth, isLoading, sizeUpdate]);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
@@ -258,12 +263,19 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
 
+  const hiddenActiveStates = useMemo(() => ticketsUser ? [ticketStateCodes.confirmed] : [ticketStateCodes.done, ticketStateCodes.confirmed], [ticketsUser]);
+
   const stateSelect = useMemo(() => {
     return (
       <SortSelect
         isLoading={statesIsFetching || statesIsLoading}
-        options={states}
-        disabled={!filteringData?.active}
+        options={states?.filter((state) => {
+          if (filteringData?.active) {
+            return !hiddenActiveStates.includes(state.code);
+          }
+          return hiddenActiveStates.includes(state.code);
+        })}
+        disabled={!filteringData?.active && ticketsUser}
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
         field={'state'}
@@ -273,7 +285,7 @@ export function TicketsList(props: ticketsListProps) {
         getReturnedValue={(value) => value?.ID}
       />
     );
-  }, [filteringData, handleOnFilterChange, states, statesIsFetching, statesIsLoading]);
+  }, [filteringData, handleOnFilterChange, hiddenActiveStates, states, statesIsFetching, statesIsLoading, ticketsUser]);
 
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
