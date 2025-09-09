@@ -10,9 +10,10 @@ import InProgressIcon from '@mui/icons-material/Autorenew';
 import InfoIcon from '@mui/icons-material/Info';
 import useDateComparator from '@gdmn-nxt/helpers/hooks/useDateComparator';
 import { useRef, useState } from 'react';
+import { IDeal, IKanbanColumn } from '@gsbelarus/util-api-types';
 
 export interface CustomerDealsProps {
-  customerId: number
+  customerId: number;
 }
 
 export function CustomerDeals(props: CustomerDealsProps) {
@@ -32,7 +33,7 @@ export function CustomerDeals(props: CustomerDealsProps) {
   });
 
 
-  const newGridColumns: GridColDef[] = [
+  const newGridColumns: GridColDef<IKanbanColumn & IDeal>[] = [
     {
       field: 'CREATIONDATE',
       headerName: 'Дата создания',
@@ -54,13 +55,14 @@ export function CustomerDeals(props: CustomerDealsProps) {
         if (Object.keys(row).length === 0) return <></>;
         if (row.USR$DONE) return <></>;
         if (row.DENIED) return <></>;
+        if (row?.CARDS?.length === 0) return <></>;
 
         if (!value) {
           return <Chip
             variant="outlined"
             color="warning"
             size="small"
-            icon={<WarningIcon/>}
+            icon={<WarningIcon />}
             label="Без срока"
           />;
         }
