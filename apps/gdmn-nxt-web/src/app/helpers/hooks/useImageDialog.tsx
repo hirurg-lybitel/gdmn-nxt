@@ -115,7 +115,8 @@ export function useImageDialog() {
             height: 'fit-content',
             maxWidth: 'none',
             background: 'none',
-            position: 'static'
+            position: 'static',
+            boxShadow: 'none'
           }
         }}
         open={open}
