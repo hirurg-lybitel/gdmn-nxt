@@ -1,18 +1,17 @@
-import { baseUrlApi } from '@gdmn/constants/client';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 import { IMailing, IMailingHistory, IQueryOptions, IRequestResult, MailAttachment, MailingStatus, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { get } from 'http';
+import { createApi } from '@reduxjs/toolkit/query/react';
 
-export type IMailingRequestResult = IRequestResult<{mailings: IMailing[], count: number}>;
+export type IMailingRequestResult = IRequestResult<{ mailings: IMailing[], count: number; }>;
 
 const cachedOptions: Partial<IQueryOptions>[] = [];
 
 export const mailingApi = createApi({
   reducerPath: 'mailing',
   tagTypes: ['mailing'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'marketing/mailings', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'marketing/mailings', credentials: 'include' }),
   endpoints: (builder) => ({
-    getAllMailing: builder.query<{mailings: IMailing[], count: number}, Partial<IQueryOptions> | void>({
+    getAllMailing: builder.query<{ mailings: IMailing[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
@@ -49,7 +48,7 @@ export const mailingApi = createApi({
     }),
     getMailingById: builder.query<IMailing, number>({
       query: (id) => `/${id}`,
-      transformResponse: (response: IRequestResult<{mailings: IMailing[]}>) => response.queries?.mailings[0],
+      transformResponse: (response: IRequestResult<{ mailings: IMailing[]; }>) => response.queries?.mailings[0],
     }),
     addMailing: builder.mutation<IMailing, Partial<IMailing>>({
       query: (body) => ({
@@ -101,7 +100,7 @@ export const mailingApi = createApi({
       }),
       invalidatesTags: ['mailing']
     }),
-    launchTestMailing: builder.mutation<any, { emails: string[], subject: string, template: string, attachments?: MailAttachment[] }>({
+    launchTestMailing: builder.mutation<any, { emails: string[], subject: string, template: string, attachments?: MailAttachment[]; }>({
       query: (body) => ({
         url: '/launch-test',
         body: body,
@@ -136,7 +135,7 @@ export const mailingApi = createApi({
         });
       },
     }),
-    getMailingHistory: builder.query<{history: IMailingHistory[], count: number}, Partial<IQueryOptions> | void>({
+    getMailingHistory: builder.query<{ history: IMailingHistory[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
         const mailingId = options?.filter?.mailingId ?? -1;
 
@@ -153,7 +152,7 @@ export const mailingApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: IRequestResult<{history: IMailingHistory[], count: number;}>) => {
+      transformResponse: (response: IRequestResult<{ history: IMailingHistory[], count: number; }>) => {
         if (!response.queries?.history) {
           return {
             count: 0,

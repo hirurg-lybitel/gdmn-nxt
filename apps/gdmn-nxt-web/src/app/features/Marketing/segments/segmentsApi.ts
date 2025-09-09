@@ -1,17 +1,17 @@
-import { baseUrlApi } from '@gdmn/constants/client';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 import { ICustomer, IQueryOptions, IRequestResult, ISegment, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 
-export type ISegmentRequestResult = IRequestResult<{segments: ISegment[], count: number}>;
+export type ISegmentRequestResult = IRequestResult<{ segments: ISegment[], count: number; }>;
 
-type ISegmentCustomersRequestResult = IRequestResult<{customers: ICustomer[]}>;
+type ISegmentCustomersRequestResult = IRequestResult<{ customers: ICustomer[]; }>;
 
 export const segmentApi = createApi({
   reducerPath: 'segment',
   tagTypes: ['segment'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi + 'marketing/', credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ baseUrl: 'marketing/', credentials: 'include' }),
   endpoints: (builder) => ({
-    getAllSegments: builder.query<{segments: ISegment[], count: number}, Partial<IQueryOptions> | void>({
+    getAllSegments: builder.query<{ segments: ISegment[], count: number; }, Partial<IQueryOptions> | void>({
       query: (options) => {
         const params = queryOptionsToParamsString(options);
 
@@ -36,7 +36,7 @@ export const segmentApi = createApi({
     }),
     getSegmentById: builder.query<ISegment, number>({
       query: (id) => `segments/${id}`,
-      transformResponse: (response: IRequestResult<{segments: ISegment[]}>) => response.queries?.segments[0],
+      transformResponse: (response: IRequestResult<{ segments: ISegment[]; }>) => response.queries?.segments[0],
     }),
     addSegment: builder.mutation<ISegmentRequestResult, ISegment>({
       query: (body) => ({
@@ -61,14 +61,14 @@ export const segmentApi = createApi({
       }),
       invalidatesTags: ['segment']
     }),
-    getCustomersCount: builder.mutation<{ count: number }, { includeSegments: ISegment[], excludeSegments: ISegment[]}>({
+    getCustomersCount: builder.mutation<{ count: number; }, { includeSegments: ISegment[], excludeSegments: ISegment[]; }>({
       query: (body) => ({
         url: 'segments/calc',
         body: body,
         method: 'POST'
       }),
     }),
-    getCustomersBySegment: builder.mutation<ICustomer[], { includeSegments: ISegment[], excludeSegments: ISegment[]}>({
+    getCustomersBySegment: builder.mutation<ICustomer[], { includeSegments: ISegment[], excludeSegments: ISegment[]; }>({
       query: (body) => ({
         url: 'segments/customers',
         body: body,

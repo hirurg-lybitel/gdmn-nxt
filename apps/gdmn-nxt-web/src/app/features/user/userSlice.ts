@@ -1,11 +1,26 @@
 import { IUserProfile } from '@gsbelarus/util-api-types';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { RootState } from '@gdmn-nxt/store';
+import { getBaseUrlByUserType } from '@gdmn-nxt/store/baseUrl';
 
 export const logoutUser = createAsyncThunk(
   'user/logout',
-  () => axios({ method: 'get', url: 'logout', baseURL: baseUrlApi, withCredentials: true })
+  async (_, thunkAPI) => {
+    const state = thunkAPI.getState() as RootState;
+    const userType = state.user.userProfile?.type;
+
+    const baseURL = getBaseUrlByUserType(userType);
+
+    const response = await axios({
+      method: 'get',
+      url: 'logout',
+      baseURL,
+      withCredentials: true,
+    });
+
+    return response.data;
+  }
 );
 
 export type LoginStage =

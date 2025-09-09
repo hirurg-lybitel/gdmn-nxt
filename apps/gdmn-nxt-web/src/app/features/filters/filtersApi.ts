@@ -1,13 +1,13 @@
 import { IQueryOptions, IRequestResult, IFilter, queryOptionsToParamsString } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-export type IFilterRequestResult = IRequestResult<{filters: IFilter[]}>;
+export type IFilterRequestResult = IRequestResult<{ filters: IFilter[]; }>;
 
 export const filtersApi = createApi({
   reducerPath: 'filters',
   tagTypes: ['filters'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getAllFilters: builder.query<IFilter[], Partial<IQueryOptions> | void>({
       query: (options) => {
@@ -23,7 +23,7 @@ export const filtersApi = createApi({
     }),
     getFilterByEntityName: builder.query<IFilter, string>({
       query: (entityName) => `filters/${entityName}`,
-      transformResponse: (response: IRequestResult<{filters: IFilter[]}>) => response.queries?.filters[0] || null,
+      transformResponse: (response: IRequestResult<{ filters: IFilter[]; }>) => response.queries?.filters[0] || null,
       providesTags: ['filters']
     }),
     addFilter: builder.mutation<IFilterRequestResult, IFilter>({

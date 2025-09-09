@@ -1,30 +1,23 @@
-import { IPermissionByUser, IPermissionsAction, IPermissionsView, IRequestResult, IUser, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { IPermissionByUser, IPermissionsAction, IPermissionsView, IRequestResult, IUserGroup, IUserGroupLine } from '@gsbelarus/util-api-types';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
 type MatrixResponse = IPermissionsView[];
-type IMatrixRequestResult = IRequestResult<{ cross: IPermissionsView[]}>;
+type IMatrixRequestResult = IRequestResult<{ cross: IPermissionsView[]; }>;
 
 type ActionsResponse = IPermissionsAction[];
-type IActionsRequestResult = IRequestResult<{ actions: IPermissionsAction[]}>;
+type IActionsRequestResult = IRequestResult<{ actions: IPermissionsAction[]; }>;
 
 type UserGroupsResponse = IUserGroup[];
-type IUserGroupsRequestResult = IRequestResult<{ userGroups: IUserGroup[]}>;
-type IUserGroupRequestResult = IRequestResult<{ userGroup: IUserGroup}>;
+type IUserGroupsRequestResult = IRequestResult<{ userGroups: IUserGroup[]; }>;
+type IUserGroupRequestResult = IRequestResult<{ userGroup: IUserGroup; }>;
 
-type IUserGroupsLineRequestResult = IRequestResult<{ users: IUserGroupLine[]}>;
-
-type UsersResponse = IUser[];
-type IUsersRequestResult = IRequestResult<{ users: IUser[]}>;
-
-
-type IPermissionByUserRequestResult = IRequestResult<{ action: IPermissionByUser}>;
-
+type IUserGroupsLineRequestResult = IRequestResult<{ users: IUserGroupLine[]; }>;
 
 export const permissionsApi = createApi({
   reducerPath: 'permissions',
   tagTypes: ['Matrix', 'Actions', 'UserGroups', 'Users', 'ActionByUser'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getMatrix: builder.query<MatrixResponse, void>({
       query: () => 'permissions',
@@ -116,7 +109,7 @@ export const permissionsApi = createApi({
           ? [{ type: 'UserGroups', id: result?.ID }, { type: 'UserGroups', id: 'LIST' }]
           : [{ type: 'UserGroups', id: 'LIST' }],
     }),
-    deleteUseGroup: builder.mutation<{ id: number}, number>({
+    deleteUseGroup: builder.mutation<{ id: number; }, number>({
       query: (id) => ({
         url: `permissions/usergroups/${id}`,
         method: 'DELETE'
@@ -158,7 +151,7 @@ export const permissionsApi = createApi({
           ? [{ type: 'Users', id: result?.ID }, { type: 'Users', id: 'LIST' }]
           : [{ type: 'Users', id: 'LIST' }],
     }),
-    deleteUserGroupLine: builder.mutation<{ id: number }, number>({
+    deleteUserGroupLine: builder.mutation<{ id: number; }, number>({
       query: (id) => ({
         url: `permissions/usergroupsline/${id}`,
         method: 'DELETE'
@@ -168,7 +161,7 @@ export const permissionsApi = createApi({
           ? [{ type: 'Users', id: result?.id }, { type: 'Users', id: 'LIST' }]
           : [{ type: 'Users', id: 'LIST' }]
     }),
-    getPermissionByUser: builder.query<IPermissionByUser, { actionCode: number, userID: number }>({
+    getPermissionByUser: builder.query<IPermissionByUser, { actionCode: number, userID: number; }>({
       query: ({ actionCode, userID }) => `permissions/actions/${actionCode}/byUser/${userID}`,
       providesTags: (result) =>
         result
@@ -178,7 +171,7 @@ export const permissionsApi = createApi({
           ]
           : [{ type: 'ActionByUser', id: 'LIST' }]
     }),
-    closeSessionById: builder.mutation<null, number >({
+    closeSessionById: builder.mutation<null, number>({
       query: (userID) => ({
         url: `permissions/userGroups/closeSessionById/${userID}`,
         method: 'POST'

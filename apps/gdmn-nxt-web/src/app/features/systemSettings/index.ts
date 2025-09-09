@@ -1,14 +1,14 @@
 import { IRequestResult, ISystemSettings } from '@gsbelarus/util-api-types';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react';
-import { baseUrlApi } from '@gdmn/constants/client';
+import { createApi } from '@reduxjs/toolkit/dist/query/react';
 import { setSystemSettings } from '../../store/settingsSlice';
+import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
 
-type ISystemSettingsRequestResult = IRequestResult<{ settings: ISystemSettings[] }>;
+type ISystemSettingsRequestResult = IRequestResult<{ settings: ISystemSettings[]; }>;
 
 export const systemSettingsApi = createApi({
   reducerPath: 'systemSettings',
   tagTypes: ['settings'],
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrlApi, credentials: 'include' }),
+  baseQuery: baseQueryByUserType({ credentials: 'include' }),
   endpoints: (builder) => ({
     getSystemSettings: builder.query<ISystemSettings, void>({
       query: () => 'system-settings',
