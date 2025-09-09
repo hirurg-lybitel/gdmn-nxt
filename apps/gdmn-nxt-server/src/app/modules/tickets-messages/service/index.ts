@@ -1,10 +1,13 @@
-import { ForbiddenException, InternalServerErrorException, ITicketMessage, NotFoundException, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { ForbiddenException, ICRMTicketUser, InternalServerErrorException, ITicketMessage, NotFoundException, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import { ticketsMessagesRepository } from '../repository';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 import { buckets, minioClient } from '@gdmn-nxt/lib/minio';
 import { ticketsHistoryService } from '@gdmn-nxt/modules/tickets-history/service';
-import { insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
+import { IinsertNotificationParams, insertNotification } from '@gdmn-nxt/controllers/socket/notifications/insertNotification';
 import { NotificationAction } from '@gdmn-nxt/socket';
+import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
+import { sendEmail, SmtpOptions } from '@gdmn/mailer';
+import { config } from '@gdmn-nxt/config';
 
 const findAll = async (
   sessionID: string,
@@ -64,37 +67,87 @@ const createMessage = async (
 
     const newMessage = await ticketsMessagesRepository.save(sessionID, { ...body, userId }, type);
 
-    const message = await ticketsMessagesRepository.findOne(sessionID, { id: newMessage?.ID }, type);
+    const newUserMessage = await ticketsMessagesRepository.findOne(sessionID, { id: newMessage?.ID }, type);
 
-    if (!message?.ID) {
+    if (!newUserMessage?.ID) {
       throw NotFoundException(`Не найдено сообщение с id=${newMessage?.ID}`);
     }
 
-    if (type === UserType.Tickets && oldTicket.performer.ID && !fromTicketEP) {
-      await insertNotification({
+    interface ISendNotification extends Omit<IinsertNotificationParams, 'userIDs' | 'sessionId'> {
+      user: ICRMTicketUser;
+    }
+
+    const sendNotification = async (params: ISendNotification) => {
+      const { user, title, message, type = UserType.Gedemin, ...rest } = params;
+      if (user.email) {
+        const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+
+        const smtpOpt: SmtpOptions = {
+          host: smtpHost,
+          port: smtpPort,
+          user: smtpUser,
+          password: smtpPassword
+        };
+
+        const link = `${config.origin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${oldTicket.ID}?disableSavedPath=true`;
+        const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
+        const mailTitle = `Новое сообщение от ${newUserMessage.user.fullName} в ${type === UserType.Tickets ? 'заявке' : 'тикете'} №${oldTicket.ID}`;
+
+        const messageText = `
+          <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+            <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.fullName}</strong>!</div>
+            <div style="font-size:20px;font-weight:bold;color:#1976d2">${mailTitle}</div>
+            <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+              <div style="color:#666">${message}</div>
+            </div>
+            <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+              <a href="${link}" style="color:#1976d2">${linkMessage}</a>
+              <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+            </div>
+          </div>
+        `;
+
+        await sendEmail({
+          from: newUserMessage.user.fullName,
+          to: user.email,
+          subject: 'Новое сообщение',
+          html: messageText,
+          options: { ...smtpOpt }
+        });
+      }
+
+      return await insertNotification({
+        title: title,
+        message: message,
+        type: type,
         sessionId: sessionID,
+        onDate: new Date(),
+        userIDs: [user.ID],
+        actionContent: oldTicket.ID + '',
+        actionType: NotificationAction.JumpToTicket,
+        ...rest,
+      });
+    };
+
+    if (type === UserType.Tickets && oldTicket.performer.ID && !fromTicketEP) {
+      await sendNotification({
         title: `Тикет №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
         onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
-        userIDs: [oldTicket.performer.ID],
-        actionContent: body.ticketKey + '',
-        actionType: NotificationAction.JumpToTicket
+        user: oldTicket.performer,
       });
     }
     if (type !== UserType.Tickets && oldTicket.sender.ID) {
-      await insertNotification({
-        sessionId: sessionID,
+      await sendNotification({
         title: `Заявка №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
         onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
-        userIDs: [oldTicket.sender.ID],
+        user: oldTicket.sender,
         type: UserType.Tickets,
-        actionContent: body.ticketKey + '',
-        actionType: NotificationAction.JumpToTicket
       });
     }
 
-    return message;
+    return newUserMessage;
   } catch (error) {
     throw InternalServerErrorException(error.message);
   }
@@ -150,7 +203,7 @@ const removeById = async (
       console.error('minioClient не определен');
     }
 
-    return await ticketsMessagesRepository.remove(sessionID, id, type);
+    return await ticketsMessagesRepository.remove(sessionID, id);
   } catch (error) {
     throw InternalServerErrorException(error.message);
   }

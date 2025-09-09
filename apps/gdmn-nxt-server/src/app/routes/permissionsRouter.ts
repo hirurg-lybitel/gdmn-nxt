@@ -17,6 +17,6 @@ router.get('/', PermissionsController.getCross);
 router.get('/userGroups', PermissionsController.getUserGroups);
 router.get('/userGroups/:id/users', PermissionsController.getUserByGroup);
 router.post('/userGroups/closeSessionById/:id', PermissionsController.closeUserSessionById);
-router.get('/usergroupsline/:groupId', PermissionsController.getUserGroupLine);
+router.get('/usergroupsline/:groupId', PermissionsController.getUserGroupLineController);
 
 export const permissionsRouter = express.Router().use('/permissions', router);

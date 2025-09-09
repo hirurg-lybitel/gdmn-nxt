@@ -2,14 +2,14 @@ import { startTransaction } from '@gdmn-nxt/db-connection';
 import { NotificationAction } from '@gdmn-nxt/socket';
 import { UserType } from '@gsbelarus/util-api-types';
 
-interface IinsertNotificationParams {
+export interface IinsertNotificationParams {
   sessionId: string,
-  title?: string,
   message: string,
+  userIDs: number[],
+  title?: string,
   onDate?: Date,
   actionContent?: string,
   actionType?: NotificationAction,
-  userIDs: number[];
   type?: UserType;
 }
 

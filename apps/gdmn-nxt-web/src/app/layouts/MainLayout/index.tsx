@@ -2,7 +2,7 @@ import { Box, SvgIconTypeMap, useMediaQuery } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Sidebar from './Sidebar/sidebar-view/sidebar-view';
 import { toggleMenu } from '../../store/settingsSlice';
 import { styled, useTheme } from '@mui/material/styles';
@@ -130,7 +130,12 @@ export const MainLayout = (props: MainLayoutProps) => {
   const [] = useFilterStore('menu', undefined, true);
 
   const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.menu);
+
+  const [searchParams] = useSearchParams();
+  const disableSavedPath = searchParams.get('disableSavedPath') === 'true';
+
   useEffect(() => {
+    if (disableSavedPath) return;
     const savedPathname = filterData?.path;
     const currentPathname = location.pathname;
 
