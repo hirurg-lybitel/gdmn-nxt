@@ -10,6 +10,7 @@ import { config } from '@gdmn-nxt/config';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { profileSettingsController } from '../settings/profileSettings';
 import { dealFeedbackService } from '@gdmn-nxt/modules/deal-feedback/service';
+import { appRouter } from '@gdmn/constants/client';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
@@ -19,7 +20,7 @@ const get: RequestHandler = async (req, res) => {
   if (id && isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
 
   try {
-    const _schema = { };
+    const _schema = {};
 
     // const erModelFull = (await importERModel('TgdcAttrUserDefinedUSR_CRM_KANBAN_COLUMNS')).entities;
     // const entites: IEntities = Object.fromEntries(Object.entries((await erModelFull).entities));
@@ -30,7 +31,7 @@ const get: RequestHandler = async (req, res) => {
     const actualFieldsNames = actualFields.join(',');
     const returnFieldsNames = allFields.join(',');
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
         const data = await rs.fetchAsObject();
@@ -48,7 +49,7 @@ const get: RequestHandler = async (req, res) => {
         query: `
           SELECT ${actualFieldsNames}
           FROM USR$CRM_KANBAN_CARDS
-          ${id ? 'WHERE ID = ?' : '' }`,
+          ${id ? 'WHERE ID = ?' : ''}`,
         params: id ? [id] : undefined,
       },
     ];
@@ -110,7 +111,7 @@ const upsert: RequestHandler = async (req, res) => {
           AND deal.USR$DONE = 0
           AND task.USR$CLOSED = 0`;
 
-      const checkTasks: { COUNT: number} = await executeSingletonAsObject(sql);
+      const checkTasks: { COUNT: number; } = await executeSingletonAsObject(sql);
 
       if ((checkTasks.COUNT || 0) > 0) {
         return res.status(400).send(resultError('Не может быть исполнено. Есть незакрытые задачи'));
@@ -418,7 +419,7 @@ const upsert: RequestHandler = async (req, res) => {
 
     await executeSingletonAsObject(sql, [cardRecord.ID, userId]);
 
-    const result: IRequestResult<{ cards: IKanbanCard[] }> = {
+    const result: IRequestResult<{ cards: IKanbanCard[]; }> = {
       queries: {
         cards: [Object.fromEntries(allFields.map((field, idx) => ([field, cardRecord[field]]))) as IKanbanCard]
       },
@@ -458,7 +459,7 @@ const upsert: RequestHandler = async (req, res) => {
   };
 };
 
-const remove: RequestHandler = async(req, res) => {
+const remove: RequestHandler = async (req, res) => {
   const { id } = req.params;
 
   if (isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
@@ -495,7 +496,7 @@ const remove: RequestHandler = async(req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: number, USR$MASTERKEY: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number, USR$MASTERKEY: number; }[] = await result.fetchAsObject();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
@@ -567,7 +568,7 @@ async function sendNewDealEmail(sessionId: string, deal: IDeal, performers: ICon
             ${deal.DESCRIPTION ? `<div style="color:#666">Описание: ${deal.DESCRIPTION}</div>` : ''}
           </div>
           <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-            <a href="${config.origin}/employee/managment/deals/list" style="color:#1976d2">Открыть в CRM</a>
+            <a href="${config.fullOrigin}/employee/managment/deals/list?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
             <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
           </div>
         </div>`;

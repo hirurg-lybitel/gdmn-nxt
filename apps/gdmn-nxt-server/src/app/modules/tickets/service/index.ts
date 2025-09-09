@@ -193,7 +193,7 @@ const createTicket = async (
               <div style="color:#666">${ticket.title}</div>
             </div>
             <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-              <a href="${config.origin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
+              <a href="${config.fullOrigin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
               <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
             </div>
           </div>
@@ -238,7 +238,7 @@ const createTicket = async (
                <div style="color:#666">${ticket.title}</div>
              </div>
              <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-               <a href="${config.origin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
+               <a href="${config.fullOrigin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
                <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
              </div>
            </div>
@@ -345,7 +345,7 @@ const updateById = async (
           password: smtpPassword
         };
 
-        const link = `${config.origin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${ticket.ID}?disableSavedPath=true`;
+        const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${ticket.ID}?disableSavedPath=true`;
         const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
 
         const messageText = `

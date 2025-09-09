@@ -17,6 +17,7 @@ import { getPublicIP } from '@gdmn-nxt/ip-info';
 import bowser from 'bowser';
 import ChangePassword from './components/change-password/change-password';
 import { getBaseUrlByUserType } from './store/baseUrl';
+import { appRouter } from './constants';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -52,14 +53,15 @@ export default function App(props: AppProps) {
     setCaptchaImage(dataCaptcha);
   };
 
-  const pathName: string[] = window.location.pathname.split('/');
-  pathName.splice(0, 1);
+  const browserRouter = appRouter === 'Browser';
+
+  const href = window.location.href;
 
   // Поиск и установка id страницы, который соответствует url, в state
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
 
-  const tickets = pathName[0] === 'tickets';
+  const tickets = href.includes('#/tickets') || window.location.pathname.split('/').splice(1)[0] === 'tickets';
   const baseUrl = getBaseUrlByUserType(tickets ? UserType.Tickets : UserType.Gedemin);
 
   const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
@@ -74,8 +76,8 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
-          if (pathName[0] === 'tickets') {
-            navigate('/tickets/login');
+          if (tickets) {
+            navigate(`${(browserRouter || href.includes('#')) ? '' : '/#'}/tickets/login`);
             break;
           };
           navigate('/');
