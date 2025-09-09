@@ -3,20 +3,18 @@ import InProgressIcon from '@mui/icons-material/Autorenew';
 import InfoIcon from '@mui/icons-material/Info';
 import useUserData from '@gdmn-nxt/helpers/hooks/useUserData';
 import { useGetKanbanDealsQuery } from '../../../features/kanban/kanbanApi';
-import { IDeal } from '@gsbelarus/util-api-types';
+import { IDeal, IKanbanColumn } from '@gsbelarus/util-api-types';
 import { Box, Chip } from '@mui/material';
 import { useRef } from 'react';
 import useDateComparator from '@gdmn-nxt/helpers/hooks/useDateComparator';
 import KanbanList from '@gdmn-nxt/components/Kanban/kanban-list/kanban-list';
 import { GridColDef } from '@mui/x-data-grid-pro';
 
-interface Props {
-  contactId: number
+interface IContactsDealsProps {
+  contactId: number;
 }
 
-export default function ContactsDeals({
-  contactId
-}: Props) {
+export default function ContactsDeals({ contactId }: Readonly<IContactsDealsProps>) {
   const { id: userId } = useUserData();
 
   const { getDayDiff } = useDateComparator();
@@ -33,7 +31,7 @@ export default function ContactsDeals({
     }
   });
 
-  const columns: GridColDef<IDeal>[] = [
+  const columns: GridColDef<IKanbanColumn & IDeal>[] = [
     {
       field: 'CREATIONDATE',
       headerName: 'Дата создания',
@@ -55,13 +53,14 @@ export default function ContactsDeals({
         if (Object.keys(row).length === 0) return <></>;
         if (row.USR$DONE) return <></>;
         if (row.DENIED) return <></>;
+        if (row.CARDS?.length === 0) return <></>;
 
         if (!value) {
           return <Chip
             variant="outlined"
             color="warning"
             size="small"
-            icon={<WarningIcon/>}
+            icon={<WarningIcon />}
             label="Без срока"
           />;
         }
