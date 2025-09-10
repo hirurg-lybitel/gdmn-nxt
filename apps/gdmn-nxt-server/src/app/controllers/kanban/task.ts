@@ -30,7 +30,7 @@ async function sendNewTaskEmail(sessionId: string, task: IKanbanTask) {
           ${task.USR$DEADLINE ? `<div style="color:#666;margin-top:8px">Срок: ${new Date(task.USR$DEADLINE).toLocaleString('default', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>` : ''}
         </div>
         <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-          <a href="${config.origin}/employee/managment/tasks/list" style="color:#1976d2">Открыть в CRM</a>
+          <a href="${config.fullOrigin}/employee/managment/tasks/list?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
           <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
         </div>
       </div>`;
@@ -75,7 +75,7 @@ const get: RequestHandler = async (req, res) => {
       }
     };
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
         const data = await rs.fetchAsObject();
@@ -361,7 +361,7 @@ const upsert: RequestHandler = async (req, res) => {
   }
 };
 
-const remove: RequestHandler = async(req, res) => {
+const remove: RequestHandler = async (req, res) => {
   const { attachment, transaction, releaseTransaction, fetchAsSingletonObject } = await startTransaction(req.sessionID);
 
   const id = parseInt(req.params.id);
@@ -415,7 +415,7 @@ const remove: RequestHandler = async(req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: number }[] = await result.fetchAsObject();
+    const data: { SUCCESS: number; }[] = await result.fetchAsObject();
     await result.close();
 
     /** Сохранение истории изменений */

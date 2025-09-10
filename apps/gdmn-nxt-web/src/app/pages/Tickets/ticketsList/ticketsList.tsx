@@ -63,6 +63,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 export function TicketsList(props: ticketsListProps) {
   const [addTicket] = useAddTicketMutation();
 
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+
   const [openEdit, setOpenEdit] = useState(false);
   const filterEntityName = 'ticketsUsers';
   const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { 'active': true });
@@ -81,9 +83,26 @@ export function TicketsList(props: ticketsListProps) {
     pageSize: 20
   });
 
+  const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
+  const hiddenActiveStates = useMemo(() => ticketsUser ? [ticketStateCodes.confirmed] : [ticketStateCodes.done, ticketStateCodes.confirmed], [ticketsUser]);
+
+  const stateFilter = useMemo(() => {
+    if (!filteringData?.active && ticketsUser) {
+      return undefined;
+    }
+    if (filteringData?.state) {
+      const filterStateCode = states?.find((state => state.ID === filteringData?.state))?.code;
+      const includesHiddenActive = filterStateCode && hiddenActiveStates.includes(filterStateCode);
+      if ((filteringData?.active ? includesHiddenActive : !includesHiddenActive)) {
+        return undefined;
+      }
+    }
+    return filteringData?.state;
+  }, [filteringData?.active, filteringData?.state, hiddenActiveStates, states, ticketsUser]);
+
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
-    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: filteringData?.active ? filteringData?.state : undefined } } : {}),
+    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter } } : {}),
   });
 
   const handleRequestSearch = (value: string) => {
@@ -144,7 +163,6 @@ export function TicketsList(props: ticketsListProps) {
     />
   ), [company, handleSubmit, openEdit]);
 
-  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const mainColumnSizes = useMemo(() => {
@@ -210,15 +228,20 @@ export function TicketsList(props: ticketsListProps) {
     getColumnWidth([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes])
   ), [customerColumnSizes, getColumnWidth, mainColumnSizes, performerColumnSizes, statusColumnSizes]);
 
+  const [sizeUpdate, setSizeUpdate] = useState(0);
+
   useEffect(() => {
     const setSize = () => {
       const headerWidth = ref?.current?.getElementsByClassName('MuiDataGrid-columnHeaders')[0]?.getBoundingClientRect().width;
       setHeaderWidth(headerWidth ? headerWidth - 20 : 0);
     };
     setSize();
+    if (!isLoading && headerWidth === 0) {
+      setSizeUpdate(sizeUpdate + 1);
+    }
     window.addEventListener('resize', setSize);
     return () => window.removeEventListener('resize', setSize);
-  }, [isLoading]);
+  }, [headerWidth, isLoading, sizeUpdate]);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
@@ -256,14 +279,17 @@ export function TicketsList(props: ticketsListProps) {
     );
   }, [customersIsFetching, customersIsLoading, customersResponse?.data, filteringData, handleOnFilterChange]);
 
-  const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
-
   const stateSelect = useMemo(() => {
     return (
       <SortSelect
         isLoading={statesIsFetching || statesIsLoading}
-        options={states}
-        disabled={!filteringData?.active}
+        options={states?.filter((state) => {
+          if (filteringData?.active) {
+            return !hiddenActiveStates.includes(state.code);
+          }
+          return hiddenActiveStates.includes(state.code);
+        })}
+        disabled={!filteringData?.active && ticketsUser}
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
         field={'state'}
@@ -273,7 +299,7 @@ export function TicketsList(props: ticketsListProps) {
         getReturnedValue={(value) => value?.ID}
       />
     );
-  }, [filteringData, handleOnFilterChange, states, statesIsFetching, statesIsLoading]);
+  }, [filteringData, handleOnFilterChange, hiddenActiveStates, states, statesIsFetching, statesIsLoading, ticketsUser]);
 
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
@@ -396,6 +422,8 @@ export function TicketsList(props: ticketsListProps) {
       />
     );
   }, [filteringData?.labels, handleOnFilterChange, labels, labelsFetching, labelsLoading, labelsHidden]);
+
+  console.log(stateFilter);
 
   const columns: GridColDef<ITicket>[] = [
     {
@@ -540,7 +568,7 @@ export function TicketsList(props: ticketsListProps) {
       renderHeader: () => {
         const hasFilters = filteringData?.labels
           || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.userId)
-          || (statusHidden && filteringData?.state)
+          || (statusHidden && stateFilter)
           || (customerHidden && filteringData?.companyKey && !ticketsUser)
           || (performerHidden && filteringData?.performerKey);
         return (

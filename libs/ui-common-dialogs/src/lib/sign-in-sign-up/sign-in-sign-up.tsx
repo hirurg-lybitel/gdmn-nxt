@@ -39,6 +39,7 @@ export interface SignInSignUpProps {
   topDecorator?: (stage?: Stage) => JSX.Element;
   bottomDecorator?: (stage?: Stage) => JSX.Element;
   checkCredentials?: () => void;
+  ticketsUser: boolean;
 };
 
 type State = {
@@ -105,7 +106,8 @@ export function SignInSignUp({
   newPassword,
   topDecorator,
   bottomDecorator,
-  onSignIn
+  onSignIn,
+  ticketsUser
 }: Readonly<SignInSignUpProps>) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
@@ -121,11 +123,11 @@ export function SignInSignUp({
 
   const doSignIn = useCallback(async () => {
     setLaunching(true);
-    const type = window.location.pathname === '/tickets/login' ? UserType.Tickets : UserType.Gedemin;
+    const type = ticketsUser ? UserType.Tickets : UserType.Gedemin;
     const res = await onSignIn({ type, userName, password });
     dispatch({ type: 'SET_AUTHRESULT', authResult: res });
     setLaunching(false);
-  }, [onSignIn, password, userName]);
+  }, [onSignIn, password, ticketsUser, userName]);
 
   const keyPress = useCallback(async (e: any) => {
     if (e.keyCode === 13) {
@@ -354,7 +356,7 @@ export function SignInSignUp({
       );
     };
 
-    return loginForm(window.location.pathname === '/tickets/login');
+    return loginForm(ticketsUser);
   }, [authResult, bottomDecorator, captchaPassed, createUser, doSignIn, email, email2, keyPress, launching, newPassword, password, passwordVisible, stage, topDecorator, userName, waiting]);
 
   return (

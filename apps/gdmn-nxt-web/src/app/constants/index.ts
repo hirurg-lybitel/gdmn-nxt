@@ -13,3 +13,5 @@ export const baseUrlApi = `${baseUrl}api/v1/`;
 export const ticketsBaseUrlApi = `${baseUrl}ticketsApi/v1/`;
 
 export const maxVirtualizationList = 10000;
+
+export const appRouter = process.env.NODE_ENV === 'development' ? 'Browser' : 'Hash';

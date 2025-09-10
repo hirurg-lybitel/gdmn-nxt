@@ -17,6 +17,7 @@ import { getPublicIP } from '@gdmn-nxt/ip-info';
 import bowser from 'bowser';
 import ChangePassword from './components/change-password/change-password';
 import { getBaseUrlByUserType } from './store/baseUrl';
+import { appRouter } from './constants';
 
 const query = async <T = IAuthResult>(config: AxiosRequestConfig<any>): Promise<T> => {
   try {
@@ -52,15 +53,16 @@ export default function App(props: AppProps) {
     setCaptchaImage(dataCaptcha);
   };
 
-  const pathName: string[] = window.location.pathname.split('/');
-  pathName.splice(0, 1);
+  const browserRouter = appRouter === 'Browser';
+
+  const href = window.location.href;
 
   // Поиск и установка id страницы, который соответствует url, в state
   type User = IUserProfile & UserState;
   const [user, setUser] = useState<User>();
 
-  const tickets = pathName[0] === 'tickets';
-  const baseUrl = getBaseUrlByUserType(tickets ? UserType.Tickets : UserType.Gedemin);
+  const ticketsUser = href.includes('#/tickets') || window.location.pathname.split('/').splice(1)[0] === 'tickets';
+  const baseUrl = getBaseUrlByUserType(ticketsUser ? UserType.Tickets : UserType.Gedemin);
 
   const post = (url: string, data: Object) => query({ method: 'post', url, baseURL: baseUrl, data, withCredentials: true });
   function get<T = IAuthResult>(url: string) {
@@ -74,8 +76,9 @@ export default function App(props: AppProps) {
       switch (loginStage) {
         case 'SELECT_MODE':
           dispatch(setColorMode(ColorMode.Light));
-          if (pathName[0] === 'tickets') {
-            navigate('/tickets/login');
+          if (ticketsUser) {
+            const prefix = (browserRouter || href.includes('#')) ? '' : '/#';
+            navigate(`${prefix}/tickets/login`);
             break;
           };
           navigate('/');
@@ -331,6 +334,7 @@ export default function App(props: AppProps) {
           <>
             <SignInSignUp
               // checkCredentials={handleCheckCredentials}
+              ticketsUser={ticketsUser}
               onSignIn={handleSignIn}
             />
             <Captcha
@@ -345,6 +349,7 @@ export default function App(props: AppProps) {
       case 'CAPTCHA':
         return (
           <SignInSignUp
+            ticketsUser={ticketsUser}
             onSignIn={({ userName, password }) => post('user/signin', { userName, password })}
             newPassword={(email) => post('user/forgot-password', { email })}
             // onSignIn={handleSignIn}
@@ -385,7 +390,7 @@ export default function App(props: AppProps) {
       default:
         return loadingPage;
     }
-  }, [loginStage, loadingPage, handleSignIn, captchaImage, captchaSubmit, captchaCancel, userProfile, create2FAOnSubmit, backToMain, handleSignInWithEmail, check2FAOnSubmit, handleChangePassword, dispatch]);
+  }, [loginStage, loadingPage, handleSignIn, handleRegenerateCaptcha, captchaImage, captchaSubmit, captchaCancel, userProfile, create2FAOnSubmit, backToMain, handleSignInWithEmail, check2FAOnSubmit, handleChangePassword, dispatch, post]);
 
   const result =
     <div
