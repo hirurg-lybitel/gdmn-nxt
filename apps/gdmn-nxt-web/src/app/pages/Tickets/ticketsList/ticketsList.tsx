@@ -310,7 +310,7 @@ export function TicketsList(props: ticketsListProps) {
         options={users?.users}
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
-        field={'userId'}
+        field={'sender'}
         label={'Постановщик'}
         getOptionLabel={(option) => option.fullName ?? option.userName ?? ''}
         getReturnedValue={(value) => value?.ID}
