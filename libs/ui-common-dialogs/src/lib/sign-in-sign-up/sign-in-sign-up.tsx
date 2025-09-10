@@ -39,6 +39,7 @@ export interface SignInSignUpProps {
   topDecorator?: (stage?: Stage) => JSX.Element;
   bottomDecorator?: (stage?: Stage) => JSX.Element;
   checkCredentials?: () => void;
+  ticketsUser: boolean;
 };
 
 type State = {
@@ -105,7 +106,8 @@ export function SignInSignUp({
   newPassword,
   topDecorator,
   bottomDecorator,
-  onSignIn
+  onSignIn,
+  ticketsUser
 }: Readonly<SignInSignUpProps>) {
   const [{ stage, userName, password, email, email2, authResult, captchaPassed, waiting }, dispatch] = useReducer(reducer, initialState);
 
@@ -118,8 +120,6 @@ export function SignInSignUp({
     dispatch({ type: 'SET_WAITING' });
     fn().then(r => dispatch({ type: 'SET_AUTHRESULT', authResult: r }));
   };
-
-  const ticketsUser = window.location.href.includes('#/tickets') || window.location.pathname.split('/').splice(1)[0] === 'tickets';
 
   const doSignIn = useCallback(async () => {
     setLaunching(true);
