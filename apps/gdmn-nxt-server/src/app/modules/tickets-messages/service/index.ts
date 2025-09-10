@@ -89,7 +89,7 @@ const createMessage = async (
           password: smtpPassword
         };
 
-        const link = `${config.origin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${oldTicket.ID}?disableSavedPath=true`;
+        const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${oldTicket.ID}?disableSavedPath=true`;
         const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
         const mailTitle = `Новое сообщение от ${newUserMessage.user.fullName} в ${type === UserType.Tickets ? 'заявке' : 'тикете'} №${oldTicket.ID}`;
 

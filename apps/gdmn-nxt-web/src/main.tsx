@@ -28,7 +28,6 @@ import { ErModelDomains } from './app/er-model-domains/er-model-domains';
 import BaseForm from './app/base-form/base-form';
 import { NlpMain } from './app/nlp-main/nlp-main';
 import { SqlEditor } from './app/components/System/sql-editor/sql-editor';
-import CustomersMap from './app/customers/customers-map/customers-map';
 import RemainsByInvoices from './app/pages/Analytics/UserReports/remains-by-invoices/remains-by-invoices';
 import Labels from './app/pages/Managment/Labels';
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
@@ -67,6 +66,7 @@ import TicketChat from './app/pages/Tickets/ticketChat/ticketChat';
 import TicketsCustomers from './app/pages/Tickets/tickets-customers/tickets-customers';
 import TicketsUsers from './app/pages/Tickets/tickets-users/tickets-users';
 import TicketsLabelList from './app/pages/Tickets/tickets-labels/tickets-label-list/tickets-label-list';
+import { appRouter } from './app/constants';
 
 registerMUI();
 
@@ -86,7 +86,7 @@ const Main = () => {
     setSavedTheme(theme(customization));
   }, [customization]);
 
-  const CustomRouter = process.env.NODE_ENV === 'development' ? BrowserRouter : HashRouter;
+  const CustomRouter = appRouter === 'Browser' ? BrowserRouter : HashRouter;
 
   return (
     <div
