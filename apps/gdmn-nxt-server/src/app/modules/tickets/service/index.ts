@@ -26,7 +26,8 @@ const findAll = async (
       name,
       pageSize,
       pageNo,
-      labels
+      labels,
+      sender
     } = filter;
 
     const labelIds = labels?.split(',') ?? [];
@@ -42,11 +43,7 @@ const findAll = async (
     const result = await ticketsRepository.find(
       sessionID,
       {
-        // ...(active ? { USR$CLOSEAT: (active === 'true' ? IsNull : IsNotNull)() } : {}),
-        ...(companyKey ? { USR$COMPANYKEY: companyKey ?? -1 } : {}),
         ...(userId ? { USR$USERKEY: userId } : {}),
-        ...(state ? { USR$STATE: state } : {}),
-        ...(performerKey ? { USR$PERFORMERKEY: performerKey } : {})
       },
       undefined,
       type
@@ -63,6 +60,26 @@ const findAll = async (
       if (labels) {
         checkConditions = checkConditions &&
           ticket.labels?.some(l => labelIds.includes(l.ID + ''));
+      }
+
+      if (performerKey) {
+        checkConditions = checkConditions &&
+          ticket.performer.ID === performerKey;
+      }
+
+      if (state) {
+        checkConditions = checkConditions &&
+          ticket.state.ID === Number(state);
+      }
+
+      if (companyKey) {
+        checkConditions = checkConditions &&
+          ticket.company.ID === Number(companyKey);
+      }
+
+      if (sender) {
+        checkConditions = checkConditions &&
+          ticket.sender.ID === Number(sender);
       }
 
       if ('active' in filter) {
