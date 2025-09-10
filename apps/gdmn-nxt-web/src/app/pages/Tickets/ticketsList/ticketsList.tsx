@@ -102,7 +102,7 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
-    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter } } : {}),
+    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter, userId: undefined } } : {}),
   });
 
   const handleRequestSearch = (value: string) => {
@@ -567,7 +567,7 @@ export function TicketsList(props: ticketsListProps) {
       renderCell: () => null,
       renderHeader: () => {
         const hasFilters = filteringData?.labels
-          || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.userId)
+          || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.sender)
           || (statusHidden && stateFilter)
           || (customerHidden && filteringData?.companyKey && !ticketsUser)
           || (performerHidden && filteringData?.performerKey);
