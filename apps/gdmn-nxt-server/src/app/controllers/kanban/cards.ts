@@ -10,7 +10,6 @@ import { config } from '@gdmn-nxt/config';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { profileSettingsController } from '../settings/profileSettings';
 import { dealFeedbackService } from '@gdmn-nxt/modules/deal-feedback/service';
-import { appRouter } from '@gdmn/constants/client';
 
 const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
