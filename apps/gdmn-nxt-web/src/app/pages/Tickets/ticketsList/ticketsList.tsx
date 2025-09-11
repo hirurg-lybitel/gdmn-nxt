@@ -1,7 +1,7 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
-import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, IconButton, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
@@ -9,7 +9,7 @@ import AdjustIcon from '@mui/icons-material/Adjust';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useAddTicketMutation, useGetAllTicketsQuery, useGetAllTicketsStatesQuery } from '../../../features/tickets/ticketsApi';
-import { IFilteringData, IPaginationData, ITicket, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { IFilteringData, ILabel, IPaginationData, ITicket, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import TicketEdit from './tickets-edit/ticket-edit';
 import { UserState } from '../../../features/user/userSlice';
@@ -21,7 +21,7 @@ import { useFilterStore } from '@gdmn-nxt/helpers/hooks/useFilterStore';
 import SortSelect from './sortSelect';
 import { customerApi, useGetCustomerQuery, useGetCustomersQuery } from '../../../features/customer/customerApi_new';
 import { useGetUsersQuery } from '../../../features/systemUsers';
-import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
+import { clearFilterData, saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
 import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
@@ -31,7 +31,9 @@ import { useGetTicketsLabelsQuery } from '../../../features/tickets/ticketsLabel
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
-import { te } from 'date-fns/locale';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+
+const appBorderWidth = 40;
 
 /* eslint-disable-next-line */
 export interface ticketsListProps { }
@@ -167,9 +169,9 @@ export function TicketsList(props: ticketsListProps) {
 
   const mainColumnSizes = useMemo(() => {
     if (ticketsUser && !isAdmin) {
-      return [470, 420, 420];
+      return [480, 420, 420];
     }
-    return [650, 500, 420];
+    return [680, 500, 420];
   }, [isAdmin, ticketsUser]);
   const statusColumnSizes = useMemo(() => [200, 120], []);
   const customerColumnSizes = useMemo(() => ticketsUser ? [0, 0] : [200, 160], [ticketsUser]);
@@ -178,6 +180,7 @@ export function TicketsList(props: ticketsListProps) {
   const ref = useRef<any>(null);
 
   const [headerWidth, setHeaderWidth] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   const getHiddenSelectors = useCallback((arrays: number[][]): boolean[] => {
     let result: number[] = [...arrays[0]];
@@ -199,14 +202,14 @@ export function TicketsList(props: ticketsListProps) {
       result = temp;
     }
 
-    return result.map((size, index) => (index === 0 ? size : size + 50) > headerWidth);
+    return result.map((size) => (size + 50) > headerWidth);
   }, [headerWidth]);
 
   const hiddenSelectors = useMemo(() => (
     getHiddenSelectors([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes])
   ), [customerColumnSizes, getHiddenSelectors, mainColumnSizes, performerColumnSizes, statusColumnSizes]);
 
-  const [labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden] = hiddenSelectors;
+  const [labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden, minWidth] = hiddenSelectors;
 
   const getColumnWidth = useCallback((arrays: number[][]): number[] => {
     const result = [];
@@ -234,6 +237,7 @@ export function TicketsList(props: ticketsListProps) {
     const setSize = () => {
       const headerWidth = ref?.current?.getElementsByClassName('MuiDataGrid-columnHeaders')[0]?.getBoundingClientRect().width;
       setHeaderWidth(headerWidth ? headerWidth - 20 : 0);
+      setWindowWidth(window.innerWidth);
     };
     setSize();
     if (!isLoading && headerWidth === 0) {
@@ -423,47 +427,166 @@ export function TicketsList(props: ticketsListProps) {
     );
   }, [filteringData?.labels, handleOnFilterChange, labels, labelsFetching, labelsLoading, labelsHidden]);
 
-  console.log(stateFilter);
+  const clearFilters = useCallback(() => {
+    dispatch(clearFilterData({ filterEntityName }));
+  }, [dispatch]);
+
+  const filter = useMemo(() => {
+    const hasFilters = filteringData?.labels
+      || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.sender)
+      || (statusHidden && stateFilter)
+      || (customerHidden && filteringData?.companyKey && !ticketsUser)
+      || (performerHidden && filteringData?.performerKey);
+    return (
+      <MenuBurger
+        hasFilters={hasFilters}
+        filter
+        items={({ closeMenu }) => [
+          <div key="labelSelect">
+            <div style={{ width: '250px' }} >
+              {labelSelect}
+            </div>
+          </div>,
+          ...((openerHidden && (!ticketsUser || isAdmin)) ? [
+            <div key="openerSelect">
+              <div style={{ width: '250px' }} >
+                {openerSelect}
+              </div>
+            </div>
+          ] : []),
+          ...(statusHidden ? [
+            <div key="stateSelect">
+              <div style={{ width: '250px' }} >
+                {stateSelect}
+              </div>
+            </div>,
+          ] : []),
+          ...((customerHidden && !ticketsUser) ? [
+            <div key="customerSelect">
+              <div style={{ width: '250px' }} >
+                {customerSelect}
+              </div>
+            </div>
+          ] : []),
+          ...(performerHidden ? [
+            <div key="performerSelect">
+              <div style={{ width: '250px' }} >
+                {performerSelect}
+              </div>
+            </div>
+          ] : []),
+          <div key="clear">
+            <Button
+              style={{ width: '100%', textTransform: 'none' }}
+              variant="contained"
+              onClick={() => {
+                closeMenu();
+                clearFilters();
+              }}
+            >
+              Очистить
+            </Button>
+          </div>
+        ]}
+      />
+    );
+  }, [clearFilters, customerHidden, customerSelect, filteringData?.companyKey, filteringData?.labels, filteringData?.performerKey, filteringData?.userId, isAdmin, labelSelect, openerHidden, openerSelect, performerHidden, performerSelect, stateFilter, stateSelect, statusHidden, ticketsUser]);
+
+  const matchDownMainColumn = useMediaQuery(`(max-width:${mainColumnSizes[2] + appBorderWidth}px)`);
+  const matchDownMainColumnButtons = useMediaQuery('(max-width:380px)');
+
+  const activeTicketsButton = useMemo(() => {
+    const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      e.stopPropagation();
+      const newObject = { ...filteringData };
+      setFilteringData({ ...newObject, 'active': true });
+    };
+    if (matchDownMainColumnButtons) {
+      return (
+        <Tooltip arrow title="Активные">
+          <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+            <IconButton color={!filteringData?.active ? 'secondary' : 'primary'} onClick={onClick} >
+              <AdjustIcon />
+            </IconButton >
+            <Chip label={data?.open} size="small" />
+          </div>
+        </Tooltip>
+      );
+    }
+    return (
+      <Button
+        sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: !filteringData?.active ? theme.palette.text.primary : undefined })}
+        onClick={onClick}
+      >
+        Активные
+        <Chip label={data?.open} size="small" />
+      </Button>
+    );
+  }, [data?.open, filteringData, matchDownMainColumnButtons, setFilteringData]);
+
+  const closedTicketsButton = useMemo(() => {
+    const onClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      e.stopPropagation();
+      const newObject = { ...filteringData };
+      setFilteringData({ ...newObject, 'active': false });
+    };
+    if (matchDownMainColumnButtons) {
+      return (
+        <Tooltip arrow title={'Завершенные'}>
+          <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+            <IconButton color={filteringData?.active ? 'secondary' : 'primary'} onClick={onClick} >
+              <CheckCircleOutlineIcon />
+            </IconButton >
+            <Chip
+              label={data?.closed}
+              size="small"
+            />
+          </div>
+        </Tooltip>
+      );
+    }
+    return (
+      <Button
+        sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: filteringData?.active ? theme.palette.text.primary : undefined })}
+        onClick={onClick}
+      >
+        Завершенные
+        <Chip
+          label={data?.closed}
+          size="small"
+        />
+      </Button>
+    );
+  }, [data?.closed, filteringData, matchDownMainColumnButtons, setFilteringData]);
+
+  const addLabelTofilter = (label: ILabel) => {
+    const newLabel = labels.find(item => item.ID === label.ID);
+    handleOnFilterChange('labels', [...(filteringData?.labels ?? []), newLabel]);
+  };
 
   const columns: GridColDef<ITicket>[] = [
     {
       field: 'title',
       headerName: 'Меню',
       flex: 1,
-      minWidth: mainColumnWidth,
+      minWidth: matchDownMainColumn ? (windowWidth - appBorderWidth) : mainColumnWidth,
       sortable: false,
       resizable: false,
       renderHeader: () => (
-        <div style={{ display: 'flex', justifyContent: 'center', height: '100%', flex: 1, paddingLeft: '8px' }}>
-          <Button
-            sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: !filteringData?.active ? theme.palette.text.primary : undefined })}
-            onClick={(e) => {
-              e.stopPropagation();
-              const newObject = { ...filteringData };
-              setFilteringData({ ...newObject, 'active': true });
-            }}
-          >
-            Активные
-            <Chip label={data?.open} size="small" />
-          </Button>
-          <Button
-            sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: filteringData?.active ? theme.palette.text.primary : undefined })}
-            onClick={(e) => {
-              e.stopPropagation();
-              const newObject = { ...filteringData };
-              setFilteringData({ ...newObject, 'active': false });
-            }}
-          >
-            Завершенные
-            <Chip
-              label={data?.closed}
-              size="small"
-            />
-          </Button>
+        <div
+          style={{
+            display: 'flex', justifyContent: 'center',
+            height: '100%', flex: 1, paddingLeft: '8px',
+            gap: matchDownMainColumnButtons ? '16px' : 0
+          }}
+        >
+          {activeTicketsButton}
+          {closedTicketsButton}
           <div style={{ flex: 1, paddingLeft: '16px', display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '40px', gap: '16px', width: '100%' }}>
               {!labelsHidden && labelSelect}
               {((!ticketsUser || isAdmin) && !openerHidden) && openerSelect}
+              {(minWidth && headerWidth !== 0) && filter}
             </div>
           </div>
         </div>
@@ -472,6 +595,7 @@ export function TicketsList(props: ticketsListProps) {
         return (
           <Item
             key={params.row.ID}
+            addLabelTofilter={addLabelTofilter}
             {...params.row}
           />
         );
@@ -501,9 +625,9 @@ export function TicketsList(props: ticketsListProps) {
           const isLetter = (char: string) => /^[A-Za-zА-Яа-яЁё]$/.test(char);
           let result = '';
 
-          for (let i = 0; i < str.length; i++) {
-            if (isLetter(str[i])) {
-              result += str[i];
+          for (const char of str) {
+            if (isLetter(char)) {
+              result += char;
               if (result.length === 2) break;
             }
           }
@@ -558,7 +682,7 @@ export function TicketsList(props: ticketsListProps) {
       },
       renderHeader: () => performerHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ width: '100%' }}>{performerSelect}</div>
     },
-    ...((labelsHidden && headerWidth !== 0) ? [{
+    ...((!minWidth && headerWidth !== 0) ? [{
       field: 'sort',
       type: 'actions',
       width: 40,
@@ -566,51 +690,13 @@ export function TicketsList(props: ticketsListProps) {
       resizable: false,
       renderCell: () => null,
       renderHeader: () => {
-        const hasFilters = filteringData?.labels
-          || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.sender)
-          || (statusHidden && stateFilter)
-          || (customerHidden && filteringData?.companyKey && !ticketsUser)
-          || (performerHidden && filteringData?.performerKey);
+        if (labelsHidden) return filter;
         return (
-          <MenuBurger
-            hasFilters={hasFilters}
-            filter
-            items={({ closeMenu }) => [
-              <div key="labelSelect">
-                <div style={{ width: '250px' }} >
-                  {labelSelect}
-                </div>
-              </div>,
-              ...((openerHidden && (!ticketsUser || isAdmin)) ? [
-                <div key="openerSelect">
-                  <div style={{ width: '250px' }} >
-                    {openerSelect}
-                  </div>
-                </div>
-              ] : []),
-              ...(statusHidden ? [
-                <div key="stateSelect">
-                  <div style={{ width: '250px' }} >
-                    {stateSelect}
-                  </div>
-                </div>,
-              ] : []),
-              ...((customerHidden && !ticketsUser) ? [
-                <div key="customerSelect">
-                  <div style={{ width: '250px' }} >
-                    {customerSelect}
-                  </div>
-                </div>
-              ] : []),
-              ...(performerHidden ? [
-                <div key="performerSelect">
-                  <div style={{ width: '250px' }} >
-                    {performerSelect}
-                  </div>
-                </div>
-              ] : []),
-            ]}
-          />
+          <Tooltip title={'Очистить'}>
+            <IconButton color="primary" onClick={clearFilters}>
+              <HighlightOffIcon />
+            </IconButton>
+          </Tooltip>
         );
       }
     }] : [])
@@ -638,6 +724,7 @@ export function TicketsList(props: ticketsListProps) {
         <Divider />
         <CardContent ref={ref} style={{ padding: 0 }}>
           <StyledGrid
+            disableColumnReorder
             getRowHeight={() => 'auto'}
             columnHeaderHeight={60}
             rowHeight={85}
@@ -683,9 +770,12 @@ export function TicketsList(props: ticketsListProps) {
 }
 
 interface IItemProps extends ITicket {
+  addLabelTofilter: (label: ILabel) => void;
 }
 
-const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: IItemProps) => {
+const ticketIconSize = 20;
+
+const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addLabelTofilter }: IItemProps) => {
   const classes = useStyles();
 
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -699,17 +789,17 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: II
     const daysLeft = Math.floor((now.getTime() - startDate.getTime()) / msInDay);
 
     if (state.code === ticketStateCodes.confirmed) {
-      return <CheckCircleOutlineIcon color={'success'} />;
+      return <CheckCircleOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'success'} />;
     }
     if (closeAt) {
-      return <CheckCircleOutlineIcon color={'primary'} />;
+      return <CheckCircleOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'primary'} />;
     }
     if (user.userProfile?.type !== UserType.Tickets) {
       if (daysLeft === 1) {
-        return <ErrorOutlineIcon color={'warning'} />;
+        return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'warning'} />;
       }
       if (daysLeft > 1) {
-        return <ErrorOutlineIcon color={'error'} />;
+        return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'error'} />;
       }
     }
     return <AdjustIcon color={'success'} />;
@@ -720,7 +810,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: II
   return (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '0px 8px', width: '100%' }}>
       {ticketIcon}
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: `calc(100% - ${ticketIconSize + 16}px)` }}>
         <Link to={ID + ''} className={classes.itemTitle} >
           {title}
         </Link>
@@ -736,9 +826,9 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: II
                     title={label.USR$DESCRIPTION}
                     arrow
                   >
-                    <div>
+                    <Button onClick={() => addLabelTofilter(label)} style={{ padding: 0, borderRadius: 'var(--label-border-radius)' }}>
                       <LabelMarker label={label} />
-                    </div>
+                    </Button>
                   </Tooltip>
                 </div>
               );
@@ -748,7 +838,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: II
         <Typography
           variant="caption"
           color="text.secondary"
-          style={{ display: 'flex', gap: '5px' }}
+          style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}
         >
           {closeAt ? openCloseWord[1] : openCloseWord[0]}
           <UserTooltip
@@ -760,7 +850,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels }: II
             <div className={classes.openBy}>{closeBy ? closeBy.fullName : sender.fullName}</div>
           </UserTooltip>
           <Tooltip arrow title={formatToFullDate(closeAt ?? openAt)}>
-            <div>
+            <div style={{ textWrap: 'nowrap' }}>
               {timeAgo(closeAt ?? openAt)}
             </div>
           </Tooltip>

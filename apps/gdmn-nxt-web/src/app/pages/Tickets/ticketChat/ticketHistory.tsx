@@ -1,7 +1,7 @@
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import { ILabel, ITicketHistory, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineSeparator } from '@mui/lab';
-import { Avatar, Tooltip } from '@mui/material';
+import { Avatar, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CreateIcon from '@mui/icons-material/Create';
 import { useSelector } from 'react-redux';
@@ -17,6 +17,8 @@ import { useEffect, useReducer, useState } from 'react';
 import { formatToFullDate, timeAgo } from '@gsbelarus/util-useful';
 import LabelMarker from '@gdmn-nxt/components/Labels/label-marker/label-marker';
 import LabelIcon from '@mui/icons-material/Label';
+import PhoneIcon from '@mui/icons-material/Phone';
+import PhoneForwardedIcon from '@mui/icons-material/PhoneForwarded';
 
 interface ITicketHistoryProps {
   history: ITicketHistory;
@@ -24,6 +26,9 @@ interface ITicketHistoryProps {
 }
 
 export default function TicketHistory({ history, ticketId }: Readonly<ITicketHistoryProps>) {
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   const getIconByStateCode = (code: number) => {
     switch (code) {
       case 1: return <CreateIcon color={'action'} />;
@@ -44,7 +49,10 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
     if (history.state) {
       return getIconByStateCode(history.state.code);
     }
-    return <Brightness1Icon color={'action'} />;
+    if (history.needCall) {
+      return <PhoneForwardedIcon color={'action'} />;
+    }
+    return <PhoneIcon color={'action'} />;
   };
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
@@ -61,7 +69,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         <span>{history.performer?.fullName}</span>
       </UserTooltip>
       </span>;
-      case 3: return <span>переназначил(a)<UserTooltip
+      case 3: return <span>переназначил(a) <UserTooltip
         name={history.performer?.fullName ?? ''}
         phone={history.performer?.phone}
         email={history.performer?.email}
@@ -106,13 +114,19 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
     if (history.state) {
       return getTextByStateCode(history.state?.code);
     }
+    if (history.needCall) {
+      return 'Запросил звонок';
+    }
+    if (!history.needCall) {
+      return 'Завершил звонок';
+    }
     return '';
   };
 
   const name = history.user?.fullName ?? 'Система';
 
   return (
-    <div key={history.ID} style={{ marginLeft: '50px' }}>
+    <div key={history.ID} style={{ marginLeft: matchDownSm ? '10px' : '50px' }}>
       <TimelineItem
         key={history.ID}
         sx={{

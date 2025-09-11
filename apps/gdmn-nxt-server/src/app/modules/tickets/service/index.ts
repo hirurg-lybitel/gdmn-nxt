@@ -10,6 +10,7 @@ import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { config } from '@gdmn-nxt/config';
 import { PermissionsController } from '@gdmn-nxt/controllers/permissions';
+import { profileSettingsController } from '@gdmn-nxt/controllers/settings/profileSettings';
 
 const findAll = async (
   sessionID: string,
@@ -194,15 +195,17 @@ const createTicket = async (
 
     // Отправка уведомления усполнителю на почту и в систему при создании тикета
     if (ticket.performer.ID) {
-      if (ticket.performer.email) {
-        const smtpOpt: SmtpOptions = {
-          host: smtpHost,
-          port: smtpPort,
-          user: smtpUser,
-          password: smtpPassword
-        };
+      try {
+        const userSettings = await profileSettingsController.getSettings({ userId: ticket.performer.ID, sessionId: sessionID, type: UserType.Gedemin });
+        if (ticket.performer.email && userSettings.settings.TICKETS_EMAIL) {
+          const smtpOpt: SmtpOptions = {
+            host: smtpHost,
+            port: smtpPort,
+            user: smtpUser,
+            password: smtpPassword
+          };
 
-        const messageText = `
+          const messageText = `
           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${ticket.performer.fullName}</strong>!</div>
             <div style="font-size:20px;font-weight:bold;color:#1976d2">Создан новый тикет №${ticket.ID}</div>
@@ -216,13 +219,16 @@ const createTicket = async (
           </div>
         `;
 
-        await sendEmail({
-          from: 'Тикет система',
-          to: ticket.performer.email,
-          subject: 'Вам назначен новый тикет',
-          html: messageText,
-          options: { ...smtpOpt }
-        });
+          await sendEmail({
+            from: 'Тикет система',
+            to: ticket.performer.email,
+            subject: 'Вам назначен новый тикет',
+            html: messageText,
+            options: { ...smtpOpt }
+          });
+        }
+      } catch (error) {
+        console.log('createTicket_sendMail_Error', error);
       }
 
       await insertNotification({
@@ -239,7 +245,8 @@ const createTicket = async (
 
       try {
         await Promise.all(users.map(async (user) => {
-          if (user.USER.EMAIL) {
+          const userSettings = await profileSettingsController.getSettings({ userId: ticket.performer.ID, sessionId: sessionID, type: UserType.Gedemin });
+          if (user.USER.EMAIL && userSettings.settings.TICKETS_EMAIL) {
             const smtpOpt: SmtpOptions = {
               host: smtpHost,
               port: smtpPort,
@@ -348,24 +355,29 @@ const updateById = async (
 
     interface ISendNotification extends Omit<IinsertNotificationParams, 'userIDs' | 'sessionId'> {
       user: ICRMTicketUser;
+      notificationMessage?: string;
+      notificationTitle?: string;
     }
 
     const sendNotification = async (params: ISendNotification) => {
-      const { user, title, message, type = UserType.Gedemin, ...rest } = params;
-      if (user.email) {
-        const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+      const { user, title, message, type = UserType.Gedemin, notificationMessage, notificationTitle, ...rest } = params;
+      const userSettings = await profileSettingsController.getSettings({ userId: user.ID, sessionId: sessionID, type });
 
-        const smtpOpt: SmtpOptions = {
-          host: smtpHost,
-          port: smtpPort,
-          user: smtpUser,
-          password: smtpPassword
-        };
+      if (user.email && userSettings.settings.TICKETS_EMAIL) {
+        try {
+          const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
 
-        const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${ticket.ID}?disableSavedPath=true`;
-        const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
+          const smtpOpt: SmtpOptions = {
+            host: smtpHost,
+            port: smtpPort,
+            user: smtpUser,
+            password: smtpPassword
+          };
 
-        const messageText = `
+          const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${ticket.ID}?disableSavedPath=true`;
+          const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
+
+          const messageText = `
           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.fullName}</strong>!</div>
             <div style="font-size:20px;font-weight:bold;color:#1976d2">${title}</div>
@@ -379,18 +391,21 @@ const updateById = async (
           </div>
         `;
 
-        await sendEmail({
-          from: type === UserType.Tickets ? 'Система заявок' : 'Тикет система',
-          to: user.email,
-          subject: title,
-          html: messageText,
-          options: { ...smtpOpt }
-        });
+          await sendEmail({
+            from: type === UserType.Tickets ? 'Система заявок' : 'Тикет система',
+            to: user.email,
+            subject: title,
+            html: messageText,
+            options: { ...smtpOpt }
+          });
+        } catch (error) {
+          console.log('updateTicket_sendMail_Error', error);
+        }
       }
 
       return await insertNotification({
-        title: title,
-        message: message,
+        title: notificationTitle ?? title,
+        message: notificationMessage ?? message,
         type: type,
         sessionId: sessionID,
         onDate: new Date(),
@@ -522,6 +537,36 @@ const updateById = async (
           title: 'Вам назначен новый тикет',
           message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
           user: ticket.performer,
+        });
+      }
+    }
+
+    // Запись с историю и отрпавка уведомления при запросе\подверждения состоящегося звонка
+    if (oldTicket.needCall !== ticket.needCall) {
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        userId,
+        {
+          ticketKey: ticket.ID,
+          needCall: ticket.needCall,
+          changeAt: new Date()
+        },
+        type
+      );
+      if (ticket.needCall) {
+        await sendNotification({
+          title: 'Представитель клиента запросил звонок',
+          message: `Вы можете позвонить ему по номеру: <a href="tel:${ticket.sender.phone}">${ticket.sender.phone}</a>`,
+          notificationTitle: 'Запрос звонка',
+          notificationMessage: 'Представитель клиента запросил звонок',
+          user: ticket.performer,
+        });
+      } else {
+        await sendNotification({
+          title: 'Звонок завершен',
+          message: 'Сотрудник технической поддержки указал что звонок завершен',
+          user: ticket.sender,
+          type: UserType.Tickets
         });
       }
     }

@@ -62,6 +62,7 @@ const find: FindHandler<ITicketHistory> = async (
         th.ID,
         th.USR$TICKETKEY,
         th.USR$CHANGEAT,
+        th.USR$NEEDCALL,
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
         s.USR$CODE as STATE_CODE
@@ -146,7 +147,8 @@ const find: FindHandler<ITicketHistory> = async (
           }
         } : {}),
         addedLabels: addedLabels[data['ID']],
-        removedLabels: removedLabels[data['ID']]
+        removedLabels: removedLabels[data['ID']],
+        needCall: data['USR$NEEDCALL'] === 1
       };
     }));
 
@@ -177,21 +179,22 @@ const save: SaveHandler<IITicketHistorySave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { ticketKey, userId, state, changeAt, performer, addedLabels, removedLabels } = metadata;
+  const { ticketKey, userId, state, changeAt, performer, addedLabels, removedLabels, needCall } = metadata;
 
   const fieldName = type === UserType.Tickets ? 'USR$CUSTOMER' : 'USR$SUPPORT';
 
   try {
     const message = await fetchAsSingletonObject<IITicketHistorySave>(
-      `INSERT INTO USR$CRM_TICKET_HISTORY(USR$TICKETKEY, USR$CHANGEAT, USR$STATE, ${fieldName}, USR$PERFORMER)
-      VALUES(:TICKETKEY, :CHANGEAT, :STATE, :SENDER, :PERFORMER)
+      `INSERT INTO USR$CRM_TICKET_HISTORY(USR$TICKETKEY, USR$CHANGEAT, USR$STATE, ${fieldName}, USR$PERFORMER, USR$NEEDCALL)
+      VALUES(:TICKETKEY, :CHANGEAT, :STATE, :SENDER, :PERFORMER, :NEEDCALL)
       RETURNING ID`,
       {
         TICKETKEY: ticketKey,
         CHANGEAT: changeAt ? new Date(changeAt) : new Date(),
         STATE: state?.ID,
         SENDER: userId,
-        PERFORMER: performer?.ID
+        PERFORMER: performer?.ID,
+        NEEDCALL: needCall
       }
     );
 

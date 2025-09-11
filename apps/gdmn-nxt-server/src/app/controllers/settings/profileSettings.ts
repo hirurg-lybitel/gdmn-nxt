@@ -64,6 +64,7 @@ const getSettings = async ({
             u.USR$EMAIL as EMAIL,
             ps.USR$PUSH_NOTIFICATIONS as PUSH_NOTIFICATIONS_ENABLED,
             ps.USR$SAVEFILTERS as SAVEFILTERS,
+            ps.USR$TICKETS_EMAIL,
             u.USR$ONE_TIME_PASSWORD,
             u.USR$FULLNAME as FULLNAME,
             u.USR$PHONE as PHONE
@@ -96,8 +97,10 @@ const getSettings = async ({
           r['REQUIRED_2FA'] = false;
           r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
           r['ONE_TIME_PASSWORD'] = r['USR$ONE_TIME_PASSWORD'] === 1;
+          r['TICKETS_EMAIL'] = r['USR$TICKETS_EMAIL'] === 1;
           delete r['USR$ONE_TIME_PASSWORD'];
           delete r['AVATAR_BLOB'];
+          delete r['USR$TICKETS_EMAIL'];
         };
 
         return result;
@@ -111,6 +114,7 @@ const getSettings = async ({
           ps.USR$PUSH_NOTIFICATIONS_ENABLED as PUSH_NOTIFICATIONS_ENABLED,
           ps.USR$LAST_IP as LAST_IP,
           ps.USR$SAVEFILTERS as SAVEFILTERS,
+          ps.USR$TICKETS_EMAIL,
           c.PHONE
         FROM GD_USER u
           JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
@@ -144,7 +148,9 @@ const getSettings = async ({
         r['REQUIRED_2FA'] = required2fa;
         r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
         r['ONE_TIME_PASSWORD'] = false;
+        r['TICKETS_EMAIL'] = r['USR$TICKETS_EMAIL'] === 1;
         delete r['AVATAR_BLOB'];
+        delete r['USR$TICKETS_EMAIL'];
       };
 
       return result;
@@ -201,7 +207,8 @@ const set: RequestHandler = async (req, res) => {
     EMAIL,
     SAVEFILTERS,
     FULLNAME,
-    PHONE
+    PHONE,
+    TICKETS_EMAIL
   } = req.body;
 
 
@@ -236,8 +243,8 @@ const set: RequestHandler = async (req, res) => {
     const sqlResult = await (async () => {
       if (ticketsUser) {
         return await fetchAsSingletonObject(
-          `UPDATE OR INSERT INTO USR$CRM_T_USER_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATION, USR$PUSH_NOTIFICATIONS, USR$SAVEFILTERS)
-          VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS)
+          `UPDATE OR INSERT INTO USR$CRM_T_USER_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATION, USR$PUSH_NOTIFICATIONS, USR$SAVEFILTERS, USR$TICKETS_EMAIL)
+          VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS, :TICKETS_EMAIL)
           MATCHING(USR$USERKEY)
           RETURNING ID`,
           {
@@ -247,12 +254,13 @@ const set: RequestHandler = async (req, res) => {
             lastVersion,
             SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
             PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
-            SAVEFILTERS: (SAVEFILTERS ? 1 : 0)
+            SAVEFILTERS: (SAVEFILTERS ? 1 : 0),
+            TICKETS_EMAIL
           });
       }
       return await fetchAsSingletonObject(
-        `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS)
-      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS)
+        `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS, USR$TICKETS_EMAIL)
+      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS, :TICKETS_EMAIL)
       MATCHING(USR$USERKEY)
       RETURNING ID`,
         {
@@ -262,7 +270,8 @@ const set: RequestHandler = async (req, res) => {
           lastVersion,
           SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
           PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
-          SAVEFILTERS: (SAVEFILTERS ? 1 : 0)
+          SAVEFILTERS: (SAVEFILTERS ? 1 : 0),
+          TICKETS_EMAIL
         });
     })();
 
