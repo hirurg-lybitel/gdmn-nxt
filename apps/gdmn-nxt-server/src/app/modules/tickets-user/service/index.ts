@@ -135,7 +135,7 @@ const create = async (
       throw NotFoundException(`Не найден пользователь с id=${newUser?.ID}`);
     }
 
-    const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
     const smtpOpt: SmtpOptions = {
       host: smtpHost,
@@ -159,9 +159,9 @@ const create = async (
         </div>`;
 
     await sendEmail({
-      from: 'Система заявок',
+      from: `Система заявок ${ourCompanyName} <${smtpUser}>`,
       to: body.email,
-      subject: 'Учетная запись',
+      subject: 'Новая учетная запись',
       html: messageText,
       options: { ...smtpOpt }
     });
