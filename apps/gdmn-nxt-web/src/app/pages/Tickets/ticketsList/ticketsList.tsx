@@ -490,7 +490,7 @@ export function TicketsList(props: ticketsListProps) {
         ]}
       />
     );
-  }, [clearFilters, customerHidden, customerSelect, filteringData?.companyKey, filteringData?.labels, filteringData?.performerKey, filteringData?.userId, isAdmin, labelSelect, openerHidden, openerSelect, performerHidden, performerSelect, stateFilter, stateSelect, statusHidden, ticketsUser]);
+  }, [clearFilters, customerHidden, customerSelect, filteringData?.companyKey, filteringData?.labels, filteringData?.performerKey, filteringData?.sender, isAdmin, labelSelect, openerHidden, openerSelect, performerHidden, performerSelect, stateFilter, stateSelect, statusHidden, ticketsUser]);
 
   const matchDownMainColumn = useMediaQuery(`(max-width:${mainColumnSizes[2] + appBorderWidth}px)`);
   const matchDownMainColumnButtons = useMediaQuery('(max-width:380px)');
@@ -632,6 +632,10 @@ export function TicketsList(props: ticketsListProps) {
             }
           }
 
+          if (result.length < 2) {
+            return str.slice(0, 2);
+          }
+
           return result;
         };
 
@@ -691,9 +695,18 @@ export function TicketsList(props: ticketsListProps) {
       renderCell: () => null,
       renderHeader: () => {
         if (labelsHidden) return filter;
+        const hasFilters = filteringData?.labels
+          || ((!ticketsUser || isAdmin) && filteringData?.sender)
+          || stateFilter
+          || (filteringData?.companyKey && !ticketsUser)
+          || filteringData?.performerKey;
         return (
           <Tooltip title={'Очистить'}>
-            <IconButton color="primary" onClick={clearFilters}>
+            <IconButton
+              disabled={!hasFilters}
+              color="primary"
+              onClick={clearFilters}
+            >
               <HighlightOffIcon />
             </IconButton>
           </Tooltip>

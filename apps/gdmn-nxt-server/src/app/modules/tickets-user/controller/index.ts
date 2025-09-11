@@ -29,6 +29,29 @@ const findAll: RequestHandler = async (req, res) => {
   }
 };
 
+const findOne: RequestHandler = async (req, res) => {
+  try {
+    const { id: sessionID } = req.session;
+    const id = parseInt(req.params.id);
+
+    const userId = req.user['id'];
+    const isAdmin = req.user['isAdmin'];
+
+    if (!isAdmin && Number(userId) !== Number(id)) {
+      throw ForbiddenException('У вас недостаточно прав');
+    }
+
+    if (isNaN(id)) {
+      throw new Error('Идентификатор не определен или не является числовым');
+    }
+
+    const response = await ticketsUserService.findOne(sessionID, id, req.user['type'],
+    );
+    return res.status(200).json(response);
+  } catch (error) {
+    res.status(error.code ?? 500).send(resultError(error.message));
+  }
+};
 const create: RequestHandler = async (req, res) => {
   try {
     const type = req.user['type'];
@@ -94,6 +117,7 @@ const removeById: RequestHandler = async (req, res) => {
 
 export const ticketsUserController = {
   findAll,
+  findOne,
   create,
   updateById,
   removeById

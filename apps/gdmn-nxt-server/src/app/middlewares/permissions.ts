@@ -23,7 +23,8 @@ const ticketsUserRoutes: TicketsPermissions = {
   'system/users': { GET: true },
   'contacts/customerId': { ALL: true },
   'ticketSystem/history': { ALL: true },
-  'ticketSystem/labels': { GET: true }
+  'ticketSystem/labels': { GET: true },
+  'ticketSystem/userById': { GET: true }
 };
 
 const ticketsAdminRoutes: TicketsPermissions = {

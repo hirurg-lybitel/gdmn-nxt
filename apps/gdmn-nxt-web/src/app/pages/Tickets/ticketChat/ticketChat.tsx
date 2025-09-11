@@ -35,7 +35,7 @@ import { useFormik } from 'formik';
 import TicketHistory from './ticketHistory';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
-import { ticketsUserApi, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
+import { ticketsUserApi, useGetAllTicketUserQuery, useGetTicketUserByIdQuery } from '../../../features/tickets/ticketsUserApi';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -518,19 +518,20 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
+  const { data: currentUser } = useGetTicketUserByIdQuery(userProfile?.id ?? -1);
 
   const rightButton = useMemo(() => {
     if (confirmed || ticket?.sender.ID !== userProfile?.id) return;
 
     if (ticketsUser && userId === ticket?.sender.ID) {
-      const currentUser = users?.users.find((user) => user.ID === userProfile?.id);
       const Container = ({ children }: { children: ReactElement<any, any>; }) => {
+        if (!currentUser?.phone) return children;
         return (
           <Confirmation
             key="call"
             title="Запросить звонок?"
             text={'После подверждения запрос нельзя будет отменить'}
-            onConfirm={currentUser?.phone ? handleRequestCall : () => { }}
+            onConfirm={handleRequestCall}
           >
             {children}
           </Confirmation>
@@ -566,7 +567,7 @@ export default function TicketChat(props: ITicketChatProps) {
       );
     }
     return;
-  }, [confirmed, handleOpenPhoneDialog, isLoading, matchDownLg, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userProfile?.id, users?.users]);
+  }, [confirmed, currentUser, handleOpenPhoneDialog, handleRequestCall, isLoading, matchDownLg, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userId, userProfile?.id]);
 
   const handleUpdateStatus = useCallback(async (value: ITicketState | null) => {
     if (!value) return;
@@ -784,7 +785,7 @@ export default function TicketChat(props: ITicketChatProps) {
         {memoStatus}
         {memoCustomer}
         {memoUser}
-        {(ticketsUser && !confirmed) && (
+        {(ticketsUser && !confirmed && ticket?.sender.ID === userProfile?.id) && (
           <Confirmation
             key="delete"
             title="Завершить заявку?"
@@ -919,7 +920,7 @@ export default function TicketChat(props: ITicketChatProps) {
             )}
             {
               (ticket?.state.code === ticketStateCodes.done && ticketsUser && !ticketIsLoading &&
-                !ticketIsFetching && !statesIsFetching && !statesIsLoading) && (
+                !ticketIsFetching && !statesIsFetching && !statesIsLoading && ticket?.sender.ID === userProfile?.id) && (
                 <div
                   style={{
                     background: 'var(--color-card-bg)', width: '100%',
@@ -935,7 +936,7 @@ export default function TicketChat(props: ITicketChatProps) {
                     <span>Удовлетворены ли вы ответом специалиста технической поддержки?</span>
                     <div style={{ display: 'flex', gap: '16px', width: matchDownSm ? '100%' : undefined }}>
                       <Button
-                        style={{ width: matchDownSm ? '100%' : undefined }}
+                        style={{ width: matchDownSm ? '100%' : undefined, textTransform: 'none' }}
                         disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
                         onClick={cancelConfrimTicket}
                         variant={'outlined'}
@@ -943,7 +944,7 @@ export default function TicketChat(props: ITicketChatProps) {
                         Нет
                       </Button>
                       <Button
-                        style={{ width: matchDownSm ? '100%' : undefined }}
+                        style={{ width: matchDownSm ? '100%' : undefined, textTransform: 'none' }}
                         disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
                         onClick={confirmTicket}
                         variant={'contained'}

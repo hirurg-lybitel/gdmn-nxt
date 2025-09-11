@@ -65,7 +65,7 @@ const findAll = async (
 
       if (performerKey) {
         checkConditions = checkConditions &&
-          ticket.performer.ID === performerKey;
+          ticket.performer.ID === Number(performerKey);
       }
 
       if (state) {
@@ -116,7 +116,7 @@ const findAll = async (
 
 const findOne = async (
   sessionID: string,
-  id: string,
+  id: number,
   type: UserType
 ) => {
   try {
@@ -208,7 +208,7 @@ const createTicket = async (
           const messageText = `
           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${ticket.performer.fullName}</strong>!</div>
-            <div style="font-size:20px;font-weight:bold;color:#1976d2">Создан новый тикет №${ticket.ID}</div>
+            <div style="font-size:20px;font-weight:bold;color:#1976d2">Вам назначен новый тикет №${ticket.ID}</div>
             <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
               <div style="color:#666">${ticket.title}</div>
             </div>
@@ -245,7 +245,7 @@ const createTicket = async (
 
       try {
         await Promise.all(users.map(async (user) => {
-          const userSettings = await profileSettingsController.getSettings({ userId: ticket.performer.ID, sessionId: sessionID, type: UserType.Gedemin });
+          const userSettings = await profileSettingsController.getSettings({ userId: user.USER.ID, sessionId: sessionID, type: UserType.Gedemin });
           if (user.USER.EMAIL && userSettings.settings.TICKETS_EMAIL) {
             const smtpOpt: SmtpOptions = {
               host: smtpHost,

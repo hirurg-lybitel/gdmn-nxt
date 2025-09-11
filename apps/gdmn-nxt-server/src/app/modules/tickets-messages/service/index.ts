@@ -136,7 +136,7 @@ const createMessage = async (
       });
     };
 
-    if (type === UserType.Tickets && oldTicket.performer.ID && !fromTicketEP) {
+    if (userId !== oldTicket.performer.ID && oldTicket.performer.ID && !fromTicketEP) {
       await sendNotification({
         title: `Тикет №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
@@ -144,7 +144,7 @@ const createMessage = async (
         user: oldTicket.performer,
       });
     }
-    if (type !== UserType.Tickets && oldTicket.sender.ID) {
+    if (userId !== oldTicket.sender.ID && oldTicket.sender.ID) {
       await sendNotification({
         title: `Заявка №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,

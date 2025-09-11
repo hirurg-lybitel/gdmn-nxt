@@ -26,6 +26,15 @@ export const ticketsUserApi = createApi({
       transformResponse: (response: ITicketUsersRequestResult) => response.queries ?? { users: [], count: 0 },
       providesTags: ['users']
     }),
+    getTicketUserById: builder.query<ITicketUser, number>({
+      query: (id) => {
+        return {
+          url: `/userById/${id}`,
+          method: 'GET'
+        };
+      },
+      providesTags: ['users']
+    }),
     addTicketUser: builder.mutation<ITicketUserRequestResult, ITicketUser>({
       query: (body) => ({
         url: '/users',
@@ -48,4 +57,5 @@ export const {
   useGetAllTicketUserQuery,
   useAddTicketUserMutation,
   useDeleteTicketUserMutation,
+  useGetTicketUserByIdQuery
 } = ticketsUserApi;
