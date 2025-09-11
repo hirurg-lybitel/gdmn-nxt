@@ -47,7 +47,6 @@ interface ITicketChatProps {
 }
 
 const maxFileSize = 5000000;
-const maxFilesCount = 10;
 
 const infoDialogWidth = 300;
 
@@ -762,9 +761,7 @@ export default function TicketChat(props: ITicketChatProps) {
 
   useEffect(() => {
     if (!messagesAndHistory || messagesAndHistory.length <= 0 || !chatRef.current) return;
-    requestAnimationFrame(() => {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    });
+    chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messagesAndHistory]);
 
   const info = useMemo(() => {
@@ -805,7 +802,7 @@ export default function TicketChat(props: ITicketChatProps) {
         )}
       </div>
     );
-  }, [confirmTicket, confirmed, matchDownLg, memoCustomer, memoLabels, memoPerformer, memoStatus, memoUser, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
+  }, [confirmTicket, confirmed, matchDownLg, memoCustomer, memoLabels, memoPerformer, memoStatus, memoUser, ticket?.sender.ID, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userProfile?.id]);
 
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
