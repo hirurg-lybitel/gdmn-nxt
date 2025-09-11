@@ -105,11 +105,18 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     <Dialog
       maxWidth={false}
       fullWidth
-      sx={{
+      sx={(theme) => ({
         '& .MuiPaper-root': {
-          height: '100%'
+          height: '100%',
+          [theme.breakpoints.down('sm')]: {
+            margin: '0px !important',
+            width: '100%',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            borderRadius: 'initial'
+          },
         }
-      }}
+      })}
       open={open}
       onClose={handleOnClose}
     >

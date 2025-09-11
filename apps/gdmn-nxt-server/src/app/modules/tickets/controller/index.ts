@@ -34,7 +34,12 @@ const findAll: RequestHandler = async (req, res) => {
 
 const findOne: RequestHandler = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      throw new Error('Идентификатор поля не определен или не является числовым');
+    }
+
     const ticket = await ticketsService.findOne(req.sessionID, id, req.user['type']);
     return res.status(200).json(ticket);
   } catch (error) {

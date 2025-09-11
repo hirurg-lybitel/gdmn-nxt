@@ -1,4 +1,4 @@
-import { Dialog, IconButton, Theme } from '@mui/material';
+import { Dialog, IconButton, Theme, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosOutlinedIcon from '@mui/icons-material/ArrowBackIosOutlined';
@@ -50,7 +50,8 @@ export function useImageDialog() {
     img.src = image;
 
     return img.onload = () => {
-      const screenWidth = window.innerWidth - (100 * 2);
+      const indent = matchDownSm ? 30 : 100;
+      const screenWidth = window.innerWidth - (indent * 2);
       const screenHeight = window.innerHeight - (50 * 2);
 
       const imgRatio = img.naturalWidth / img.naturalHeight;
@@ -106,6 +107,9 @@ export function useImageDialog() {
     return () => window.removeEventListener('keydown', keyDown);
   }, [clickNext, clickPrev]);
 
+  const theme = useTheme();
+  const matchDownSm = useMediaQuery(theme.breakpoints.down('sm'));
+
   const imageDialog = useMemo(() => {
     return (
       <Dialog
@@ -123,18 +127,34 @@ export function useImageDialog() {
         onClose={handleClose}
       >
         <div
-          style={{ left: 0, visibility: currentIndex === 0 ? 'hidden' : undefined }}
+          style={{
+            left: 0,
+            position: matchDownSm ? 'absolute' : undefined,
+            visibility: currentIndex === 0 ? 'hidden' : undefined,
+            width: matchDownSm ? '30%' : undefined,
+            zIndex: 1300
+          }}
           className={classes.arrow}
           onClick={clickPrev}
         >
-          <ArrowBackIosOutlinedIcon fontSize="medium" />
+          <div style={{ display: 'flex', padding: '6px', background: 'rgb(0 0 0 / 50%)', borderRadius: '100%' }}>
+            <ArrowBackIosOutlinedIcon fontSize="medium" />
+          </div>
         </div>
         <div
-          style={{ right: 0, visibility: currentIndex === images.length - 1 ? 'hidden' : undefined }}
+          style={{
+            right: 0,
+            position: matchDownSm ? 'absolute' : undefined,
+            visibility: currentIndex === images.length - 1 ? 'hidden' : undefined,
+            width: matchDownSm ? '30%' : undefined,
+            zIndex: 1300
+          }}
           className={classes.arrow}
           onClick={clickNext}
         >
-          <ArrowForwardIosOutlinedIcon fontSize="medium" />
+          <div style={{ display: 'flex', padding: '6px', background: 'rgb(0 0 0 / 50%)', borderRadius: '100%' }}>
+            <ArrowForwardIosOutlinedIcon fontSize="medium" />
+          </div>
         </div>
         <div style={{ position: 'relative' }}>
           <div style={{ position: 'absolute', top: '-32px', right: '-32px' }}>

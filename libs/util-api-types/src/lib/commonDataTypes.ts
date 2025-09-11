@@ -112,6 +112,7 @@ export interface IProfileSettings {
   SAVEFILTERS?: boolean;
   ONE_TIME_PASSWORD?: boolean;
   PHONE?: string;
+  TICKETS_EMAIL?: boolean;
 }
 
 export interface ISystemSettings extends IWithID {

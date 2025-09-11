@@ -8,6 +8,7 @@ import { NotificationAction } from '@gdmn-nxt/socket';
 import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system';
 import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { config } from '@gdmn-nxt/config';
+import { profileSettingsController } from '@gdmn-nxt/controllers/settings/profileSettings';
 
 const findAll = async (
   sessionID: string,
@@ -79,21 +80,24 @@ const createMessage = async (
 
     const sendNotification = async (params: ISendNotification) => {
       const { user, title, message, type = UserType.Gedemin, ...rest } = params;
-      if (user.email) {
-        const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+      const userSettings = await profileSettingsController.getSettings({ userId: user.ID, sessionId: sessionID, type });
 
-        const smtpOpt: SmtpOptions = {
-          host: smtpHost,
-          port: smtpPort,
-          user: smtpUser,
-          password: smtpPassword
-        };
+      if (user.email && userSettings.settings.TICKETS_EMAIL) {
+        try {
+          const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
 
-        const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${oldTicket.ID}?disableSavedPath=true`;
-        const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
-        const mailTitle = `Новое сообщение от ${newUserMessage.user.fullName} в ${type === UserType.Tickets ? 'заявке' : 'тикете'} №${oldTicket.ID}`;
+          const smtpOpt: SmtpOptions = {
+            host: smtpHost,
+            port: smtpPort,
+            user: smtpUser,
+            password: smtpPassword
+          };
 
-        const messageText = `
+          const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${oldTicket.ID}?disableSavedPath=true`;
+          const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
+          const mailTitle = `Новое сообщение от ${newUserMessage.user.fullName} в ${type === UserType.Tickets ? 'заявке' : 'тикете'} №${oldTicket.ID}`;
+
+          const messageText = `
           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.fullName}</strong>!</div>
             <div style="font-size:20px;font-weight:bold;color:#1976d2">${mailTitle}</div>
@@ -107,13 +111,16 @@ const createMessage = async (
           </div>
         `;
 
-        await sendEmail({
-          from: newUserMessage.user.fullName,
-          to: user.email,
-          subject: 'Новое сообщение',
-          html: messageText,
-          options: { ...smtpOpt }
-        });
+          await sendEmail({
+            from: newUserMessage.user.fullName,
+            to: user.email,
+            subject: 'Новое сообщение',
+            html: messageText,
+            options: { ...smtpOpt }
+          });
+        } catch (error) {
+          console.log('createMessage_sendMail_Error', error);
+        }
       }
 
       return await insertNotification({
@@ -129,7 +136,7 @@ const createMessage = async (
       });
     };
 
-    if (type === UserType.Tickets && oldTicket.performer.ID && !fromTicketEP) {
+    if (userId !== oldTicket.performer.ID && oldTicket.performer.ID && !fromTicketEP) {
       await sendNotification({
         title: `Тикет №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
@@ -137,7 +144,7 @@ const createMessage = async (
         user: oldTicket.performer,
       });
     }
-    if (type !== UserType.Tickets && oldTicket.sender.ID) {
+    if (userId !== oldTicket.sender.ID && oldTicket.sender.ID) {
       await sendNotification({
         title: `Заявка №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,

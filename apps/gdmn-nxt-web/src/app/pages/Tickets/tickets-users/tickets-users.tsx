@@ -120,16 +120,19 @@ export function TicketsUsers(props: TicketsCustomersProps) {
       field: 'fullName',
       headerName: 'ФИО',
       flex: 1,
+      minWidth: 220
     },
     {
       field: 'email',
       headerName: 'Email',
       flex: 1,
+      minWidth: 220
     },
     {
       field: 'phone',
       headerName: 'Телефон',
       flex: 1,
+      minWidth: 220
     },
     {
       field: 'Actions',

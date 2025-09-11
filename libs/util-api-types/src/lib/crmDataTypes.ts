@@ -771,6 +771,7 @@ export interface ITicketHistory extends IWithID {
   performer?: ICRMTicketUser;
   addedLabels?: ILabel[];
   removedLabels?: ILabel[];
+  needCall?: boolean;
 }
 
 export enum ticketStateCodes {

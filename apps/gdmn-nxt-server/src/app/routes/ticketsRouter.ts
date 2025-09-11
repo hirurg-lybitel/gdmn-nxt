@@ -24,6 +24,7 @@ router.put('/messages/:id', ticketsMessagesController.updateById);
 router.delete('/messages/:id', ticketsMessagesController.removeById);
 
 router.get('/users', ticketsUserController.findAll);
+router.get('/userById/:id', ticketsUserController.findOne);
 router.post('/users', ticketsUserController.create);
 router.delete('/users/:id', ticketsUserController.removeById);
 

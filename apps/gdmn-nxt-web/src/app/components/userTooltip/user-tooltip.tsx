@@ -2,7 +2,6 @@ import { Avatar, Tooltip, TooltipProps } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import styles from './user-tooltip.module.less';
-import { CSSProperties } from 'react';
 
 interface IUserTooltipProps extends Omit<TooltipProps, 'title'> {
   name: string;

@@ -24,6 +24,7 @@ export default function NotificationsTab() {
   const initValue: Partial<IProfileSettings> = {
     SEND_EMAIL_NOTIFICATIONS: settings?.SEND_EMAIL_NOTIFICATIONS ?? false,
     PUSH_NOTIFICATIONS_ENABLED: settings?.PUSH_NOTIFICATIONS_ENABLED ?? false,
+    TICKETS_EMAIL: settings?.TICKETS_EMAIL ?? false
   };
 
   const formik = useFormik<IProfileSettings>({
@@ -98,6 +99,10 @@ export default function NotificationsTab() {
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
 
+  const ticketActions = ticketsUser
+    ? ['Отправлено сообщение', 'Изменен статус заявки', 'Звонок по заявке завершен']
+    : ['Вам назначен тикет', 'Отправлено сообщение', 'Изменен статус тикета', ['Запрошен звонок'], 'Представитель клиента отклонил/подтвердил выполнение тикета'];
+
   return (
     <FormikProvider value={formik}>
       <Form id="notificationsTabForm" onSubmit={formik.handleSubmit}>
@@ -158,6 +163,46 @@ export default function NotificationsTab() {
             </Tooltip>
             <Box flex={1} />
             <Button variant="contained" onClick={checkPushNotifications}>Проверить</Button>
+          </Stack>
+          <Stack direction="row" alignItems="center">
+            <FormControlLabel
+              disabled={isLoading}
+              label={ticketsUser ? 'Получать уведомления по почте' : 'Получать уведомления по тикетам на почту'}
+              control={<Checkbox
+                name="TICKETS_EMAIL"
+                checked={formik.values.TICKETS_EMAIL}
+                onChange={formik.handleChange}
+              />}
+              style={{
+                minWidth: '190px',
+              }}
+            />
+            <Tooltip
+              style={{ cursor: 'help' }}
+              arrow
+              title={<List disablePadding dense>
+                {ticketsUser
+                  ? 'Уведомления будут приходить на почту сразу при следующих действиях:'
+                  : 'Уведомления, по тикетам в которых вы являетесь исполнителем, будут приходить на почту сразу при следующих действиях:'
+                }
+                {ticketActions.map((text, index) => {
+                  return (
+                    <ListItem
+                      key={index}
+                      disableGutters
+                      alignItems="flex-start"
+                    >
+                      <ListItemIcon style={{ minWidth: 15, marginTop: 0, color: 'white' }}>
+                        {index + 1}.
+                      </ListItemIcon >
+                      {text}
+                    </ListItem>
+                  );
+                })}
+              </List>}
+            >
+              <InfoIcon color="action" />
+            </Tooltip>
           </Stack>
           <Box flex={1} />
           <ButtonWithConfirmation
