@@ -412,7 +412,7 @@ const addToTickets = async (
       true
     );
 
-    const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne('mailer');
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne('mailer');
 
     const smtpOpt: SmtpOptions = {
       host: smtpHost,
@@ -437,9 +437,9 @@ const addToTickets = async (
 
     try {
       await sendEmail({
-        from: 'Система заявок',
+        from: `Система заявок ${ourCompanyName} <${smtpUser}>`,
         to: body.email,
-        subject: 'Учетная запись',
+        subject: 'Новая учетная запись',
         html: messageText,
         options: { ...smtpOpt }
       });

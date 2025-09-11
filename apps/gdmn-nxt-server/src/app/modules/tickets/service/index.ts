@@ -191,7 +191,7 @@ const createTicket = async (
       );
     }
 
-    const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup } = await systemSettingsRepository.findOne(sessionID);
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
     // Отправка уведомления усполнителю на почту и в систему при создании тикета
     if (ticket.performer.ID) {
@@ -220,7 +220,7 @@ const createTicket = async (
         `;
 
           await sendEmail({
-            from: 'Тикет система',
+            from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
             to: ticket.performer.email,
             subject: 'Вам назначен новый тикет',
             html: messageText,
@@ -269,7 +269,7 @@ const createTicket = async (
          `;
 
             await sendEmail({
-              from: 'Тикет система',
+              from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
               to: user.USER.EMAIL,
               subject: 'Новый тикет',
               html: messageText,
@@ -365,7 +365,7 @@ const updateById = async (
 
       if (user.email && userSettings.settings.TICKETS_EMAIL) {
         try {
-          const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+          const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
           const smtpOpt: SmtpOptions = {
             host: smtpHost,
@@ -392,7 +392,7 @@ const updateById = async (
         `;
 
           await sendEmail({
-            from: type === UserType.Tickets ? 'Система заявок' : 'Тикет система',
+            from: `${type === UserType.Tickets ? 'Система заявок' : 'Тикет система'} ${ourCompanyName} <${smtpUser}>`,
             to: user.email,
             subject: title,
             html: messageText,

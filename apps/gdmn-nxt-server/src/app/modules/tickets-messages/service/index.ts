@@ -84,7 +84,7 @@ const createMessage = async (
 
       if (user.email && userSettings.settings.TICKETS_EMAIL) {
         try {
-          const { smtpHost, smtpPort, smtpUser, smtpPassword } = await systemSettingsRepository.findOne(sessionID);
+          const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
           const smtpOpt: SmtpOptions = {
             host: smtpHost,
@@ -112,7 +112,7 @@ const createMessage = async (
         `;
 
           await sendEmail({
-            from: newUserMessage.user.fullName,
+            from: `${newUserMessage.user.fullName} <${smtpUser}>`,
             to: user.email,
             subject: 'Новое сообщение',
             html: messageText,
