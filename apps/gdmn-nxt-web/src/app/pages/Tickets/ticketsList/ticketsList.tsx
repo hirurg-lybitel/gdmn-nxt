@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, IconButton, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -818,7 +818,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
     return <AdjustIcon color={'success'} />;
   }, [closeAt, openAt, state.code, user.userProfile?.type]);
 
-  const openCloseWord = ticketsUser ? ['Открыта', 'Закрыта'] : ['Закрыт', 'Открыт'];
+  const openCloseWord = ticketsUser ? ['Открыта', 'Закрыта'] : ['Открыт', 'Закрыт'];
 
   return (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '0px 8px', width: '100%' }}>
@@ -862,15 +862,58 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
           >
             <div className={classes.openBy}>{closeBy ? closeBy.fullName : sender.fullName}</div>
           </UserTooltip>
-          <Tooltip arrow title={formatToFullDate(closeAt ?? openAt)}>
-            <div style={{ textWrap: 'nowrap' }}>
-              {timeAgo(closeAt ?? openAt)}
-            </div>
-          </Tooltip>
+          <TicketTime date={closeAt ?? openAt} />
         </Typography>
       </div>
     </div >
   );
 };
+
+interface ITicketTimeProps {
+  date: Date;
+}
+
+const TicketTime = ({ date }: ITicketTimeProps) => {
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const calcUpdateInterval = (date: Date | undefined) => {
+    if (!date) return;
+    const pastDate = new Date(date);
+    const now = new Date();
+
+    const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
+
+    if (secondsPassed <= 60) return 1000;
+    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    return;
+  };
+
+  const [updateInterval, setUpdateInterval] = useState(calcUpdateInterval(date));
+
+  useEffect(() => {
+    if (!date || !updateInterval) return;
+
+    const updateTime = setInterval(() => {
+      forceUpdate();
+      const newInterval = calcUpdateInterval(date);
+      if (newInterval !== updateInterval) {
+        setUpdateInterval(newInterval);
+      }
+    }, updateInterval);
+
+    return () => {
+      clearInterval(updateTime);
+    };
+  }, [date, updateInterval]);
+
+  return (
+    <Tooltip arrow title={formatToFullDate(date)}>
+      <div style={{ textWrap: 'nowrap' }}>
+        {timeAgo(date)}
+      </div>
+    </Tooltip>
+  );
+};
+
 
 export default TicketsList;
