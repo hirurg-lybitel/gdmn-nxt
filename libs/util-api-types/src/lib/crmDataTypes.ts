@@ -697,6 +697,7 @@ export interface ICRMTicketUser extends IWithID {
   phone?: string,
   email?: string,
   avatar?: string;
+  type?: UserType;
 }
 
 export interface ITicketState extends IWithID {
@@ -728,7 +729,7 @@ export interface ITicketMessageFile {
 export interface ITicketMessage extends IWithID {
   body: string,
   ticketKey: number,
-  user: ICRMTicketUser & { type: 'empl' | 'user'; },
+  user: ICRMTicketUser;
   state: ITicketState;
   sendAt: Date;
   files?: ITicketMessageFile[];

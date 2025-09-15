@@ -96,7 +96,7 @@ export default function AccountTab() {
                   fullWidth
                 />}
               </Stack>
-              {ticketsUser ? <Box sx={{ display: 'flex', gap: '16px', flexDirection: { lg: 'row', xs: 'column' } }}>
+              <Box sx={{ display: 'flex', gap: '16px', flexDirection: { lg: 'row', xs: 'column' } }}>
                 <div style={{ flex: 1 }}>
                   <EmailInput
                     disabled={isLoading}
@@ -125,16 +125,6 @@ export default function AccountTab() {
                   />
                 </div>
               </Box>
-                :
-                <EmailInput
-                  disabled={isLoading}
-                  name="EMAIL"
-                  onChange={formik.handleChange}
-                  value={formik.values.EMAIL ?? ''}
-                  helperText={getIn(formik.touched, 'EMAIL') && getIn(formik.errors, 'EMAIL')}
-                  error={getIn(formik.touched, 'EMAIL') && Boolean(getIn(formik.errors, 'EMAIL'))}
-                />
-              }
             </Stack>
           </Stack>
           <Box flex={1} />

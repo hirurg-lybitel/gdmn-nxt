@@ -60,23 +60,27 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
   const getTextByStateCode = (code: number) => {
     switch (code) {
       case 1: return `создал(a) ${ticketsUser ? 'заявку' : 'тикет'} №${ticketId}`;
-      case 2: return <span>назначил(a) {history.performer?.ID === history.user?.ID ? 'cебя' : <UserTooltip
-        name={history.performer?.fullName ?? ''}
-        phone={history.performer?.phone}
-        email={history.performer?.email}
-        avatar={history.performer?.avatar}
-      >
-        <span>{history.performer?.fullName}</span>
-      </UserTooltip>}
+      case 2: return <span>назначил(a) {history.performer?.ID === history.user?.ID ? 'cебя' : (
+        <UserTooltip
+          name={history.performer?.fullName ?? ''}
+          phone={history.performer?.phone}
+          email={history.performer?.email}
+          avatar={history.performer?.avatar}
+        >
+          <span>{history.performer?.fullName}</span>
+        </UserTooltip>
+      )}
       </span>;
-      case 3: return <span>переназначил(a) <UserTooltip
-        name={history.performer?.fullName ?? ''}
-        phone={history.performer?.phone}
-        email={history.performer?.email}
-        avatar={history.performer?.avatar}
-      >
-        <span>{history.performer?.fullName}</span>
-      </UserTooltip>
+      case 3: return <span>переназначил(a) {history.performer?.ID === history.user?.ID ? 'cебя' : (
+        <UserTooltip
+          name={history.performer?.fullName ?? ''}
+          phone={history.performer?.phone}
+          email={history.performer?.email}
+          avatar={history.performer?.avatar}
+        >
+          <span>{history.performer?.fullName}</span>
+        </UserTooltip>
+      )}
       </span>;
       default: return `изменил(a) статус ${ticketsUser ? 'заявки' : 'тикета'} на "${history.state?.name}"`;
     }

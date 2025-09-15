@@ -201,12 +201,14 @@ const find: FindHandler<ICustomer> = async (sessionID, clause = {}, order = {}) 
       return customers;
     })();
 
+    const { OURCOMPANY } = await systemSettingsRepository.findOne(sessionID);
+
     const contacts = cachedContacts
       .reduce((filteredArray, c) => {
         let checkConditions = true;
 
         if (ticketSystem) {
-          checkConditions = checkConditions && (c['TICKETSYSTEM'] === (ticketSystem === 'true' ? 1 : 0));
+          checkConditions = checkConditions && (c['TICKETSYSTEM'] === (ticketSystem === 'true' ? 1 : 0) || c['ID'] === OURCOMPANY.ID);
         }
 
         if (ID) {
