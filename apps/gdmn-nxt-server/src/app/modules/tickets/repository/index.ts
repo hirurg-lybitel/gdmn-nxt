@@ -79,23 +79,46 @@ const find: FindHandler<ITicket> = async (
         ) AS PERFORMER_FULLNAME,
         gc.EMAIL as PERFORMER_EMAIL,
         gc.PHONE as PERFORMER_PHONE,
-        gups.USR$AVATAR as PERFORMER_AVATAR_BLOB
+        gups.USR$AVATAR as PERFORMER_AVATAR_BLOB,
+
+        sendergu.ID as CRM_SENDER_ID,
+        REPLACE(
+          TRIM(
+            COALESCE(sendergp.FIRSTNAME, '') || ' ' ||
+            COALESCE(sendergp.SURNAME, '') || ' ' ||
+            COALESCE(sendergp.MIDDLENAME, '')
+          ),
+          '  ', ' '
+        ) AS CRM_SENDER_FULLNAME,
+        sendergc.EMAIL as CRM_SENDER_EMAIL,
+        sendergc.PHONE as CRM_SENDER_PHONE,
+        sendergups.USR$AVATAR as CRM_SENDER_AVATAR_BLOB
       FROM USR$CRM_TICKET t
         LEFT JOIN USR$CRM_TICKET_STATE s ON s.ID = t.USR$STATE
 
+        /* Отправитель(Пользователь тикет системы) */
         LEFT JOIN USR$CRM_USER u ON u.ID = t.USR$USERKEY
         LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = t.USR$USERKEY
 
+        /* Исполнитель */
         LEFT JOIN GD_USER gu ON gu.ID = USR$PERFORMERKEY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
         LEFT JOIN GD_CONTACT gc ON gc.id = gu.contactkey
         LEFT JOIN GD_PEOPLE gp ON gp.contactkey = gu.contactkey
 
+        /* Кем закрыт */
         LEFT JOIN GD_USER cgu ON cgu.ID = USR$CLOSEDBY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS cgups ON cgups.USR$USERKEY = cgu.ID
         LEFT JOIN GD_CONTACT cgc ON cgc.id = cgu.contactkey
         LEFT JOIN GD_PEOPLE cgp ON cgp.contactkey = cgu.contactkey
-      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
+
+        /* Отправитель(Пользователь CRM) */
+        LEFT JOIN GD_USER sendergu ON sendergu.ID = t.USR$CRM_USERKEY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS sendergups ON sendergups.USR$USERKEY = sendergu.ID
+        LEFT JOIN GD_CONTACT sendergc ON sendergc.id = sendergu.contactkey
+        LEFT JOIN GD_PEOPLE sendergp ON sendergp.contactkey = sendergu.contactkey
+      ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
+      ORDER BY COALESCE(USR$CLOSEAT, USR$OPENAT) DESC`;
 
     const result = await fetchAsObject<any>(sql, params);
 
@@ -138,6 +161,9 @@ const find: FindHandler<ITicket> = async (
       const closerAvatarBlob = await getStringFromBlob(attachment, transaction, data['CLOSER_AVATAR_BLOB']);
       const closerAvatar = bin2String(closerAvatarBlob.split(','));
 
+      const CRMSenderAvatarBlob = await getStringFromBlob(attachment, transaction, data['CRM_SENDER_AVATAR_BLOB']);
+      const CRMSenderAvatar = bin2String(CRMSenderAvatarBlob.split(','));
+
       return {
         ID: data['ID'],
         title: data['USR$TITLE'],
@@ -149,20 +175,34 @@ const find: FindHandler<ITicket> = async (
           name: data['STATE_NAME'],
           code: data['STATE_CODE']
         },
-        sender: {
-          ID: data['USER_ID'],
-          fullName: data['USER_NAME'],
-          phone: data['USER_PHONE'],
-          email: data['USER_EMAIL'],
-          avatar
-        },
-        performer: {
-          ID: data['PERFORMER_ID'],
-          fullName: data['PERFORMER_FULLNAME'],
-          phone: data['PERFORMER_PHONE'],
-          email: data['PERFORMER_EMAIL'],
-          avatar: performerAvatar
-        },
+        ...(data['USER_ID'] ? {
+          sender: {
+            ID: data['USER_ID'],
+            fullName: data['USER_NAME'],
+            phone: data['USER_PHONE'],
+            email: data['USER_EMAIL'],
+            avatar,
+            type: UserType.Tickets
+          }
+        } : {
+          sender: {
+            ID: data['CRM_SENDER_ID'],
+            fullName: data['CRM_SENDER_FULLNAME'],
+            phone: data['CRM_SENDER_PHONE'],
+            email: data['CRM_SENDER_EMAIL'],
+            avatar: CRMSenderAvatar,
+            type: UserType.Gedemin
+          }
+        }),
+        ...(data['PERFORMER_ID'] ? {
+          performer: {
+            ID: data['PERFORMER_ID'],
+            fullName: data['PERFORMER_FULLNAME'],
+            phone: data['PERFORMER_PHONE'],
+            email: data['PERFORMER_EMAIL'],
+            avatar: performerAvatar
+          }
+        } : {}),
         closeBy: data['CLOSER_ID'] ? {
           ID: data['CLOSER_ID'],
           fullName: data['CLOSER_FULLNAME'],
@@ -197,7 +237,8 @@ interface ITicketSave extends ITicket {
 
 const save: SaveHandler<ITicketSave> = async (
   sessionID,
-  metadata
+  metadata,
+  type
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
@@ -211,9 +252,11 @@ const save: SaveHandler<ITicketSave> = async (
     throw new Error('Не удалось определить статус тикета');
   }
 
+  const senderField = type === UserType.Tickets ? 'USR$USERKEY' : 'USR$CRM_USERKEY';
+
   try {
     const ticket = await fetchAsSingletonObject<ITicketSave>(
-      `INSERT INTO USR$CRM_TICKET(USR$TITLE,USR$COMPANYKEY,USR$USERKEY,USR$OPENAT,USR$STATE,USR$PERFORMERKEY)
+      `INSERT INTO USR$CRM_TICKET(USR$TITLE, USR$COMPANYKEY, ${senderField}, USR$OPENAT, USR$STATE, USR$PERFORMERKEY)
       VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT,:STATEID,:PERFORMERKEY)
       RETURNING ID`,
       {

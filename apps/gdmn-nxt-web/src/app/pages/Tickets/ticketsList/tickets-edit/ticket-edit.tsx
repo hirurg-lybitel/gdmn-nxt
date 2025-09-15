@@ -1,6 +1,6 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Stack, TextField } from '@mui/material';
 import { useCallback, useEffect, useMemo, } from 'react';
-import { ITicket } from '@gsbelarus/util-api-types';
+import { ITicket, UserType } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { RootState } from '@gdmn-nxt/store';
@@ -10,6 +10,7 @@ import Dropzone from '@gdmn-nxt/components/dropzone/dropzone';
 import styles from './tickets-edit.module.less';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
+import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -101,6 +102,10 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     formik.setFieldValue('files', attachments);
   }, [formik]);
 
+  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+
+  const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+
   return (
     <Dialog
       maxWidth={false}
@@ -120,7 +125,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
       open={open}
       onClose={handleOnClose}
     >
-      <DialogTitle>Создание заявки</DialogTitle>
+      <DialogTitle>Создание {ticketsUser ? 'заявки' : 'тикета'}</DialogTitle>
       <DialogContent style={{ paddingTop: '5px', marginTop: '-5px' }} >
         <FormikProvider value={formik}>
           <Form
@@ -134,18 +139,39 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
               style={{ gap: '16px' }}
               height="100%"
             >
-              <TextField
-                style={{ width: '100%' }}
-                label="Тема"
-                type="text"
-                required
-                autoFocus
-                name="title"
-                onChange={formik.handleChange}
-                value={formik.values.title}
-                error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
-                helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
-              />
+              <Stack sx={(theme) => ({ display: 'flex', flexDirection: { sx: 'column', md: 'row' }, gap: '16px' })}>
+                <TextField
+                  style={{ width: '100%' }}
+                  label="Тема"
+                  type="text"
+                  required
+                  autoFocus
+                  name="title"
+                  onChange={formik.handleChange}
+                  value={formik.values.title}
+                  error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
+                  helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
+                />
+                <Autocomplete
+                  fullWidth
+                  sx={(theme) => ({ maxWidth: { xs: '100%', md: '400px' } })}
+                  size="small"
+                  disabled={systemUsersIsLoading || systemUsersIsFetching}
+                  loadingText="Загрузка данных..."
+                  options={systemUsers ?? []}
+                  value={systemUsers?.find(user => user.ID === formik.values.performer?.ID) ?? null}
+                  getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
+                  onChange={(e, value) => {
+                    formik.setFieldValue('performer', value);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={'Исполнитель'}
+                    />
+                  )}
+                />
+              </Stack>
               <MarkdownTextfield
                 name="message"
                 placeholder="Сообщение"

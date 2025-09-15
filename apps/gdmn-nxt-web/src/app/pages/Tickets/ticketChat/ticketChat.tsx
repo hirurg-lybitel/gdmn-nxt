@@ -35,7 +35,7 @@ import { useFormik } from 'formik';
 import TicketHistory from './ticketHistory';
 import CustomMarkdown from '@gdmn-nxt/components/Styled/custom-markdown/custom-markdown';
 import { LabelsSelect } from '@gdmn-nxt/components/selectors/labels-select';
-import { ticketsUserApi, useGetAllTicketUserQuery, useGetTicketUserByIdQuery } from '../../../features/tickets/ticketsUserApi';
+import { ticketsUserApi } from '../../../features/tickets/ticketsUserApi';
 import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 import CustomizedDialog from '@gdmn-nxt/components/Styled/customized-dialog/customized-dialog';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -233,11 +233,11 @@ export default function TicketChat(props: ITicketChatProps) {
     if (ticket.state.code === ticketStateCodes.needInfo && ticketsUser) {
       return states?.find(state => state.code === ticketStateCodes.inProgress);
     }
-    if (ticket?.state.code < ticketStateCodes.inProgress && !ticketsUser) {
+    if (ticket?.state.code < ticketStateCodes.inProgress && !ticketsUser && ticket.sender.ID !== userId) {
       return states?.find(state => state.code === ticketStateCodes.inProgress);
     }
     return;
-  }, [states, ticket?.state.code, ticketsUser]);
+  }, [states, ticket?.sender.ID, ticket?.state.code, ticketsUser, userId]);
 
   const [shiftHold, setShiftHold] = useState(false);
 
@@ -451,7 +451,6 @@ export default function TicketChat(props: ITicketChatProps) {
         ticketKey: -1,
         user: {
           ID: -1,
-          type: index % 2 === 0 ? 'user' : 'empl',
           fullName: '',
         },
         state: {
@@ -459,7 +458,8 @@ export default function TicketChat(props: ITicketChatProps) {
           name: '',
           code: 0
         },
-        sendAt: new Date()
+        sendAt: new Date(),
+        changeAt: new Date()
       },
       type: 'message',
       date: new Date()
@@ -472,7 +472,7 @@ export default function TicketChat(props: ITicketChatProps) {
   }, [navigate, ticketsUser]);
 
   const userProfile = useSelector<RootState, IUserProfile | undefined>(state => state.user.userProfile);
-  const { data: settings, isFetching: profileIsFetching } = useGetProfileSettingsQuery(userProfile?.id ?? -1);
+  const { data: settings, isFetching: profileIsFetching } = useGetProfileSettingsQuery(userId ?? -1);
   const [setSettings, { isLoading: updateProfileIsLoading }] = useSetProfileSettingsMutation();
 
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
@@ -499,11 +499,11 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const handleSavePhone = useCallback(async (value: string) => {
     setPhoneDialogOpen(false);
-    if (!settings || !userProfile?.id) return;
-    await setSettings({ userId: userProfile?.id, body: { ...settings, PHONE: value } });
+    if (!settings || !userId) return;
+    await setSettings({ userId, body: { ...settings, PHONE: value } });
     dispatch(ticketsUserApi.util.invalidateTags(['users']));
     dispatch(profileSettingsApi.util.invalidateTags(['settings']));
-  }, [dispatch, setSettings, settings, userProfile?.id]);
+  }, [dispatch, setSettings, settings, userId]);
 
   const memoPhoneDialog = useMemo(() => (
     <PhoneDialog
@@ -516,15 +516,13 @@ export default function TicketChat(props: ITicketChatProps) {
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
-  const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
-  const { data: currentUser } = useGetTicketUserByIdQuery(userProfile?.id ?? -1);
 
   const rightButton = useMemo(() => {
-    if (confirmed || ticket?.sender.ID !== userProfile?.id) return;
+    if (confirmed || ticket?.sender.ID !== userId) return;
 
-    if (ticketsUser && userId === ticket?.sender.ID) {
+    if (userId === ticket?.sender.ID) {
       const Container = ({ children }: { children: ReactElement<any, any>; }) => {
-        if (!currentUser?.phone) return children;
+        if (!settings?.PHONE) return children;
         return (
           <Confirmation
             key="call"
@@ -540,8 +538,8 @@ export default function TicketChat(props: ITicketChatProps) {
         return (
           <Container>
             <IconButton
-              onClick={currentUser?.phone ? undefined : handleOpenPhoneDialog}
-              disabled={isLoading || ticket?.needCall || !currentUser || updateProfileIsLoading || profileIsFetching}
+              onClick={settings?.PHONE ? undefined : handleOpenPhoneDialog}
+              disabled={isLoading || ticket?.needCall || !settings || updateProfileIsLoading || profileIsFetching}
               color="primary"
             >
               <PhoneIcon />
@@ -555,8 +553,8 @@ export default function TicketChat(props: ITicketChatProps) {
             <Button
               variant="contained"
               style={{ textTransform: 'none', textWrap: 'nowrap' }}
-              onClick={currentUser?.phone ? undefined : handleOpenPhoneDialog}
-              disabled={isLoading || ticket?.needCall || !currentUser || updateProfileIsLoading || profileIsFetching}
+              onClick={settings?.PHONE ? undefined : handleOpenPhoneDialog}
+              disabled={isLoading || ticket?.needCall || !settings || updateProfileIsLoading || profileIsFetching}
               color="primary"
             >
               Запросить звонок
@@ -566,7 +564,7 @@ export default function TicketChat(props: ITicketChatProps) {
       );
     }
     return;
-  }, [confirmed, currentUser, handleOpenPhoneDialog, handleRequestCall, isLoading, matchDownLg, profileIsFetching, ticket?.needCall, ticket?.sender.ID, ticketsUser, updateProfileIsLoading, userId, userProfile?.id]);
+  }, [confirmed, handleOpenPhoneDialog, handleRequestCall, isLoading, matchDownLg, profileIsFetching, settings, ticket?.needCall, ticket?.sender.ID, updateProfileIsLoading, userId]);
 
   const handleUpdateStatus = useCallback(async (value: ITicketState | null) => {
     if (!value) return;
@@ -782,11 +780,11 @@ export default function TicketChat(props: ITicketChatProps) {
         {memoStatus}
         {memoCustomer}
         {memoUser}
-        {(ticketsUser && !confirmed && ticket?.sender.ID === userProfile?.id) && (
+        {(!confirmed && ticket?.sender.ID === userId) && (
           <Confirmation
             key="delete"
-            title="Завершить заявку?"
-            text={'После завершения открыть заявку будет невозможно'}
+            title={`Завершить ${ticketsUser ? 'заявку' : 'тикет'}?`}
+            text={`После завершения открыть ${ticketsUser ? 'заявку' : 'тикет'} будет невозможно`}
             dangerous
             onConfirm={confirmTicket}
           >
@@ -796,13 +794,13 @@ export default function TicketChat(props: ITicketChatProps) {
               style={{ width: '100%', textTransform: 'none' }}
               disabled={ticketIsFetching || ticketIsLoading || updateTicketIsLoading}
             >
-              Завершить заявку
+              {`Завершить ${ticketsUser ? 'заявку' : 'тикет'}`}
             </Button>
           </Confirmation>
         )}
       </div>
     );
-  }, [confirmTicket, confirmed, matchDownLg, memoCustomer, memoLabels, memoPerformer, memoStatus, memoUser, ticket?.sender.ID, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userProfile?.id]);
+  }, [confirmTicket, confirmed, matchDownLg, memoCustomer, memoLabels, memoPerformer, memoStatus, memoUser, ticket?.sender.ID, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userId]);
 
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
@@ -887,12 +885,12 @@ export default function TicketChat(props: ITicketChatProps) {
               <div
                 style={{
                   background: 'var(--color-card-bg)', width: '100%',
-                  padding: '5px', display: 'flex', borderBottom: '1px solid var(--color-paper-bg)'
+                  padding: '5px', paddingLeft: '16px', display: 'flex', borderBottom: '1px solid var(--color-paper-bg)', gap: '16px'
                 }}
               >
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span>
-                    <span>Представитель клиента запросил звонок{ticket?.sender.phone ? ', вы можете позвонить ему по номеру:' : ''}</span>
+                    <span>{ticket.sender.fullName} запросил(а) звонок{ticket?.sender.phone ? '. Телефон для связи:' : ''}</span>
                     <a
                       style={{ marginLeft: '5px' }}
                       className={classes.link}
@@ -916,8 +914,8 @@ export default function TicketChat(props: ITicketChatProps) {
               </div>
             )}
             {
-              (ticket?.state.code === ticketStateCodes.done && ticketsUser && !ticketIsLoading &&
-                !ticketIsFetching && !statesIsFetching && !statesIsLoading && ticket?.sender.ID === userProfile?.id) && (
+              (ticket?.state.code === ticketStateCodes.done && (ticketsUser || userId === ticket.sender.ID) && !ticketIsLoading &&
+                !ticketIsFetching && !statesIsFetching && !statesIsLoading && ticket?.sender.ID === userId) && (
                 <div
                   style={{
                     background: 'var(--color-card-bg)', width: '100%',

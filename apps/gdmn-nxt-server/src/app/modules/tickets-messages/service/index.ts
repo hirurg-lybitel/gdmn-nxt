@@ -52,7 +52,7 @@ const createMessage = async (
       throw NotFoundException(`Не найден тикет с id=${body.ticketKey}`);
     }
 
-    if (body.state && !fromTicketEP) {
+    if (body.state && body.state.ID !== oldTicket.state.ID && !fromTicketEP) {
       const ticket = await ticketsRepository.update(sessionID, oldTicket.ID, { ...oldTicket, state: body.state }, type);
       await ticketsHistoryService.createHistory(
         sessionID,
@@ -136,7 +136,7 @@ const createMessage = async (
       });
     };
 
-    if (userId !== oldTicket.performer.ID && oldTicket.performer.ID && !fromTicketEP) {
+    if (oldTicket.performer?.ID && userId !== oldTicket.performer?.ID && !fromTicketEP) {
       await sendNotification({
         title: `Тикет №${oldTicket.ID}`,
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
@@ -150,7 +150,7 @@ const createMessage = async (
         message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
         onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
         user: oldTicket.sender,
-        type: UserType.Tickets,
+        type: oldTicket.sender.type,
       });
     }
 

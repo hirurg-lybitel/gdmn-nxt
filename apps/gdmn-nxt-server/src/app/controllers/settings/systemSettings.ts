@@ -6,7 +6,16 @@ import { cachedRequets } from '../../utils/cachedRequests';
 
 const getAll: RequestHandler = async (req, res) => {
   try {
-    const settings = await systemSettingsRepository.findOne(req.sessionID);
+    const putPermission = req.user['permissions']['system']['PUT'];
+
+    const settings = { ...(await systemSettingsRepository.findOne(req.sessionID)) };
+
+    if (!putPermission) {
+      delete settings.smtpHost;
+      delete settings.smtpPassword;
+      delete settings.smtpPort;
+      delete settings.smtpUser;
+    }
 
     const result: IRequestResult = {
       queries: { settings: [settings] },

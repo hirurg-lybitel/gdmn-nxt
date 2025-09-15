@@ -2,7 +2,7 @@ import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customiz
 import styles from './ticketsList.module.less';
 import CustomCardHeader from '@gdmn-nxt/components/customCardHeader/customCardHeader';
 import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Divider, IconButton, ListItem, Popper, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -32,6 +32,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import { useGetSystemSettingsQuery } from '../../../features/systemSettings';
 
 const appBorderWidth = 40;
 
@@ -104,7 +105,7 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
-    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter, userId: undefined } } : {}),
+    ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter, userId: undefined, sender: filteringData?.sender?.split('-')[1] } } : {}),
   });
 
   const handleRequestSearch = (value: string) => {
@@ -147,23 +148,29 @@ export function TicketsList(props: ticketsListProps) {
     setOpenEdit(false);
     const res = await addTicket(ticket);
     if ('error' in res) return;
-    addSnackbar('Спасибо за ваше обращение. Мы постараемся ответить как можно скорее.', {
+    const message = ticketsUser
+      ? 'Спасибо за ваше обращение. Мы постараемся ответить как можно скорее.'
+      : 'Тикет успешно создан';
+    addSnackbar(message, {
       variant: 'success'
     });
     dispatch(customerApi.util.invalidateTags(['Customers']));
-  }, [addSnackbar, addTicket, dispatch]);
+  }, [addSnackbar, addTicket, dispatch, ticketsUser]);
 
   const companyKey = useSelector<RootState, number>(state => state.user.userProfile?.companyKey ?? -1);
-  const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 });
+  const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 || !ticketsUser });
+  const { data: settings } = useGetSystemSettingsQuery(undefined, { skip: ticketsUser });
+
+  const currentCompany = ticketsUser ? company : settings?.OURCOMPANY;
 
   const memoEdit = useMemo(() => (
     <TicketEdit
       open={openEdit}
-      ticket={company ? { company } as ITicket : undefined}
+      ticket={currentCompany ? { company: currentCompany } as ITicket : undefined}
       onSubmit={handleSubmit}
       onCancelClick={() => setOpenEdit(false)}
     />
-  ), [company, handleSubmit, openEdit]);
+  ), [currentCompany, handleSubmit, openEdit]);
 
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
@@ -307,21 +314,27 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data: users, isFetching: usersIsFetching, isLoading: usersIsLoading } = useGetAllTicketUserQuery(undefined, { skip: ticketsUser && !isAdmin });
 
+  const senders = useMemo(() => {
+    const parsedUsers = users?.users.map((user) => ({ ...user, ID: UserType.Tickets + '-' + user.ID })) ?? [];
+    const parsedSystemUsers = systemUsers?.map((user) => ({ ...user, ID: UserType.Gedemin + '-' + user.ID })) ?? [];
+    return [...parsedUsers, ...parsedSystemUsers];
+  }, [systemUsers, users?.users]);
+
   const openerSelect = useMemo(() => {
     return (
       <SortSelect
         isLoading={usersIsLoading || usersIsFetching}
-        options={users?.users}
+        options={senders as any}
         filteringData={filteringData}
         handleOnFilterChange={handleOnFilterChange}
         field={'sender'}
         label={'Постановщик'}
-        getOptionLabel={(option) => option.fullName ?? option.userName ?? ''}
+        getOptionLabel={(option: any) => option.fullName ?? option.userName ?? option.CONTACT?.NAME ?? option.NAME ?? ''}
         getReturnedValue={(value) => value?.ID}
         sx={{ width: '100%', minWidth: '200px', flex: 1, maxWidth: '300px' }}
       />
     );
-  }, [filteringData, handleOnFilterChange, users?.users, usersIsFetching, usersIsLoading]);
+  }, [filteringData, handleOnFilterChange, senders, usersIsFetching, usersIsLoading]);
 
   const { data: labels = [], isFetching: labelsFetching, isLoading: labelsLoading } = useGetTicketsLabelsQuery();
 
@@ -721,8 +734,8 @@ export function TicketsList(props: ticketsListProps) {
       <CustomizedCard style={{ width: '100%' }}>
         <CustomCardHeader
           title={ticketsUser ? 'Заявки' : 'Тикеты'}
-          addButton={ticketsUser}
-          addButtonHint={'Создать заявку'}
+          addButton
+          addButtonHint={`Создать ${ticketsUser ? 'заявку' : 'тикет'}`}
           onAddClick={() => setOpenEdit(true)}
           onRefetch={refetch}
           refetch
@@ -818,7 +831,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
     return <AdjustIcon color={'success'} />;
   }, [closeAt, openAt, state.code, user.userProfile?.type]);
 
-  const openCloseWord = ticketsUser ? ['Открыта', 'Закрыта'] : ['Закрыт', 'Открыт'];
+  const openCloseWord = ticketsUser ? ['Открыта', 'Закрыта'] : ['Открыт', 'Закрыт'];
 
   return (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '0px 8px', width: '100%' }}>
@@ -862,15 +875,58 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
           >
             <div className={classes.openBy}>{closeBy ? closeBy.fullName : sender.fullName}</div>
           </UserTooltip>
-          <Tooltip arrow title={formatToFullDate(closeAt ?? openAt)}>
-            <div style={{ textWrap: 'nowrap' }}>
-              {timeAgo(closeAt ?? openAt)}
-            </div>
-          </Tooltip>
+          <TicketTime date={closeAt ?? openAt} />
         </Typography>
       </div>
     </div >
   );
 };
+
+interface ITicketTimeProps {
+  date: Date;
+}
+
+const TicketTime = ({ date }: ITicketTimeProps) => {
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const calcUpdateInterval = (date: Date | undefined) => {
+    if (!date) return;
+    const pastDate = new Date(date);
+    const now = new Date();
+
+    const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
+
+    if (secondsPassed <= 60) return 1000;
+    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    return;
+  };
+
+  const [updateInterval, setUpdateInterval] = useState(calcUpdateInterval(date));
+
+  useEffect(() => {
+    if (!date || !updateInterval) return;
+
+    const updateTime = setInterval(() => {
+      forceUpdate();
+      const newInterval = calcUpdateInterval(date);
+      if (newInterval !== updateInterval) {
+        setUpdateInterval(newInterval);
+      }
+    }, updateInterval);
+
+    return () => {
+      clearInterval(updateTime);
+    };
+  }, [date, updateInterval]);
+
+  return (
+    <Tooltip arrow title={formatToFullDate(date)}>
+      <div style={{ textWrap: 'nowrap' }}>
+        {timeAgo(date)}
+      </div>
+    </Tooltip>
+  );
+};
+
 
 export default TicketsList;

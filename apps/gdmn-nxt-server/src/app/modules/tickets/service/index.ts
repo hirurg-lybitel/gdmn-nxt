@@ -65,7 +65,7 @@ const findAll = async (
 
       if (performerKey) {
         checkConditions = checkConditions &&
-          ticket.performer.ID === Number(performerKey);
+          ticket.performer?.ID === Number(performerKey);
       }
 
       if (state) {
@@ -177,10 +177,10 @@ const createTicket = async (
 
     const assignedState = ticketStates.find(state => state.code === ticketStateCodes.assigned);
 
-    if (ticket.performer.ID && ticket.performer.ID !== -1) {
+    if (ticket.performer?.ID && ticket.performer.ID !== -1) {
       await ticketsHistoryService.createHistory(
         sessionID,
-        undefined,
+        type === UserType.Tickets ? undefined : userId,
         {
           ticketKey: ticket.ID,
           state: assignedState,
@@ -194,18 +194,19 @@ const createTicket = async (
     const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
     // Отправка уведомления усполнителю на почту и в систему при создании тикета
-    if (ticket.performer.ID) {
-      try {
-        const userSettings = await profileSettingsController.getSettings({ userId: ticket.performer.ID, sessionId: sessionID, type: UserType.Gedemin });
-        if (ticket.performer.email && userSettings.settings.TICKETS_EMAIL) {
-          const smtpOpt: SmtpOptions = {
-            host: smtpHost,
-            port: smtpPort,
-            user: smtpUser,
-            password: smtpPassword
-          };
+    if (ticket.performer?.ID) {
+      if (ticket.performer?.ID !== userId) {
+        try {
+          const userSettings = await profileSettingsController.getSettings({ userId: ticket.performer.ID, sessionId: sessionID, type: UserType.Gedemin });
+          if (ticket.performer.email && userSettings.settings.TICKETS_EMAIL) {
+            const smtpOpt: SmtpOptions = {
+              host: smtpHost,
+              port: smtpPort,
+              user: smtpUser,
+              password: smtpPassword
+            };
 
-          const messageText = `
+            const messageText = `
           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${ticket.performer.fullName}</strong>!</div>
             <div style="font-size:20px;font-weight:bold;color:#1976d2">Вам назначен новый тикет №${ticket.ID}</div>
@@ -219,29 +220,30 @@ const createTicket = async (
           </div>
         `;
 
-          await sendEmail({
-            from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
-            to: ticket.performer.email,
-            subject: 'Вам назначен новый тикет',
-            html: messageText,
-            options: { ...smtpOpt }
-          });
+            await sendEmail({
+              from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
+              to: ticket.performer.email,
+              subject: 'Вам назначен новый тикет',
+              html: messageText,
+              options: { ...smtpOpt }
+            });
+          }
+        } catch (error) {
+          console.log('createTicket_sendMail_Error', error);
         }
-      } catch (error) {
-        console.log('createTicket_sendMail_Error', error);
-      }
 
-      await insertNotification({
-        sessionId: sessionID,
-        title: `Новый тикет №${ticket.ID}`,
-        message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
-        onDate: new Date(),
-        userIDs: [ticket.performer.ID],
-        actionContent: ticket.ID + '',
-        actionType: NotificationAction.JumpToTicket
-      });
+        await insertNotification({
+          sessionId: sessionID,
+          title: `Новый тикет №${ticket.ID}`,
+          message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
+          onDate: new Date(),
+          userIDs: [ticket.performer.ID],
+          actionContent: ticket.ID + '',
+          actionType: NotificationAction.JumpToTicket
+        });
+      }
     } else {
-      const users = (ticket.performer.ID || !performersGroup?.ID) ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID);
+      const users = !performersGroup?.ID ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID);
 
       try {
         await Promise.all(users.map(async (user) => {
@@ -441,11 +443,13 @@ const updateById = async (
           },
           type
         );
-        await sendNotification({
-          title: `Тикет №${ticket.ID} завершен`,
-          message: 'Клиент завершил тикет',
-          user: ticket.performer,
-        });
+        if (ticket.performer.ID !== userId) {
+          await sendNotification({
+            title: `Тикет №${ticket.ID} завершен`,
+            message: 'Клиент завершил тикет',
+            user: ticket.performer,
+          });
+        }
       } else {
         // Сохранение в историю изменения состояния тикета
         await ticketsHistoryService.createHistory(
@@ -460,7 +464,7 @@ const updateById = async (
           type
         );
         // Отправка уведомления исполнителю после подверждения тикета со стадии "Завершен"
-        if (body.state.code === ticketStateCodes.confirmed) {
+        if (body.state.code === ticketStateCodes.confirmed && ticket.performer.ID !== userId) {
           await sendNotification({
             title: `Тикет №${ticket.ID} завершен`,
             message: 'Клиент подтвердил выполнение тикета',
@@ -468,7 +472,7 @@ const updateById = async (
           });
         } else {
           // Отправка уведомления об изменении состояния тикета исполнителю
-          if (userId !== ticket.performer.ID) {
+          if (userId !== ticket.performer?.ID) {
             if (type === UserType.Tickets && body.state.code === ticketStateCodes.inProgress) {
               await sendNotification({
                 title: `Тикет №${ticket.ID}`,
@@ -490,14 +494,14 @@ const updateById = async (
                 title: `Заявка №${ticket.ID}`,
                 message: 'Заявка была отмечена как завершённая сотрудником технической поддержки. Просим подтвердить выполнение. Если у вас остались вопросы или проблема не решена — вы можете возобновить заявку.',
                 user: ticket.sender,
-                type: UserType.Tickets
+                type: ticket.sender.type
               });
             } else {
               await sendNotification({
                 title: `Заявка №${ticket.ID}`,
                 message: `Статус заявки изменен на "${body.state.name}"`,
                 user: ticket.sender,
-                type: UserType.Tickets
+                type: ticket.sender.type
               });
             }
           }
@@ -506,8 +510,8 @@ const updateById = async (
     }
 
     // При изменении исполнителя
-    if ((!oldTicket.performer.ID || oldTicket.performer.ID !== body.performer.ID) && body.performer.ID) {
-      if (!oldTicket.performer.ID) {
+    if ((!oldTicket.performer?.ID || oldTicket.performer?.ID !== body.performer?.ID) && body.performer?.ID) {
+      if (!oldTicket.performer?.ID) {
         await ticketsHistoryService.createHistory(
           sessionID,
           userId,
@@ -532,7 +536,7 @@ const updateById = async (
           type
         );
       }
-      if (ticket.performer.ID !== userId) {
+      if (ticket.performer?.ID !== userId) {
         await sendNotification({
           title: 'Вам назначен новый тикет',
           message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
@@ -553,21 +557,23 @@ const updateById = async (
         },
         type
       );
-      if (ticket.needCall) {
+      if (ticket.needCall && ticket.performer.ID !== userId) {
         await sendNotification({
-          title: 'Представитель клиента запросил звонок',
-          message: `Вы можете позвонить ему по номеру: <a href="tel:${ticket.sender.phone}">${ticket.sender.phone}</a>`,
+          title: `${ticket.sender.fullName} запросил звонок`,
+          message: `Телефон для связи: <a href="tel:${ticket.sender.phone}">${ticket.sender.phone}</a>`,
           notificationTitle: 'Запрос звонка',
-          notificationMessage: 'Представитель клиента запросил звонок',
+          notificationMessage: `${ticket.sender.fullName} запросил звонок`,
           user: ticket.performer,
         });
       } else {
-        await sendNotification({
-          title: 'Звонок завершен',
-          message: 'Сотрудник технической поддержки указал что звонок завершен',
-          user: ticket.sender,
-          type: UserType.Tickets
-        });
+        if (ticket.sender.ID !== userId) {
+          await sendNotification({
+            title: 'Звонок завершен',
+            message: 'Сотрудник технической поддержки указал что звонок завершен',
+            user: ticket.sender,
+            type: ticket.sender.type
+          });
+        }
       }
     }
 

@@ -233,10 +233,11 @@ const set: RequestHandler = async (req, res) => {
     } else {
       const updateEmail = await fetchAsObject(
         `UPDATE GD_CONTACT c
-      SET EMAIL = :EMAIL
+      SET EMAIL = :EMAIL,
+      PHONE = :PHONE
       WHERE EXISTS(SELECT ID FROM GD_USER u WHERE u.CONTACTKEY = c.ID AND u.ID = :userId)
       RETURNING EMAIL`,
-        { userId, EMAIL }
+        { userId, EMAIL, PHONE }
       );
     }
 
