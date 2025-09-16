@@ -1173,6 +1173,7 @@ const UserMessage = ({ isLoading: isLoadingProp, message, indent }: IUserMessage
                   key="save"
                   size={'small'}
                   label="Сохранить"
+                  disabled={(!formik.values.body || formik.values.body.trim() === '') && (!formik.values.files || formik.values.files.length === 0)}
                   onClick={(e) => {
                     formik.handleSubmit();
                     closeMenu();

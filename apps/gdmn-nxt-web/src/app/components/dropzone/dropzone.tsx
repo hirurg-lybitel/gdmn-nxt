@@ -54,6 +54,7 @@ export function Dropzone({
 
     if (!initialFiles) {
       setFileObjects([]);
+      setInitialized(true);
       return;
     }
 
