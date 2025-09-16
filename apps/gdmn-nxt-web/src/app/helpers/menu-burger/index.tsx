@@ -41,7 +41,11 @@ export default function MenuBurger({
   })
     .filter(({ key }) => !!key)
     .map((item, index) => !filter ? (
-      <MenuItem key={index} style={{ padding: 0 }}>
+      <MenuItem
+        disabled={item.props.disabled}
+        key={index}
+        style={{ padding: 0 }}
+      >
         {cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })}
       </MenuItem>
     ) : cloneElement(item, { style: { padding: '6px 16px', width: '100%' } })
