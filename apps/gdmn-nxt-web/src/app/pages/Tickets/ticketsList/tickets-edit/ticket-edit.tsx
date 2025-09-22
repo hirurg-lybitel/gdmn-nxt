@@ -152,7 +152,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                   error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
                   helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
                 />
-                <Autocomplete
+                {!ticketsUser && <Autocomplete
                   fullWidth
                   sx={(theme) => ({ maxWidth: { xs: '100%', md: '400px' } })}
                   size="small"
@@ -170,7 +170,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                       label={'Исполнитель'}
                     />
                   )}
-                />
+                />}
               </Stack>
               <MarkdownTextfield
                 name="message"
