@@ -82,6 +82,7 @@ const find: FindHandler<ITicketMessage> = async (
           USR$NAME
         FROM USR$CRM_TICKETFILE
         WHERE USR$TICKETRECKEY = ?
+        ORDER BY USR$SORTNUMBER ASC
         `, [id]);
 
       const files = [];
@@ -188,17 +189,18 @@ const save: SaveHandler<ITicketMessageSave> = async (
       });
     };
 
-    await Promise.all(renameDuplicates(files).map(async (file) => {
+    await Promise.all(renameDuplicates(files).map(async (file, index) => {
       const fileName = `${message.ID}/${file.fileName}`;
 
       await fetchAsSingletonObject<ITicketMessageSave>(
-        `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME)
-          VALUES(:TICKETRECKEY, :NAME)
+        `INSERT INTO USR$CRM_TICKETFILE(USR$TICKETRECKEY, USR$NAME, USR$SORTNUMBER)
+          VALUES(:TICKETRECKEY, :NAME, :SORTNUMBER)
           RETURNING ID
         `,
         {
           TICKETRECKEY: message?.ID,
-          NAME: fileName
+          NAME: fileName,
+          SORTNUMBER: index
         }
       );
 
