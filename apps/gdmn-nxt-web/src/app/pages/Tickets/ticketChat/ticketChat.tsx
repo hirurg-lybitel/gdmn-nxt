@@ -755,12 +755,21 @@ export default function TicketChat(props: ITicketChatProps) {
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
 
-  const chatRef = useRef<any>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!messagesAndHistory || messagesAndHistory.length <= 0 || !chatRef.current) return;
-    chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  }, [messagesAndHistory]);
+    if (!messagesRef.current || !chatRef.current) return;
+
+    const observer = new ResizeObserver(entries => {
+      if (!chatRef.current) return;
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    });
+
+    observer.observe(messagesRef.current);
+
+    return () => observer.disconnect();
+  }, []);
 
   const info = useMemo(() => {
     return (
@@ -951,7 +960,7 @@ export default function TicketChat(props: ITicketChatProps) {
                 </div>
               )}
             <div ref={chatRef} style={{ flex: 1, padding: '16px', position: 'relative', overflow: 'auto' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
+              <div ref={messagesRef} style={{ display: 'flex', flexDirection: 'column', paddingBottom: '16px', height: 'max-content', position: 'absolute', inset: '16px' }}>
                 {(isLoading ? fakeMessages : messagesAndHistory).map((item, index) => {
                   if (item.type === 'message') {
                     return <UserMessage
