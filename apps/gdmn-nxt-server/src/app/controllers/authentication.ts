@@ -503,7 +503,7 @@ const changePassword: RequestHandler = async (req, res) => {
         ));
       }
 
-      const updateUser = await ticketsUserService.updateById(sessionID, userId, { ...user, password: newPassword });
+      const updateUser = await ticketsUserService.updateById(sessionID, userId, { ...user, password: newPassword }, true);
 
       return res.json(authResult(
         'SUCCESS',

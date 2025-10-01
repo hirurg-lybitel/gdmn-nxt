@@ -50,8 +50,8 @@ const find: FindHandler<ITicketMessage> = async (
           sps.USR$AVATAR
         ) AS AVATAR,
         CASE
-          WHEN r.USR$CUSTOMER_AUTHORKEY IS NOT NULL THEN 'user'
-          ELSE 'empl'
+          WHEN r.USR$CUSTOMER_AUTHORKEY IS NOT NULL THEN '${UserType.Tickets}'
+          ELSE '${UserType.Gedemin}'
         END AS TYPE,
         r.ID,
         r.USR$BODY,

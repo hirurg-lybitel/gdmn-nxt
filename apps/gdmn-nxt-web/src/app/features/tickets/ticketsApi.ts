@@ -1,6 +1,8 @@
-import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser, IChangePassword, IAuthResult, ITicketHistory } from '@gsbelarus/util-api-types';
+import { IQueryOptions, IRequestResult, queryOptionsToParamsString, ITicket, ITicketState, ITicketMessage, ITicketUser, IChangePassword, IAuthResult, ITicketHistory, UserType, ticketStateCodes } from '@gsbelarus/util-api-types';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryByUserType } from '@gdmn-nxt/store/baseUrl';
+import { getSocketClient, SocketRoom, TicketEvent } from '@gdmn-nxt/socket';
+import { RootState } from '@gdmn-nxt/store';
 
 export type ITicketsRequestResult = IRequestResult<{ tickets: ITicket[], count: number, closed: number, open: number; }>;
 export type ITicketsStatesRequestResult = IRequestResult<{ ticketStates: ITicketState[]; }>;
@@ -11,7 +13,7 @@ export type ITicketHistoryRequestResult = IRequestResult<{ ticketsHistory: ITick
 
 export const ticketsApi = createApi({
   reducerPath: 'ticketSystem',
-  tagTypes: ['tickets', 'ticketsStates', 'messages'],
+  tagTypes: ['chat'],
   baseQuery: baseQueryByUserType({ baseUrl: 'ticketSystem', credentials: 'include' }),
   endpoints: (builder) => ({
     getAllTickets: builder.query<{ tickets: ITicket[], count: number, closed: number, open: number; }, Partial<{ active: boolean; } & IQueryOptions> | void>({
@@ -24,16 +26,70 @@ export const ticketsApi = createApi({
         };
       },
       transformResponse: (response: ITicketsRequestResult) => response.queries || null,
-      providesTags: ['tickets']
+      async onCacheEntryAdded(arg, { updateCachedData, cacheEntryRemoved, cacheDataLoaded, getState, dispatch }) {
+        await cacheDataLoaded;
+
+        const socket = getSocketClient('tickets');
+
+        const state = getState() as RootState;
+
+        const userType = state.user.userProfile?.type ?? UserType.Gedemin;
+
+        const updateTicket = (ticket: ITicket) => {
+          updateCachedData((draft) => {
+            if (ticket.state.code === ticketStateCodes.confirmed || (userType === UserType.Gedemin && ticket.state.code === ticketStateCodes.done)) {
+              dispatch(ticketsApi.endpoints.getAllTickets.initiate(arg, { forceRefetch: true }));
+            } else {
+              const findIndex = draft.tickets.findIndex(d => d.ID === ticket.ID);
+              draft.tickets[findIndex] = { ...ticket };
+            }
+          });
+        };
+
+        socket?.emit(TicketEvent.JoinToTicketsRoom, userType);
+
+        socket?.on(TicketEvent.UpdateTicket, updateTicket);
+
+        const addTicket = (ticket: ITicket) => {
+          dispatch(ticketsApi.endpoints.getAllTickets.initiate(arg, { forceRefetch: true }));
+        };
+
+        socket?.on(TicketEvent.AddTicket, addTicket);
+
+        await cacheEntryRemoved;
+        socket?.off(TicketEvent.UpdateTicket, updateTicket);
+        socket?.off(TicketEvent.AddTicket, addTicket);
+      }
     }),
-    getTicketById: builder.query<ITicket, string>({
-      query: (options) => {
+    getTicketById: builder.query<ITicket, number>({
+      query: (id) => {
         return {
-          url: `/tickets/${options}`,
+          url: `/tickets/${id}`,
           method: 'GET'
         };
       },
-      providesTags: ['tickets']
+      async onCacheEntryAdded(id, { updateCachedData, cacheEntryRemoved, cacheDataLoaded, getState }) {
+        await cacheDataLoaded;
+
+        const socket = getSocketClient('tickets');
+
+        const updateTicket = (ticket: ITicket) => {
+          updateCachedData(() => ({ ...ticket }));
+        };
+
+        const state = getState() as RootState;
+
+        const userType = state.user.userProfile?.type ?? UserType.Gedemin;
+
+        socket?.emit(TicketEvent.JoinToChat, id, userType);
+
+        socket?.on(TicketEvent.UpdateTicket, updateTicket);
+
+        await cacheEntryRemoved;
+        socket?.off(TicketEvent.UpdateTicket, updateTicket);
+        socket?.emit(TicketEvent.LeaveFromChat, id);
+      },
+      providesTags: ['chat']
     }),
     updateTicket: builder.mutation<ITicket, Partial<ITicket>>({
       query: ({ ID, ...body }) => ({
@@ -41,15 +97,35 @@ export const ticketsApi = createApi({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: () => ['tickets']
+      transformResponse: (response: ITicketsRequestResult) => {
+        const result = response.queries?.tickets || [];
+
+        const socket = getSocketClient('tickets');
+
+        if (result.length) {
+          socket?.emit(TicketEvent.UpdateTicket, result[0]);
+        }
+
+        return result[0];
+      }
     }),
-    addTicket: builder.mutation<ITicketsRequestResult, ITicket>({
+    addTicket: builder.mutation<ITicket, ITicket>({
       query: (body) => ({
         url: '/tickets',
         body: body,
         method: 'POST'
       }),
-      invalidatesTags: ['tickets']
+      transformResponse: (response: ITicketsRequestResult) => {
+        const result = response.queries?.tickets || [];
+
+        const socket = getSocketClient('tickets');
+
+        if (result.length) {
+          socket?.emit(TicketEvent.AddTicket, result[0]);
+        }
+
+        return result[0];
+      }
     }),
     getAllTicketsStates: builder.query<ITicketState[], void>({
       query: (options) => {
@@ -58,19 +134,9 @@ export const ticketsApi = createApi({
           method: 'GET'
         };
       },
-      transformResponse: (response: ITicketsStatesRequestResult) => response.queries?.ticketStates || null,
-      providesTags: ['ticketsStates']
+      transformResponse: (response: ITicketsStatesRequestResult) => response.queries?.ticketStates || null
     }),
-    getTicketStateById: builder.query<ITicketState, string>({
-      query: (options) => {
-        return {
-          url: `/states/${options}`,
-          method: 'GET'
-        };
-      },
-      providesTags: ['ticketsStates']
-    }),
-    getAllTicketMessages: builder.query<ITicketMessage[], Partial<{ id: string; } & IQueryOptions>>({
+    getAllTicketMessages: builder.query<ITicketMessage[], Partial<{ id: number, userId: number; } & IQueryOptions>>({
       query: (options) => {
         const { id } = options;
         const params = queryOptionsToParamsString(options);
@@ -80,16 +146,63 @@ export const ticketsApi = createApi({
           method: 'GET'
         };
       },
+      async onCacheEntryAdded({ id }, { updateCachedData, cacheEntryRemoved, cacheDataLoaded, getState }) {
+        await cacheDataLoaded;
+
+        const socket = getSocketClient('tickets');
+
+        const newMessage = (message: ITicketMessage) => {
+          updateCachedData((draft) => {
+            draft.push(message);
+          });
+        };
+
+        socket?.on(TicketEvent.NewMessage, newMessage);
+
+        const updateMessage = (message: ITicketMessage) => {
+          updateCachedData((draft) => {
+            const findIndex = draft.findIndex(d => d.ID === message.ID);
+            draft[findIndex] = { ...message };
+          });
+        };
+
+        socket?.on(TicketEvent.UpdateMessage, updateMessage);
+
+        const deleteMessage = (id: number) => {
+          updateCachedData((draft) => {
+            draft.splice(0, draft.length, ...draft.filter(column => {
+              return column.ID !== Number(id);
+            }));
+          });
+        };
+
+        socket?.on(TicketEvent.DeleteMessage, deleteMessage);
+
+        await cacheEntryRemoved;
+        socket?.off(TicketEvent.NewMessage, newMessage);
+        socket?.off(TicketEvent.UpdateMessage, updateMessage);
+        socket?.off(TicketEvent.DeleteMessage, deleteMessage);
+      },
       transformResponse: (response: ITicketMessagesRequestResult) => response.queries?.messages || null,
-      providesTags: ['messages']
+      providesTags: ['chat']
     }),
-    addTicketMessage: builder.mutation<ITicketsRequestResult, Partial<ITicketMessage>>({
+    addTicketMessage: builder.mutation<ITicketMessage, Partial<ITicketMessage>>({
       query: (body) => ({
         url: '/messages',
         body: body,
         method: 'POST'
       }),
-      invalidatesTags: ['messages']
+      transformResponse: (response: ITicketMessagesRequestResult) => {
+        const result = response.queries?.messages || [];
+
+        const socket = getSocketClient('tickets');
+
+        if (result.length) {
+          socket?.emit(TicketEvent.NewMessage, result[0]);
+        }
+
+        return result[0];
+      }
     }),
     updateTicketMessage: builder.mutation<ITicketMessage, Partial<ITicketMessage>>({
       query: ({ ID, ...body }) => ({
@@ -97,14 +210,31 @@ export const ticketsApi = createApi({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: () => ['messages']
+      transformResponse: (response: ITicketMessagesRequestResult) => {
+        const result = response.queries?.messages || [];
+
+        const socket = getSocketClient('tickets');
+
+        if (result.length) {
+          socket?.emit(TicketEvent.UpdateMessage, result[0]);
+        }
+
+        return result[0];
+      }
     }),
-    deleteTicketMessage: builder.mutation<{ id: number; }, number>({
+    deleteTicketMessage: builder.mutation<number, number>({
       query: (id) => ({
         url: `/messages/${id}`,
         method: 'DELETE'
       }),
-      invalidatesTags: ['messages']
+      transformResponse: ({ id, ticketKey }: { id: number, ticketKey: number; }) => {
+        if (id) {
+          const socket = getSocketClient('tickets');
+          socket?.emit(TicketEvent.DeleteMessage, id, ticketKey);
+        }
+
+        return id;
+      }
     }),
     getAllTicketHistory: builder.query<ITicketHistory[], Partial<{ id: string; } & IQueryOptions>>({
       query: (options) => {
@@ -116,8 +246,24 @@ export const ticketsApi = createApi({
           method: 'GET'
         };
       },
+      async onCacheEntryAdded({ id }, { updateCachedData, cacheEntryRemoved, cacheDataLoaded, getState }) {
+        await cacheDataLoaded;
+
+        const socket = getSocketClient('tickets');
+
+        const newHistory = (history: ITicketHistory[]) => {
+          updateCachedData((draft) => {
+            draft.push(...history);
+          });
+        };
+
+        socket?.on(TicketEvent.NewHistory, newHistory);
+
+        await cacheEntryRemoved;
+        socket?.off(TicketEvent.NewHistory, newHistory);
+      },
       transformResponse: (response: ITicketHistoryRequestResult) => response.queries?.ticketsHistory || null,
-      providesTags: ['messages', 'tickets']
+      providesTags: ['chat']
     }),
   }),
 });
@@ -127,7 +273,6 @@ export const {
   useAddTicketMutation,
   useGetTicketByIdQuery,
   useGetAllTicketsStatesQuery,
-  useGetTicketStateByIdQuery,
   useGetAllTicketMessagesQuery,
   useAddTicketMessageMutation,
   useUpdateTicketMutation,

@@ -11,7 +11,6 @@ export const customerContractsApi = createApi({
   endpoints: (builder) => ({
     getCustomerContracts: builder.query<ICustomerContract[], number | void>({
       query: (id) => `customerContracts${id ? `/${id}` : ''}`,
-      // async onQueryStarted(){console.log('⏩ request', "GET", `${baseUrlApi}customercontracts`)},
       transformResponse: (response: ICustomerContractsRequestResult) => response.queries?.customerContracts || [],
       providesTags: (result, error) =>
         result
@@ -25,7 +24,6 @@ export const customerContractsApi = createApi({
 
     }),
     updateCustomerContract: builder.mutation<ICustomerContractsRequestResult, Partial<ICustomerContract>>({
-      // async onQueryStarted({ID:id}){console.log('⏩ request', 'PUT', `${baseUrlApi}customerContracts/${id}`)},
       query(body) {
         const { ID: id } = body;
         return {
@@ -45,7 +43,6 @@ export const customerContractsApi = createApi({
             : [{ type: 'CustomerContracts', id: 'LIST' }]
     }),
     addCustomerContract: builder.mutation<ICustomerContract[], Partial<ICustomerContract>>({
-      // async onQueryStarted(){console.log('⏩ request', 'POST', `${baseUrlApi}customerContracts`)},
       query(body) {
         return {
           url: 'customerContracts',
@@ -63,7 +60,6 @@ export const customerContractsApi = createApi({
           : [{ type: 'CustomerContracts', id: 'LIST' }],
     }),
     deleteCustomerContract: builder.mutation<{ id: number; }, number>({
-      // async onQueryStarted(id){console.log('⏩ request', 'DELETE', `${baseUrlApi}customerContracts/${id}`)},
       query(id) {
         return {
           url: `customerContracts/${id}`,

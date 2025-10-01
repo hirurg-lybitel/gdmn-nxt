@@ -255,7 +255,7 @@ export function SignInSignUp({
                   fontSize: { xs: '1.75rem', sm: '2rem' }
                 }}
               >
-                {ticketsLogin ? 'Вход в тикет систему' : 'Вход в систему'}
+                {ticketsLogin ? 'Вход в систему заявок' : 'Вход в систему'}
               </Typography>
               <Typography
                 variant="body2"

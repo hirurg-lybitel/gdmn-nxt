@@ -75,7 +75,10 @@ export function Notifications({ router }: NotificationsProps) {
     });
 
     socket.on('deleteAll', async (userId) => {
-      await deleteAllNotifications(sessionId, userId);
+      const user = users.find(u => u.socketId === socket.id);
+      const userType = user?.userType;
+
+      await deleteAllNotifications(sessionId, userId, userType);
       await sendMessages();
     });
 
@@ -120,7 +123,7 @@ export function Notifications({ router }: NotificationsProps) {
       const userIndex = users.indexOf(user);
       (userIndex !== -1) && users.splice(userIndex, 1);
 
-      console.log(`🔥: A user ${socket.id} disconnected`);
+      console.log(`🔥: Notifications: ${socket.id} user just disconnected`);
     });
   });
 

@@ -11,12 +11,14 @@ const findAll: RequestHandler = async (req, res) => {
     const isAdmin = req.user['isAdmin'];
     const userId = req.user['id'] ?? -1;
 
+    const showAll = req.user['permissions']?.['ticketSystem/tickets/all']?.GET;
+
     const response = await ticketsService.findAll(
       sessionID,
       {
         ...req.query,
-        ...(type === UserType.Tickets ? { companyKey: req.user['companyKey'] ?? -1 } : {}),
-        ...((type === UserType.Tickets && !isAdmin) ? { userId } : {})
+        ...(type === UserType.Tickets ? { companyID: req.user['companyKey'] ?? -1 } : {}),
+        ...((!showAll && !isAdmin) ? { userId } : {})
       },
       type
     );
@@ -40,7 +42,15 @@ const findOne: RequestHandler = async (req, res) => {
       throw new Error('Идентификатор поля не определен или не является числовым');
     }
 
-    const ticket = await ticketsService.findOne(req.sessionID, id, req.user['type']);
+    const ticket = await ticketsService.findOne(
+      req.sessionID,
+      id,
+      req.user['type'],
+      req.user['id'],
+      req.user['isAdmin'],
+      req.user['companyKey'],
+      !!req.user['permissions']?.['ticketSystem/tickets/all']?.GET
+    );
     return res.status(200).json(ticket);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
@@ -57,7 +67,14 @@ const createTicket: RequestHandler = async (req, res) => {
       throw ForbiddenException('Организация создаваемого тикета отличается от вашей');
     }
 
-    const tickets = await ticketsService.createTicket(req.sessionID, userId, req.body, req.user['type']);
+    const tickets = await ticketsService.createTicket(
+      req.sessionID,
+      userId,
+      req.body,
+      req.user['type'],
+      req.user['isAdmin'],
+      req.user['companyKey']
+    );
 
     const result: IRequestResult = {
       queries: { tickets: [tickets] },
@@ -86,7 +103,10 @@ const updateById: RequestHandler = async (req, res) => {
       id,
       userId,
       req.body,
-      req.user['type']
+      req.user['type'],
+      req.user['isAdmin'],
+      req.user['companyKey'],
+      !!req.user['permissions']?.['ticketSystem/tickets/all']?.GET
     );
 
     const result: IRequestResult = {

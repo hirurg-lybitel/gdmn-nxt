@@ -1,15 +1,15 @@
-import { IKanbanCard, IKanbanColumn, IKanbanTask, UserType } from '@gsbelarus/util-api-types';
+import { IKanbanCard, IKanbanColumn, IKanbanTask, ITicket, ITicketHistory, ITicketMessage, UserType } from '@gsbelarus/util-api-types';
 export interface InterServerEvents {
   ping: () => void;
   joinToRoom: (roomName: string) => void;
 }
-export interface ServerToClientEvents extends InterServerEvents, KanbanEvents {
+export interface ServerToClientEvents extends InterServerEvents, KanbanEvents, TicketEvents {
   messages: (data: IMessage[]) => void;
   messagesByUser_response: (data: IMessage[]) => void;
   sendMessageToUsers_response: (status: number, statusText: string) => void;
 }
 
-export interface ClientToServerEvents extends InterServerEvents, KanbanEvents {
+export interface ClientToServerEvents extends InterServerEvents, KanbanEvents, TicketEvents {
   delete: (notificationId: number) => void;
   deleteAll: (userId: number) => void;
   messagesByUser_request: (userId: number) => void;
@@ -48,7 +48,7 @@ export interface INotification {
 }
 
 export enum SocketRoom {
-  KanbanBoard = 'KanbanBoard',
+  KanbanBoard = 'KanbanBoard'
 }
 
 export enum KanbanEvent {
@@ -81,4 +81,32 @@ interface KanbanEvents {
   [KanbanEvent.AddTaskCard]: (columnIndex: number, task: IKanbanTask) => void;
   [KanbanEvent.UpdateTaskCard]: (columnIndex: number, taskCard: IKanbanTask) => void;
   [KanbanEvent.DeleteTaskCard]: (id: number) => void;
+}
+
+export enum TicketEvent {
+  JoinToChat = 'join_to_chat',
+  LeaveFromChat = 'leave_from_chat',
+  NewMessage = 'new_message',
+  UpdateMessage = 'update_message',
+  DeleteMessage = 'delete_message',
+
+  NewHistory = 'new_history',
+
+  JoinToTicketsRoom = 'join_to_tickets_room',
+  UpdateTicket = 'update_ticket',
+  AddTicket = 'add_ticket'
+}
+
+interface TicketEvents {
+  [TicketEvent.JoinToChat]: (ticketId: number, userType: UserType) => void;
+  [TicketEvent.LeaveFromChat]: (ticketId: number) => void;
+  [TicketEvent.NewMessage]: (message: ITicketMessage) => void;
+  [TicketEvent.UpdateMessage]: (message: ITicketMessage) => void;
+  [TicketEvent.DeleteMessage]: (id: number, ticketKey: number) => void;
+
+  [TicketEvent.NewHistory]: (message: ITicketHistory[]) => void;
+
+  [TicketEvent.JoinToTicketsRoom]: (userType: UserType) => void;
+  [TicketEvent.UpdateTicket]: (ticket: ITicket) => void;
+  [TicketEvent.AddTicket]: (ticket: ITicket) => void;
 }

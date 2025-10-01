@@ -1,6 +1,7 @@
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
-import { FindHandler, FindOneHandler, FindOperator, ITicketUser, RemoveOneHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
+import { FindHandler, FindOneHandler, ITicketUser, RemoveOneHandler, UpdateHandler, UserType } from '@gsbelarus/util-api-types';
+import { prepareClause } from '@gsbelarus/util-helpers';
 import { hash } from 'bcryptjs';
 
 const find: FindHandler<ITicketUser> = async (
@@ -12,21 +13,7 @@ const find: FindHandler<ITicketUser> = async (
   const { fetchAsObject, releaseReadTransaction } = await acquireReadTransaction(sessionID);
 
   try {
-    const params = [];
-    const clauseString = Object
-      .keys({ ...clause })
-      .map(f => {
-        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
-          const expression = clause[f] as FindOperator;
-          switch (expression.operator) {
-            case 'LIKE':
-              return ` UPPER(f.${f}) ${expression.value} `;
-          }
-        }
-        params.push(clause[f]);
-        return ` f.${f} = ?`;
-      })
-      .join(' AND ');
+    const { clauseString, whereClause } = prepareClause(clause, { prefix: () => 'f' });
 
     const sql = `
       SELECT
@@ -42,7 +29,7 @@ const find: FindHandler<ITicketUser> = async (
       FROM USR$CRM_USER f
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}`;
 
-    const result = await fetchAsObject<any>(sql, params);
+    const result = await fetchAsObject<any>(sql, whereClause);
 
     const customers = await customersService.find(sessionID, { ticketSystem: 'true' });
 
@@ -94,18 +81,14 @@ const update: UpdateHandler<ITicketUser> = async (
 
     const {
       password,
-      fullName,
-      email,
-      phone,
+      isAdmin
     } = metadata;
 
     const updatedFilter = await fetchAsSingletonObject<ITicketUser>(
       `UPDATE USR$CRM_USER
       SET
-        ${password ? 'USR$PASSWORD = :PASSWORD' : ''},
-        USR$FULLNAME = :FULLNAME,
-        USR$EMAIL = :EMAIL,
-        USR$PHONE = :PHONE,
+        ${password ? 'USR$PASSWORD = :PASSWORD,' : ''}
+        USR$ISADMIN = :ISADMIN,
         USR$ONE_TIME_PASSWORD = :ONE_TIME_PASSWORD
       WHERE
         ID = :ID
@@ -113,9 +96,7 @@ const update: UpdateHandler<ITicketUser> = async (
       {
         ID,
         ...(password ? { PASSWORD: await hash(password, 12) } : {}),
-        FULLNAME: fullName,
-        EMAIL: email,
-        PHONE: phone,
+        ISADMIN: isAdmin,
         ONE_TIME_PASSWORD: false
       }
     );
@@ -138,7 +119,7 @@ const save: Save = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { company, password: propPassword, fullName, userName, email, phone } = metadata;
+  const { company, password: propPassword, fullName, userName, email, phone, isAdmin: isAdminMeta } = metadata;
 
   const password = isAdmin ? propPassword : await hash(propPassword, 12);
 
@@ -154,7 +135,7 @@ const save: Save = async (
         USERNAME: userName,
         EMAIL: email,
         PHONE: phone,
-        ISADMIN: isAdmin ?? false,
+        ISADMIN: isAdmin ?? isAdminMeta ?? false,
         ONE_TIME_PASSWORD: isAdmin ?? false
       }
     );

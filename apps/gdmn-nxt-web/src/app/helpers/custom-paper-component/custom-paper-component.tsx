@@ -21,6 +21,7 @@ const CustomPaperComponent = ({ header, footer }: CustomPaperComponentProps) => 
         // Prevent blur for footer
         event.preventDefault();
       }}
+
     >
       {header && <div>{header}</div>}
       {children}

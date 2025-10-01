@@ -1,3 +1,4 @@
+import { FindOperator } from '@gsbelarus/util-api-types';
 import { string2Bin } from '@gsbelarus/util-helpers';
 import { Attachment, Blob, Transaction } from 'node-firebird-driver-native';
 

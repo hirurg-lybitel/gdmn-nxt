@@ -314,6 +314,7 @@ export interface IUser extends IWithID {
   isActivated?: boolean;
   AVATAR?: string;
   EMAIL?: string;
+  PHONE?: string;
 };
 
 export interface IPermissionsView extends IWithID {
@@ -391,6 +392,7 @@ export type ActionName =
   'ticketSystem/tickets' |
   'contacts/tickets' |
   'ticketSystem/labels' |
+  'ticketSystem/tickets/all' |
   '';
 export type ActionMethod = RouteMethod | 'ALL' | 'COPY' | 'forGroup' | '';
 
@@ -713,11 +715,12 @@ export interface ITicket extends IWithID {
   closeBy?: ICRMTicketUser,
   state: ITicketState,
   sender: ICRMTicketUser;
-  performer?: ICRMTicketUser;
+  performers?: ICRMTicketUser[];
   needCall: boolean;
   message?: string;
   files?: ITicketMessageFile[];
   labels?: ILabel[];
+  deadline?: Date;
 }
 
 export interface ITicketMessageFile {
@@ -772,6 +775,8 @@ export interface ITicketHistory extends IWithID {
   performer?: ICRMTicketUser;
   addedLabels?: ILabel[];
   removedLabels?: ILabel[];
+  addedPerformers?: ICRMTicketUser[];
+  removedPerformers?: ICRMTicketUser[];
   needCall?: boolean;
 }
 

@@ -42,7 +42,7 @@ export const sendEmail = async ({
       password: pass = process.env.SMTP_PASSWORD ?? ''
     } = options;
 
-    const secure = securePorts.includes(port);
+    const secure = host === 'smtp.ethereal.email' ? false : securePorts.includes(port);
 
     const transporter = nodemailer.createTransport({
       host,

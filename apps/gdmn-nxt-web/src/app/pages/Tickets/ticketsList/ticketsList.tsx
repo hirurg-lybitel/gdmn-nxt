@@ -33,6 +33,8 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import { IconByName } from '@gdmn-nxt/components/icon-by-name';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { useGetSystemSettingsQuery } from '../../../features/systemSettings';
+import { DatePicker } from '@mui/x-date-pickers-pro';
+import { OptionsTooltip } from '@gdmn-nxt/components/Styled/options-tooltip/options-tooltip';
 
 const appBorderWidth = 40;
 
@@ -70,7 +72,7 @@ export function TicketsList(props: ticketsListProps) {
 
   const [openEdit, setOpenEdit] = useState(false);
   const filterEntityName = 'ticketsUsers';
-  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { 'active': true });
+  const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName, { active: true });
   const filtersStorage = useSelector(
     (state: RootState) => state.filtersStorage
   );
@@ -106,7 +108,7 @@ export function TicketsList(props: ticketsListProps) {
   const { data, isLoading, isFetching, refetch } = useGetAllTicketsQuery({
     pagination: paginationData,
     ...(Object.keys(filteringData || {}).length > 0 ? { filter: { ...filteringData, state: stateFilter, userId: undefined, sender: filteringData?.sender?.split('-')[1] } } : {}),
-  });
+  }, { skip: filtersIsLoading });
 
   const handleRequestSearch = (value: string) => {
     const newObject = { ...filteringData };
@@ -176,13 +178,13 @@ export function TicketsList(props: ticketsListProps) {
 
   const mainColumnSizes = useMemo(() => {
     if (ticketsUser && !isAdmin) {
-      return [480, 420, 420];
+      return [650, 480, 420, 420];
     }
-    return [680, 500, 420];
+    return [850, 680, 500, 420];
   }, [isAdmin, ticketsUser]);
   const statusColumnSizes = useMemo(() => [200, 120], []);
   const customerColumnSizes = useMemo(() => ticketsUser ? [0, 0] : [200, 160], [ticketsUser]);
-  const performerColumnSizes = useMemo(() => [200, 120], []);
+  const performerColumnSizes = useMemo(() => [200, 180], []);
 
   const ref = useRef<any>(null);
 
@@ -216,7 +218,7 @@ export function TicketsList(props: ticketsListProps) {
     getHiddenSelectors([mainColumnSizes, statusColumnSizes, customerColumnSizes, performerColumnSizes])
   ), [customerColumnSizes, getHiddenSelectors, mainColumnSizes, performerColumnSizes, statusColumnSizes]);
 
-  const [labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden, minWidth] = hiddenSelectors;
+  const [dateHidden, labelsHidden, openerHidden, statusHidden, customerHidden, performerHidden, minWidth] = hiddenSelectors;
 
   const getColumnWidth = useCallback((arrays: number[][]): number[] => {
     const result = [];
@@ -253,6 +255,22 @@ export function TicketsList(props: ticketsListProps) {
     window.addEventListener('resize', setSize);
     return () => window.removeEventListener('resize', setSize);
   }, [headerWidth, isLoading, sizeUpdate]);
+
+  const dateSelect = useMemo(() => {
+    const date = filteringData?.date ? new Date(filteringData?.date) : null;
+    return (
+      <DatePicker
+        label="Дата"
+        sx={{ width: dateHidden ? '100%' : '170px' }}
+        value={date}
+        onChange={(value) => handleOnFilterChange('date', value?.getTime())}
+        slotProps={{
+          textField: { variant: 'outlined' },
+          field: { clearable: true, onClear: () => handleOnFilterChange('date', undefined) },
+        }}
+      />
+    );
+  }, [dateHidden, filteringData?.date, handleOnFilterChange]);
 
   const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
@@ -338,11 +356,11 @@ export function TicketsList(props: ticketsListProps) {
 
   const { data: labels = [], isFetching: labelsFetching, isLoading: labelsLoading } = useGetTicketsLabelsQuery();
 
-  const labelSelect = useMemo(() => {
-    const CustomPopper = (props: any) => {
-      return <Popper {...props} style={{ width: 'fit-content' }} />;
-    };
+  const labelSelectPopper = useCallback((props: any) => {
+    return <Popper {...props} style={{ width: 'fit-content' }} />;
+  }, []);
 
+  const labelSelect = useMemo(() => {
     return (
       <Autocomplete
         loading={labelsFetching || labelsLoading}
@@ -355,8 +373,9 @@ export function TicketsList(props: ticketsListProps) {
             }
           }
         }}
+        isOptionEqualToValue={(option, value) => option.ID === value.ID}
         multiple
-        PopperComponent={CustomPopper}
+        PopperComponent={labelSelectPopper}
         size="small"
         loadingText="Загрузка данных..."
         options={labels}
@@ -368,10 +387,25 @@ export function TicketsList(props: ticketsListProps) {
         getOptionLabel={opt => opt.USR$NAME}
         renderTags={() => [<div key={0}>
           {(filteringData?.labels && filteringData?.labels.length > 0) && (
-            <Chip
-              size="small"
-              label={filteringData?.labels.length}
-            />
+            <OptionsTooltip
+              arrow
+              title={
+                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                  {filteringData?.labels.map((label: ILabel) => {
+                    return (
+                      <LabelMarker key={label.ID} label={label} />
+                    );
+                  })}
+                </div>
+              }
+            >
+              <div>
+                <Chip
+                  size="small"
+                  label={filteringData?.labels.length}
+                />
+              </div>
+            </OptionsTooltip>
           )}
         </div>]}
         renderOption={(props, option, { selected }) => (
@@ -380,7 +414,7 @@ export function TicketsList(props: ticketsListProps) {
             key={option.ID}
             disablePadding
             sx={{
-              dusplay: 'flex',
+              display: 'flex',
               gap: '8px',
               py: '2px !important',
               '&:hover .action': {
@@ -438,28 +472,37 @@ export function TicketsList(props: ticketsListProps) {
         )}
       />
     );
-  }, [filteringData?.labels, handleOnFilterChange, labels, labelsFetching, labelsLoading, labelsHidden]);
+  }, [labelsFetching, labelsLoading, labelsHidden, labelSelectPopper, labels, filteringData?.labels, handleOnFilterChange]);
 
   const clearFilters = useCallback(() => {
-    dispatch(clearFilterData({ filterEntityName }));
+    dispatch(clearFilterData({ filterEntityName, saveFields: ['active'] }));
   }, [dispatch]);
 
   const filter = useMemo(() => {
-    const hasFilters = filteringData?.labels
+    const hasFilters = filteringData?.date
+      || (labelsHidden && filteringData?.labels)
       || (openerHidden && (!ticketsUser || isAdmin) && filteringData?.sender)
       || (statusHidden && stateFilter)
       || (customerHidden && filteringData?.companyKey && !ticketsUser)
       || (performerHidden && filteringData?.performerKey);
+
     return (
       <MenuBurger
         hasFilters={hasFilters}
         filter
         items={({ closeMenu }) => [
-          <div key="labelSelect">
+          <div key="dateSelect">
             <div style={{ width: '250px' }} >
-              {labelSelect}
+              {dateSelect}
             </div>
           </div>,
+          ...((labelsHidden) ? [
+            <div key="labelSelect">
+              <div style={{ width: '250px' }} >
+                {labelSelect}
+              </div>
+            </div>
+          ] : []),
           ...((openerHidden && (!ticketsUser || isAdmin)) ? [
             <div key="openerSelect">
               <div style={{ width: '250px' }} >
@@ -503,7 +546,7 @@ export function TicketsList(props: ticketsListProps) {
         ]}
       />
     );
-  }, [clearFilters, customerHidden, customerSelect, filteringData?.companyKey, filteringData?.labels, filteringData?.performerKey, filteringData?.sender, isAdmin, labelSelect, openerHidden, openerSelect, performerHidden, performerSelect, stateFilter, stateSelect, statusHidden, ticketsUser]);
+  }, [clearFilters, customerHidden, customerSelect, dateSelect, filteringData?.companyKey, filteringData?.date, filteringData?.labels, filteringData?.performerKey, filteringData?.sender, isAdmin, labelSelect, labelsHidden, openerHidden, openerSelect, performerHidden, performerSelect, stateFilter, stateSelect, statusHidden, ticketsUser]);
 
   const matchDownMainColumn = useMediaQuery(`(max-width:${mainColumnSizes[2] + appBorderWidth}px)`);
   const matchDownMainColumnButtons = useMediaQuery('(max-width:380px)');
@@ -528,7 +571,7 @@ export function TicketsList(props: ticketsListProps) {
     }
     return (
       <Button
-        sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: !filteringData?.active ? theme.palette.text.primary : undefined })}
+        sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: !(filteringData?.active ?? true) ? theme.palette.text.primary : undefined })}
         onClick={onClick}
       >
         Активные
@@ -560,7 +603,7 @@ export function TicketsList(props: ticketsListProps) {
     }
     return (
       <Button
-        sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: filteringData?.active ? theme.palette.text.primary : undefined })}
+        sx={(theme) => ({ gap: '5px', paddingRight: '6px', color: (filteringData?.active ?? true) ? theme.palette.text.primary : undefined })}
         onClick={onClick}
       >
         Завершенные
@@ -597,6 +640,7 @@ export function TicketsList(props: ticketsListProps) {
           {closedTicketsButton}
           <div style={{ flex: 1, paddingLeft: '16px', display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '40px', gap: '16px', width: '100%' }}>
+              {!dateHidden && dateSelect}
               {!labelsHidden && labelSelect}
               {((!ticketsUser || isAdmin) && !openerHidden) && openerSelect}
               {(minWidth && headerWidth !== 0) && filter}
@@ -655,7 +699,8 @@ export function TicketsList(props: ticketsListProps) {
         const avatar = (
           <div
             style={{
-              background: 'var(--color-primary-bg)', height: '40px', width: '40px', borderRadius: '100%',
+              background: 'var(--color-primary-bg)', minHeight: '40px', minWidth: '40px',
+              maxHeight: '40px', maxWidth: '40px', borderRadius: '100%',
               display: 'flex', justifyContent: 'center', alignItems: 'center',
               fontWeight: 500, fontSize: '15px', position: 'relative'
             }}
@@ -679,23 +724,66 @@ export function TicketsList(props: ticketsListProps) {
     }]),
     {
       field: 'performer',
-      headerName: 'Исполнитель',
+      headerName: 'Исполнители',
       width: performerColumnWidth,
       sortable: false,
       resizable: false,
       renderCell: (params: GridRenderCellParams<ITicket, any, any, GridTreeNodeWithRender>) => {
-        const performer = params.row.performer;
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-          {performer?.fullName && <UserTooltip
-            name={performer.fullName ?? ''}
-            phone={performer.phone}
-            email={performer.email}
-            avatar={performer.avatar}
-            placement="bottom-start"
-          >
-            <Avatar src={performer.avatar} />
-          </UserTooltip>}
-        </div>;
+        const performers = params.row.performers ?? [];
+        const firstFive = performers.slice(0, 5);
+        const rest = performers.slice(5);
+
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%', flexDirection: 'column', gap: '8px' }}>
+            {firstFive.map((performer) => {
+              return performer?.fullName && <UserTooltip
+                name={performer.fullName ?? ''}
+                phone={performer.phone}
+                email={performer.email}
+                avatar={performer.avatar}
+                placement="bottom-end"
+              >
+                <div style={{ display: 'flex', gap: '8px', maxWidth: '100%' }}>
+                  <Avatar style={{ height: '20px', width: '20px' }} src={performer.avatar} />
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ textWrap: 'nowrap' }}>
+                      {performer.fullName}
+                    </span>
+                  </div>
+                </div>
+              </UserTooltip>;
+            })
+            }
+            {rest.length > 0 && (
+              <div style={{ width: '100%' }}>
+                <OptionsTooltip
+                  arrow
+                  PopperProps={{
+                    disablePortal: true
+                  }}
+                  title={
+                    <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '40vh', overflow: 'auto', gap: '8px' }}>
+                      {rest.map((performer) => {
+                        return (
+                          <div key={performer.ID} style={{ display: 'flex', gap: '8px' }}>
+                            <Avatar style={{ height: '20px', width: '20px' }} src={performer.avatar} />
+                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <span style={{ textWrap: 'nowrap' }}>
+                                {performer.fullName}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  }
+                >
+                  <Chip size="small" label={`+${rest.length}`} />
+                </OptionsTooltip>
+              </div>
+            )}
+          </div >
+        );
       },
       renderHeader: () => performerHidden ? <div style={{ fontSize: '14px', fontWeight: 600 }}>Исполнитель</div> : <div style={{ width: '100%' }}>{performerSelect}</div>
     },
@@ -707,8 +795,9 @@ export function TicketsList(props: ticketsListProps) {
       resizable: false,
       renderCell: () => null,
       renderHeader: () => {
-        if (labelsHidden) return filter;
-        const hasFilters = filteringData?.labels
+        if (dateHidden) return filter;
+        const hasFilters = filteringData?.date
+          || filteringData?.labels
           || ((!ticketsUser || isAdmin) && filteringData?.sender)
           || stateFilter
           || (filteringData?.companyKey && !ticketsUser)
@@ -801,7 +890,7 @@ interface IItemProps extends ITicket {
 
 const ticketIconSize = 20;
 
-const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addLabelTofilter }: IItemProps) => {
+const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, deadline, addLabelTofilter }: IItemProps) => {
   const classes = useStyles();
 
   const user = useSelector<RootState, UserState>(state => state.user);
@@ -820,16 +909,29 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
     if (closeAt) {
       return <CheckCircleOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'primary'} />;
     }
+
     if (user.userProfile?.type !== UserType.Tickets) {
-      if (daysLeft === 1) {
-        return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'warning'} />;
-      }
-      if (daysLeft > 1) {
-        return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'error'} />;
+      if (deadline) {
+        const deadlineDate = new Date(deadline);
+        const diffMs = deadlineDate.getTime() - now.getTime();
+        const diffDays = diffMs / msInDay;
+        if (diffDays <= 0) {
+          return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'error'} />;
+        }
+        if (diffDays <= 1) {
+          return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'warning'} />;
+        }
+      } else {
+        if (daysLeft > 1) {
+          return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'error'} />;
+        }
+        if (daysLeft === 1) {
+          return <ErrorOutlineIcon style={{ fontSize: ticketIconSize + 'px' }} color={'warning'} />;
+        }
       }
     }
     return <AdjustIcon color={'success'} />;
-  }, [closeAt, openAt, state.code, user.userProfile?.type]);
+  }, [closeAt, deadline, openAt, state.code, user.userProfile?.type]);
 
   const openCloseWord = ticketsUser ? ['Открыта', 'Закрыта'] : ['Открыт', 'Закрыт'];
 
@@ -852,7 +954,7 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
                     title={label.USR$DESCRIPTION}
                     arrow
                   >
-                    <Button onClick={() => addLabelTofilter(label)} style={{ padding: 0, borderRadius: 'var(--label-border-radius)' }}>
+                    <Button onClick={() => addLabelTofilter(label)} style={{ padding: 0, borderRadius: 'var(--label-border-radius)', minWidth: 0 }}>
                       <LabelMarker label={label} />
                     </Button>
                   </Tooltip>
@@ -860,6 +962,15 @@ const Item = ({ ID, title, sender, openAt, closeAt, closeBy, state, labels, addL
               );
             })}
           </div>
+        )}
+        {deadline && (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}
+          >
+            Срок выполнения: {formatToFullDate(deadline)}
+          </Typography>
         )}
         <Typography
           variant="caption"
@@ -896,8 +1007,9 @@ const TicketTime = ({ date }: ITicketTimeProps) => {
 
     const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
 
-    if (secondsPassed <= 60) return 1000;
-    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    const minute = 1000 * 60;
+
+    if (secondsPassed <= (60 * 60)) return minute;
     return;
   };
 
@@ -922,7 +1034,7 @@ const TicketTime = ({ date }: ITicketTimeProps) => {
   return (
     <Tooltip arrow title={formatToFullDate(date)}>
       <div style={{ textWrap: 'nowrap' }}>
-        {timeAgo(date)}
+        {`${timeAgo(date, 'minute')} назад`}
       </div>
     </Tooltip>
   );

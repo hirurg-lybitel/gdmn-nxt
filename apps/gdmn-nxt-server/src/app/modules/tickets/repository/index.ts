@@ -1,39 +1,20 @@
-import { ILabel, ticketStateCodes, UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
+import { ICRMTicketUser, ILabel, ticketStateCodes, UserType } from './../../../../../../../libs/util-api-types/src/lib/crmDataTypes';
 import { acquireReadTransaction, startTransaction } from '@gdmn-nxt/db-connection';
 import { customersService } from '@gdmn-nxt/modules/customers/service';
 import { ticketsStateRepository } from '@gdmn-nxt/modules/tickets-state/repository';
-import { FindHandler, FindOneHandler, FindOperator, ITicket, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
-import { bin2String } from '@gsbelarus/util-helpers';
+import { FindHandler, FindOneHandler, ITicket, SaveHandler, UpdateHandler } from '@gsbelarus/util-api-types';
+import { bin2String, prepareClause } from '@gsbelarus/util-helpers';
 import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
 
 const find: FindHandler<ITicket> = async (
   sessionID,
   clause = {},
-  _,
-  type
+  _
 ) => {
   const { fetchAsObject, releaseReadTransaction, attachment, transaction } = await acquireReadTransaction(sessionID);
 
   try {
-    const params = [];
-    const clauseString = Object
-      .keys({ ...clause })
-      .map(f => {
-        if (typeof clause[f] === 'object' && 'operator' in clause[f]) {
-          const expression = clause[f] as FindOperator;
-          switch (expression.operator) {
-            case 'LIKE':
-              return ` UPPER(f.${f}) ${expression.value} `;
-            case 'IsNull':
-              return `${f} IS NULL`;
-            case 'IsNotNull':
-              return `${f} IS NOT NULL`;
-          }
-        }
-        params.push(clause[f]);
-        return `t.${f} = ?`;
-      })
-      .join(' AND ');
+    const { clauseString, whereClause } = prepareClause(clause, { prefix: () => 't' });
 
     const sql = `
       SELECT
@@ -44,6 +25,7 @@ const find: FindHandler<ITicket> = async (
         t.USR$OPENAT,
         t.USR$CLOSEAT,
         t.USR$NEEDCALL,
+        t.USR$DEADLINE,
 
         s.ID as STATEID,
         s.USR$NAME as STATE_NAME,
@@ -56,40 +38,13 @@ const find: FindHandler<ITicket> = async (
         ps.USR$AVATAR,
 
         cgu.ID as CLOSER_ID,
-        REPLACE(
-          TRIM(
-            COALESCE(cgp.FIRSTNAME, '') || ' ' ||
-            COALESCE(cgp.SURNAME, '') || ' ' ||
-            COALESCE(cgp.MIDDLENAME, '')
-          ),
-          '  ', ' '
-        ) AS CLOSER_FULLNAME,
+        cgc.NAME AS CLOSER_FULLNAME,
         cgc.EMAIL as CLOSER_EMAIL,
         cgc.PHONE as CLOSER_PHONE,
         cgups.USR$AVATAR as CLOSER_AVATAR_BLOB,
 
-        gu.ID as PERFORMER_ID,
-        REPLACE(
-          TRIM(
-            COALESCE(gp.FIRSTNAME, '') || ' ' ||
-            COALESCE(gp.SURNAME, '') || ' ' ||
-            COALESCE(gp.MIDDLENAME, '')
-          ),
-          '  ', ' '
-        ) AS PERFORMER_FULLNAME,
-        gc.EMAIL as PERFORMER_EMAIL,
-        gc.PHONE as PERFORMER_PHONE,
-        gups.USR$AVATAR as PERFORMER_AVATAR_BLOB,
-
         sendergu.ID as CRM_SENDER_ID,
-        REPLACE(
-          TRIM(
-            COALESCE(sendergp.FIRSTNAME, '') || ' ' ||
-            COALESCE(sendergp.SURNAME, '') || ' ' ||
-            COALESCE(sendergp.MIDDLENAME, '')
-          ),
-          '  ', ' '
-        ) AS CRM_SENDER_FULLNAME,
+        sendergc.NAME as CRM_SENDER_FULLNAME,
         sendergc.EMAIL as CRM_SENDER_EMAIL,
         sendergc.PHONE as CRM_SENDER_PHONE,
         sendergups.USR$AVATAR as CRM_SENDER_AVATAR_BLOB
@@ -100,27 +55,19 @@ const find: FindHandler<ITicket> = async (
         LEFT JOIN USR$CRM_USER u ON u.ID = t.USR$USERKEY
         LEFT JOIN USR$CRM_T_USER_PROFILE_SETTINGS ps ON ps.USR$USERKEY = t.USR$USERKEY
 
-        /* Исполнитель */
-        LEFT JOIN GD_USER gu ON gu.ID = USR$PERFORMERKEY
-        LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
-        LEFT JOIN GD_CONTACT gc ON gc.id = gu.contactkey
-        LEFT JOIN GD_PEOPLE gp ON gp.contactkey = gu.contactkey
-
         /* Кем закрыт */
         LEFT JOIN GD_USER cgu ON cgu.ID = USR$CLOSEDBY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS cgups ON cgups.USR$USERKEY = cgu.ID
         LEFT JOIN GD_CONTACT cgc ON cgc.id = cgu.contactkey
-        LEFT JOIN GD_PEOPLE cgp ON cgp.contactkey = cgu.contactkey
 
         /* Отправитель(Пользователь CRM) */
         LEFT JOIN GD_USER sendergu ON sendergu.ID = t.USR$CRM_USERKEY
         LEFT JOIN USR$CRM_PROFILE_SETTINGS sendergups ON sendergups.USR$USERKEY = sendergu.ID
         LEFT JOIN GD_CONTACT sendergc ON sendergc.id = sendergu.contactkey
-        LEFT JOIN GD_PEOPLE sendergp ON sendergp.contactkey = sendergu.contactkey
       ${clauseString.length > 0 ? ` WHERE ${clauseString}` : ''}
       ORDER BY COALESCE(USR$CLOSEAT, USR$OPENAT) DESC`;
 
-    const result = await fetchAsObject<any>(sql, params);
+    const result = await fetchAsObject<any>(sql, whereClause);
 
     const customers = await customersService.find(sessionID, { ticketSystem: 'true' });
 
@@ -151,18 +98,53 @@ const find: FindHandler<ITicket> = async (
       };
     });
 
-    const tickets: ITicket[] = await Promise.all(result.map(async (data) => {
-      const avatarBlob = await getStringFromBlob(attachment, transaction, data['USR$AVATAR']);
+    const getAvatar = async (data) => {
+      const NULL_AVATAR_CHAR = '\u0000';
+      if (!data) return undefined;
+      const avatarBlob = await getStringFromBlob(attachment, transaction, data);
       const avatar = bin2String(avatarBlob.split(','));
+      if (avatar === NULL_AVATAR_CHAR) return undefined;
+      return avatar;
+    };
 
-      const performerAvatarBlob = await getStringFromBlob(attachment, transaction, data['PERFORMER_AVATAR_BLOB']);
-      const performerAvatar = bin2String(performerAvatarBlob.split(','));
+    const performersData = await fetchAsObject(`
+      SELECT
+        p.USR$TICKETKEY,
+        gu.ID as PERFORMER_ID,
+        gc.NAME AS PERFORMER_FULLNAME,
+        gc.EMAIL as PERFORMER_EMAIL,
+        gc.PHONE as PERFORMER_PHONE,
+        gups.USR$AVATAR as PERFORMER_AVATAR_BLOB
+      FROM USR$CRM_TICKET_PERFORMERS p
+        LEFT JOIN GD_USER gu ON gu.ID = p.USR$PERFORMERKEY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
+        LEFT JOIN GD_CONTACT gc ON gc.id = gu.contactkey
+      ORDER BY p.USR$TICKETKEY`);
 
-      const closerAvatarBlob = await getStringFromBlob(attachment, transaction, data['CLOSER_AVATAR_BLOB']);
-      const closerAvatar = bin2String(closerAvatarBlob.split(','));
+    const performers: { [key: string]: ICRMTicketUser[]; } = {};
+    await Promise.all(performersData.map(async (item) => {
+      const performerAvatar = await getAvatar(item['PERFORMER_AVATAR_BLOB']);
 
-      const CRMSenderAvatarBlob = await getStringFromBlob(attachment, transaction, data['CRM_SENDER_AVATAR_BLOB']);
-      const CRMSenderAvatar = bin2String(CRMSenderAvatarBlob.split(','));
+      const performer = {
+        ID: item['PERFORMER_ID'],
+        fullName: item['PERFORMER_FULLNAME'],
+        phone: item['PERFORMER_PHONE'],
+        email: item['PERFORMER_EMAIL'],
+        avatar: performerAvatar
+      };
+
+      if (performers[item['USR$TICKETKEY']]) {
+        performers[item['USR$TICKETKEY']].push({ ...performer });
+      } else {
+        performers[item['USR$TICKETKEY']] = [{ ...performer }];
+      };
+    }));
+
+
+    const tickets: ITicket[] = await Promise.all(result.map(async (data) => {
+      const avatar = await getAvatar(data['USR$AVATAR']);
+      const closerAvatar = await getAvatar(data['CLOSER_AVATAR_BLOB']);
+      const CRMSenderAvatar = await getAvatar(data['CRM_SENDER_AVATAR_BLOB']);
 
       return {
         ID: data['ID'],
@@ -194,15 +176,7 @@ const find: FindHandler<ITicket> = async (
             type: UserType.Gedemin
           }
         }),
-        ...(data['PERFORMER_ID'] ? {
-          performer: {
-            ID: data['PERFORMER_ID'],
-            fullName: data['PERFORMER_FULLNAME'],
-            phone: data['PERFORMER_PHONE'],
-            email: data['PERFORMER_EMAIL'],
-            avatar: performerAvatar
-          }
-        } : {}),
+        performers: performers[data['ID']],
         closeBy: data['CLOSER_ID'] ? {
           ID: data['CLOSER_ID'],
           fullName: data['CLOSER_FULLNAME'],
@@ -211,7 +185,8 @@ const find: FindHandler<ITicket> = async (
           avatar: closerAvatar
         } : undefined,
         needCall: data['USR$NEEDCALL'] === 1,
-        labels: labels[data['ID']]
+        labels: labels[data['ID']],
+        deadline: data['USR$DEADLINE'] ? new Date(data['USR$DEADLINE']) : undefined
       };
     }));
 
@@ -221,8 +196,8 @@ const find: FindHandler<ITicket> = async (
   }
 };
 
-const findOne: FindOneHandler<ITicket> = async (sessionID, clause = {}, type) => {
-  const ticket = await find(sessionID, clause, undefined, type);
+const findOne: FindOneHandler<ITicket> = async (sessionID, clause = {}) => {
+  const ticket = await find(sessionID, clause, undefined);
 
   if (ticket.length === 0) {
     return Promise.resolve(undefined);
@@ -242,11 +217,11 @@ const save: SaveHandler<ITicketSave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { title, company, userId, openAt, performer, labels } = metadata;
+  const { title, company, userId, openAt, performers, labels, deadline } = metadata;
 
   const ticketStates = await ticketsStateRepository.find(sessionID);
 
-  const currentState = ticketStates.find(state => state.code === ((performer.ID && performer.ID !== -1) ? ticketStateCodes.assigned : ticketStateCodes.initial));
+  const currentState = ticketStates.find(state => state.code === ((performers && performers.length > 0) ? ticketStateCodes.assigned : ticketStateCodes.initial));
 
   if (!currentState?.ID) {
     throw new Error('Не удалось определить статус тикета');
@@ -255,9 +230,12 @@ const save: SaveHandler<ITicketSave> = async (
   const senderField = type === UserType.Tickets ? 'USR$USERKEY' : 'USR$CRM_USERKEY';
 
   try {
+    const now = new Date();
+    const defaultDeadline = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+
     const ticket = await fetchAsSingletonObject<ITicketSave>(
-      `INSERT INTO USR$CRM_TICKET(USR$TITLE, USR$COMPANYKEY, ${senderField}, USR$OPENAT, USR$STATE, USR$PERFORMERKEY)
-      VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT,:STATEID,:PERFORMERKEY)
+      `INSERT INTO USR$CRM_TICKET(USR$TITLE, USR$COMPANYKEY, ${senderField}, USR$OPENAT, USR$STATE, USR$DEADLINE)
+      VALUES(:TITLE,:COMPANYKEY,:USERKEY,:OPENAT,:STATEID,:DEADLINE)
       RETURNING ID`,
       {
         TITLE: title,
@@ -265,9 +243,22 @@ const save: SaveHandler<ITicketSave> = async (
         USERKEY: userId,
         OPENAT: openAt ? new Date(openAt) : new Date(),
         STATEID: currentState.ID,
-        PERFORMERKEY: (!performer?.ID || performer?.ID < 0) ? undefined : performer.ID
+        DEADLINE: deadline ? new Date(deadline) : defaultDeadline
       }
     );
+
+    await Promise.all(performers?.map(async (performer) => {
+      return await fetchAsSingletonObject<ILabel>(
+        `INSERT INTO USR$CRM_TICKET_PERFORMERS(USR$TICKETKEY, USR$PERFORMERKEY)
+          VALUES(:TICKETKEY, :PERFORMERKEY)
+          RETURNING ID
+        `,
+        {
+          TICKETKEY: ticket.ID,
+          PERFORMERKEY: performer.ID
+        }
+      );
+    }));
 
     await Promise.all(labels.map(async (label) => {
       return await fetchAsSingletonObject<ILabel>(
@@ -307,7 +298,7 @@ const update: UpdateHandler<ITicket> = async (
       closeAt,
       needCall,
       state,
-      performer,
+      performers,
       closeBy,
       labels
     } = metadata;
@@ -324,7 +315,6 @@ const update: UpdateHandler<ITicket> = async (
       USR$NEEDCALL = :NEEDCALL,
       USR$CLOSEAT = :CLOSEAT,
       USR$STATE = :STATE,
-      USR$PERFORMERKEY = :PERFORMERKEY,
       USR$CLOSEDBY = :CLOSEDBY
     `;
 
@@ -341,10 +331,32 @@ const update: UpdateHandler<ITicket> = async (
         CLOSEAT: closeAt ? new Date(closeAt) : undefined,
         ID,
         STATE: state?.ID,
-        PERFORMERKEY: performer?.ID,
         CLOSEDBY: closeBy?.ID
       }
     );
+
+    const deletePerformers = await executeQuery(
+      'DELETE FROM USR$CRM_TICKET_PERFORMERS WHERE USR$TICKETKEY = :TICKETKEY',
+      {
+        TICKETKEY: ID
+      }
+    );
+    deletePerformers.close();
+
+    if (performers) {
+      await Promise.all(performers.map(async (performer) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_TICKET_PERFORMERS(USR$TICKETKEY, USR$PERFORMERKEY)
+          VALUES(:TICKETKEY, :PERFORMERKEY)
+          RETURNING ID
+        `,
+          {
+            TICKETKEY: ID,
+            PERFORMERKEY: performer.ID
+          }
+        );
+      }));
+    }
 
     const deleteLabels = await executeQuery(
       'DELETE FROM USR$CRM_TICKET_LABELS WHERE USR$TICKETKEY = :TICKETKEY',

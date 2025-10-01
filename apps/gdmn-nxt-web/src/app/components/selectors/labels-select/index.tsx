@@ -123,6 +123,10 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
 
   const mobile = useMediaQuery('(pointer: coarse)');
 
+  const paper = useMemo(() => {
+    return disableCreation ? undefined : CustomPaperComponent({ footer: memoPaperFooter });
+  }, [disableCreation, memoPaperFooter]);
+
   return (
     <>
       {labelEditComponent}
@@ -132,7 +136,7 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
         multiple
         limitTags={'limitTags' in rest ? rest.limitTags : 2}
         disableCloseOnSelect
-        PaperComponent={disableCreation ? undefined : CustomPaperComponent({ footer: memoPaperFooter })}
+        PaperComponent={paper}
         onChange={(e, value, reason) => {
           onChange(value, reason);
         }}
@@ -149,7 +153,7 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
             key={option.ID}
             disablePadding
             sx={{
-              dusplay: 'flex',
+              display: 'flex',
               gap: '8px',
               py: '2px !important',
               '&:hover .action': {
@@ -213,17 +217,19 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
           <TextField
             {...params}
             label="Метки"
-            placeholder="Выберите метки"
+            placeholder={rest.readOnly ? '' : 'Выберите метки'}
             {...textFieldProps}
             sx={{
               ...textFieldProps?.sx,
               '& .MuiInputBase-input': {
                 ...(textFieldProps?.sx as any)?.['& .MuiInputBase-input'],
-                minWidth: '100% !important'
+                minWidth: '100% !important',
+                height: rest.readOnly ? '5px' : (textFieldProps?.sx as any)?.['& .MuiInputBase-input'].height
               }
             }}
             InputProps={{
-              ...params.InputProps
+              ...params.InputProps,
+              endAdornment: rest.readOnly ? undefined : params.InputProps.endAdornment
             }}
           />
         )}

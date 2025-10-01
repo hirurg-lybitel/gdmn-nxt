@@ -1,7 +1,7 @@
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
-import { ILabel, ITicketHistory, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ILabel, ITicketHistory, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import { TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineSeparator } from '@mui/lab';
-import { Avatar, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CreateIcon from '@mui/icons-material/Create';
 import { useSelector } from 'react-redux';
@@ -24,6 +24,10 @@ interface ITicketHistoryProps {
   history: ITicketHistory;
   ticketId?: number;
 }
+
+const actionText = (text: string) => {
+  return <Typography style={{ fontSize: 'inherit' }} variant="caption">{text}</Typography>;
+};
 
 export default function TicketHistory({ history, ticketId }: Readonly<ITicketHistoryProps>) {
   const theme = useTheme();
@@ -59,8 +63,8 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
 
   const getTextByStateCode = (code: number) => {
     switch (code) {
-      case 1: return `создал(a) ${ticketsUser ? 'заявку' : 'тикет'} №${ticketId}`;
-      case 2: return <span>назначил(a) {history.performer?.ID === history.user?.ID ? 'cебя' : (
+      case ticketStateCodes.initial: return <>{actionText('создал(a)')} {`${ticketsUser ? 'заявку' : 'тикет'} №${ticketId}`}</>;
+      case ticketStateCodes.assigned: return <span>{actionText('назначил(a)')} {history.performer?.ID === history.user?.ID ? 'cебя' : (
         <UserTooltip
           name={history.performer?.fullName ?? ''}
           phone={history.performer?.phone}
@@ -71,7 +75,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         </UserTooltip>
       )}
       </span>;
-      case 3: return <span>переназначил(a) {history.performer?.ID === history.user?.ID ? 'cебя' : (
+      case ticketStateCodes.ressigned: return <span>{actionText('переназначил(a)')} {history.performer?.ID === history.user?.ID ? 'cебя' : (
         <UserTooltip
           name={history.performer?.fullName ?? ''}
           phone={history.performer?.phone}
@@ -82,19 +86,36 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
         </UserTooltip>
       )}
       </span>;
-      default: return `изменил(a) статус ${ticketsUser ? 'заявки' : 'тикета'} на "${history.state?.name}"`;
+      case ticketStateCodes.confirmed: return `Подтвердил выполнение ${ticketsUser ? 'заявки' : 'тикета'}`;
+      default: return <>{actionText('изменил(a)')} {`статус ${ticketsUser ? 'заявки' : 'тикета'}`} {actionText('на')} {`"${history.state?.name}"`}</>;
     }
   };
 
   const getHistoryText = (history: ITicketHistory) => {
     const labelsToJSX = (labels: ILabel[]) => labels.map((label, index) => <LabelMarker key={index} label={label} />);
 
+    const performersToJSX = (performers: ICRMTicketUser[]) => {
+      return performers.map((performer, index) => {
+        return (
+          <UserTooltip
+            key={performer.ID}
+            name={performer?.fullName ?? ''}
+            phone={performer?.phone}
+            email={performer?.email}
+            avatar={performer?.avatar}
+          >
+            <Typography variant="body1">{performer?.fullName}{performers.length - 1 !== index ? ',' : ''}</Typography>
+          </UserTooltip>
+        );
+      });
+    };
+
     if (history.addedLabels && history.removedLabels) {
       return (
         <>
-          Добавил(а)
+          {actionText('Добавил(а)')}
           {labelsToJSX(history.addedLabels)}
-          и убрал(а)
+          {actionText('и убрал(а)')}
           {labelsToJSX(history.removedLabels)}
         </>
       );
@@ -102,7 +123,7 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
     if (history.addedLabels) {
       return (
         <>
-          Добавил(а)
+          {actionText('Добавил(а)')}
           {labelsToJSX(history.addedLabels)}
         </>
       );
@@ -110,11 +131,39 @@ export default function TicketHistory({ history, ticketId }: Readonly<ITicketHis
     if (history.removedLabels) {
       return (
         <>
-          Убрал(а)
+          {actionText('Убрал(а)')}
           {labelsToJSX(history.removedLabels)}
         </>
       );
     }
+
+    if (history.addedPerformers && history.removedPerformers) {
+      return (
+        <>
+          {actionText('Назначил(а)')}
+          {performersToJSX(history.addedPerformers)}
+          {actionText('и исключил(а)')}
+          {performersToJSX(history.removedPerformers)}
+        </>
+      );
+    }
+    if (history.addedPerformers) {
+      return (
+        <>
+          {actionText('Назначил(а)')}
+          {performersToJSX(history.addedPerformers)}
+        </>
+      );
+    }
+    if (history.removedPerformers) {
+      return (
+        <>
+          {actionText('Исключил(а)')}
+          {performersToJSX(history.removedPerformers)}
+        </>
+      );
+    }
+
     if (history.state) {
       return getTextByStateCode(history.state?.code);
     }
@@ -196,8 +245,9 @@ const HistoryTime = ({ date }: IHistoryTimeProps) => {
 
     const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
 
-    if (secondsPassed <= 60) return 1000;
-    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    const minute = 1000 * 60;
+
+    if (secondsPassed <= (60 * 60)) return minute;
     return;
   };
 
@@ -222,9 +272,15 @@ const HistoryTime = ({ date }: IHistoryTimeProps) => {
   if (!date) return;
 
   return (
-    <Tooltip arrow title={formatToFullDate(date)}>
+    <Tooltip
+      PopperProps={{
+        disablePortal: true
+      }}
+      arrow
+      title={formatToFullDate(date)}
+    >
       <div>
-        {timeAgo(date)}
+        {actionText(`${timeAgo(date, 'minute')} назад`)}
       </div>
     </Tooltip>
   );

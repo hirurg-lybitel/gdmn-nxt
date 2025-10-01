@@ -1,4 +1,4 @@
-import { InternalServerErrorException, UserType, NotFoundException, ITicketUser, ForbiddenException, ConflictException, BadRequest } from '@gsbelarus/util-api-types';
+import { InternalServerErrorException, UserType, NotFoundException, ITicketUser, ForbiddenException, ConflictException, BadRequest, Like, NotEqual, IsNotNull } from '@gsbelarus/util-api-types';
 import { ticketsUserRepository } from '../repository';
 import { ERROR_MESSAGES } from '@gdmn/constants/server';
 import { config } from '@gdmn-nxt/config';
@@ -18,7 +18,8 @@ const findAll = async (
     pageSize,
     pageNo,
     sortField,
-    sortMode
+    sortMode,
+    notUserId
   } = filter;
 
   try {
@@ -36,6 +37,7 @@ const findAll = async (
         ...(userName ? { USR$USERNAME: userName } : {}),
         ...(companyKey ? { USR$COMPANYKEY: Number(companyKey) } : {}),
         ...(isAdmin ? { USR$ISADMIN: isAdmin === 'true' ? 1 : 0 } : {}),
+        ...(notUserId ? { ID: NotEqual(notUserId) } : {})
       },
       undefined,
       type
@@ -135,16 +137,17 @@ const create = async (
       throw NotFoundException(`Не найден пользователь с id=${newUser?.ID}`);
     }
 
-    const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
+    try {
+      const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
-    const smtpOpt: SmtpOptions = {
-      host: smtpHost,
-      port: smtpPort,
-      user: smtpUser,
-      password: smtpPassword
-    };
+      const smtpOpt: SmtpOptions = {
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser,
+        password: smtpPassword
+      };
 
-    const messageText = `
+      const messageText = `
         <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
           <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${body.fullName}</strong>!</div>
           <div style="font-size:20px;font-weight:bold;color:#1976d2">Для вас был создан аккаунт в системе заявок.</div>
@@ -158,14 +161,16 @@ const create = async (
           </div>
         </div>`;
 
-    await sendEmail({
-      from: `Система заявок ${ourCompanyName} <${smtpUser}>`,
-      to: body.email,
-      subject: 'Новая учетная запись',
-      html: messageText,
-      options: { ...smtpOpt }
-    });
-
+      await sendEmail({
+        from: `Система заявок ${ourCompanyName} <${smtpUser}>`,
+        to: body.email,
+        subject: 'Новая учетная запись',
+        html: messageText,
+        options: { ...smtpOpt }
+      });
+    } catch (err) {
+      console.log('sendMail_create_ticket_user:', err);
+    }
     return user;
   } catch (error) {
     throw InternalServerErrorException(error.message);
@@ -175,9 +180,13 @@ const create = async (
 const updateById = async (
   sessionID: string,
   id: number,
-  body: Omit<ITicketUser, 'ID'>
+  body: Omit<ITicketUser, 'ID'>,
+  isAdmin: boolean
 ) => {
   try {
+    if (!isAdmin) {
+      throw ForbiddenException('У вас недостаточно прав');
+    }
     const updatedUser = await ticketsUserRepository.update(sessionID, id, body);
     if (!updatedUser?.ID) {
       throw NotFoundException(`Не найден пользователь с id=${id}`);

@@ -2,8 +2,10 @@ import { IRequestResult } from '@gsbelarus/util-api-types';
 import { RequestHandler } from 'express';
 import { resultError } from '../responseMessages';
 import { getReadTransaction, releaseReadTransaction } from '@gdmn-nxt/db-connection';
+import { getStringFromBlob } from 'libs/db-connection/src/lib/convertors';
+import { bin2String } from '@gsbelarus/util-helpers';
 
-export const get: RequestHandler = async(req, res) => {
+export const get: RequestHandler = async (req, res) => {
   const { attachment, transaction } = await getReadTransaction(req.sessionID);
 
   const { id } = req.params;
@@ -11,7 +13,7 @@ export const get: RequestHandler = async(req, res) => {
   try {
     const _schema = {};
 
-    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[] }) => {
+    const execQuery = async ({ name, query, params }: { name: string, query: string, params?: any[]; }) => {
       const rs = await attachment.executeQuery(transaction, query, params);
       try {
         const data = await rs.fetchAsObject();
@@ -37,16 +39,34 @@ export const get: RequestHandler = async(req, res) => {
             u.FULLNAME,
             u.DISABLED,
             con.ID AS CONTACT_ID,
-            con.NAME AS CONTACT_NAME
+            con.NAME AS CONTACT_NAME,
+            con.EMAIL,
+            con.PHONE,
+            ps.USR$AVATAR
           FROM GD_USER u
           JOIN GD_CONTACT con ON con.ID = u.CONTACTKEY
+          LEFT JOIN USR$CRM_PROFILE_SETTINGS ps ON ps.USR$USERKEY = u.ID
           WHERE u.disabled = 0 ${id ? 'AND u.ID = ?' : ''}`,
       params: id ? [id] : undefined,
     }];
 
+    const data = Object.fromEntries(await Promise.all(queries.map(execQuery)));
+
+    const users = await Promise.all((data.users ?? []).map(async (item) => {
+      const newUser = { ...item };
+
+      const avatarBlob = await getStringFromBlob(attachment, transaction, item['USR$AVATAR']);
+      const avatar = bin2String(avatarBlob.split(','));
+
+      newUser.avatar = avatar;
+      delete newUser['USR$AVATAR'];
+
+      return newUser;
+    }));
+
     const result: IRequestResult = {
       queries: {
-        ...Object.fromEntries(await Promise.all(queries.map(execQuery)))
+        users: users
       },
       _params: id ? [{ id: id }] : undefined,
       _schema

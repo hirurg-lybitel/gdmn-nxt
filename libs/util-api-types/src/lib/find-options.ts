@@ -2,31 +2,32 @@ export type FindOperator = ExpressionLike;
 
 interface BaseExpression {
   operator:
-    'LIKE' |
-    'IsNull' |
-    'IsNotNull' |
-    'IN' |
-    'MoreThan' |
-    'MoreThanOrEqual' |
-    'LessThan' |
-    'LessThanOrEqual' |
-    'Between';
+  'LIKE' |
+  'IsNull' |
+  'IsNotNull' |
+  'IN' |
+  'MoreThan' |
+  'MoreThanOrEqual' |
+  'LessThan' |
+  'LessThanOrEqual' |
+  'Between' |
+  'NotEqual';
 };
 
 interface ExpressionWithValue extends BaseExpression {
-  value: string
+  value: string;
 };
 
 interface ExpressionLike extends BaseExpression {
-  value: string
+  value: string;
 };
 
 interface ExpressionIn extends BaseExpression {
-  value: string
+  value: string;
 };
 
-interface ExpressionIsNull extends BaseExpression {};
-interface ExpressionIsNotNull extends BaseExpression {};
+interface ExpressionIsNull extends BaseExpression { };
+interface ExpressionIsNotNull extends BaseExpression { };
 
 
 export const Like = (value: string): ExpressionLike => ({
@@ -70,4 +71,9 @@ export const LessThanOrEqual = <T>(value: T): ExpressionWithValue => ({
 export const Between = (value: string[]): ExpressionWithValue => ({
   operator: 'Between',
   value: ` BETWEEN '${value[0]}' AND '${value[1]}'`
+});
+
+export const NotEqual = (value: string): ExpressionWithValue => ({
+  operator: 'NotEqual',
+  value: value
 });

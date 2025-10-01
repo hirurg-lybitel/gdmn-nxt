@@ -1,7 +1,7 @@
 import { GridColDef, GridSortModel } from '@mui/x-data-grid-pro';
 import Stack from '@mui/material/Stack/Stack';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, useMediaQuery, Theme, Divider, CardContent } from '@mui/material';
+import { Box, useMediaQuery, Theme, Divider, CardContent, Checkbox } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { ICustomer, IFilteringData, IPaginationData, ISortingData, ITicketUser } from '@gsbelarus/util-api-types';
 import { useTheme } from '@mui/material';
@@ -15,8 +15,8 @@ import { useGetCustomerQuery } from '../../../features/customer/customerApi_new'
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import StyledGrid from '@gdmn-nxt/components/Styled/styled-grid/styled-grid';
 import TicketsUserEdit from './tickets-users-edit/tickets-users-edit';
-import ItemButtonDelete from '@gdmn-nxt/components/customButtons/item-button-delete/item-button-delete';
-import { useAddTicketUserMutation, useDeleteTicketUserMutation, useGetAllTicketUserQuery } from '../../../features/tickets/ticketsUserApi';
+import { useAddTicketUserMutation, useDeleteTicketUserMutation, useGetAllTicketUserQuery, useUpdateTicketUserMutation } from '../../../features/tickets/ticketsUserApi';
+import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   DataGrid: {
@@ -70,8 +70,8 @@ export function TicketsUsers(props: TicketsCustomersProps) {
   const classes = useStyles();
   const filterEntityName = 'ticketsUsers';
   const [filtersIsLoading, filtersIsFetching] = useFilterStore(filterEntityName);
-  const [currentOrganization, setCurrentUser] = useState(0);
   const [openEditForm, setOpenEditForm] = useState(false);
+  const [editedUser, setEditedUser] = useState<ITicketUser | undefined>();
   const [openFilters, setOpenFilters] = useState(false);
   const filtersStorage = useSelector(
     (state: RootState) => state.filtersStorage
@@ -81,21 +81,18 @@ export function TicketsUsers(props: TicketsCustomersProps) {
     pageNo: 0,
     pageSize: 20
   });
-  const [dataChanged, setDataChanged] = useState(false);
   const [sortingData, setSortingData] = useState<ISortingData | null>();
 
   const setFilteringData = (newFilter: IFilteringData) => {
     dispatch(saveFilterData({ [`${filterEntityName}`]: newFilter }));
   };
 
-  useEffect(() => {
-    setDataChanged(false);
-  }, [filteringData]);
+  const userId = useSelector<RootState, number | undefined>(state => state.user.userProfile?.id);
 
   const { data, isFetching: usersIsFetching, isLoading: usersIsLoading, refetch: usersRefetch } = useGetAllTicketUserQuery(
     {
       pagination: paginationData,
-      ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData, isAdmin: false } : {}),
+      ...(Object.keys(filteringData || {}).length > 0 ? { filter: filteringData, notUserId: userId } : {}),
       ...(sortingData ? { sort: sortingData } : {})
     }
   );
@@ -103,7 +100,8 @@ export function TicketsUsers(props: TicketsCustomersProps) {
   const companyKey = useSelector<RootState, number>(state => state.user.userProfile?.companyKey ?? -1);
   const { data: company, isFetching: companyIsFetching, isLoading: companyIsLoading } = useGetCustomerQuery({ customerId: companyKey }, { skip: companyKey === -1 });
 
-  const [addUser, { isLoading }] = useAddTicketUserMutation();
+  const [addUser, { isLoading: addIsLoading }] = useAddTicketUserMutation();
+  const [updateUser, { isLoading: updateIsLoading }] = useUpdateTicketUserMutation();
   const [deleteUser, { isLoading: deleteUserIsLoading }] = useDeleteTicketUserMutation();
 
   const users = useMemo(() => {
@@ -135,6 +133,13 @@ export function TicketsUsers(props: TicketsCustomersProps) {
       minWidth: 220
     },
     {
+      field: 'isAdmin',
+      headerName: 'Администратор',
+      flex: 1,
+      minWidth: 140,
+      type: 'boolean'
+    },
+    {
       field: 'Actions',
       headerName: 'Действия',
       width: 150,
@@ -144,10 +149,9 @@ export function TicketsUsers(props: TicketsCustomersProps) {
       renderCell: (params) => {
         return (
           <Box>
-            <ItemButtonDelete
-              disabled={deleteUserIsLoading}
-              onClick={() => deleteUser(params.row.ID)}
-              title={`Удаление пользователя ${params.row.fullName}`}
+            <ItemButtonEdit
+              disabled={deleteUserIsLoading || updateIsLoading}
+              onClick={() => handleEditClick(params.row)}
               button
             />
           </Box>
@@ -196,26 +200,47 @@ export function TicketsUsers(props: TicketsCustomersProps) {
   }, []);
 
   const handleSubmit = useCallback(async (values: ITicketUser, isDelete: boolean) => {
-    if (isDelete) return { error: {} };
+    if (isDelete) {
+      deleteUser(values.ID);
+      setOpenEditForm(false);
+      return;
+    };
+
+    if (values.ID !== -1) {
+      setOpenEditForm(false);
+      updateUser(values);
+      return;
+    }
+
     const result = await addUser(values);
     if ('data' in result) {
       setOpenEditForm(false);
     }
     return result;
-  }, [addUser]);
+  }, [addUser, deleteUser, updateUser]);
+
+  const handleAddClick = () => {
+    setEditedUser(undefined);
+    setOpenEditForm(true);
+  };
+
+  const handleEditClick = (user: ITicketUser) => {
+    setEditedUser(user);
+    setOpenEditForm(true);
+  };
 
   const memoEdit = useMemo(() => {
-    const user = { ...users?.find((element) => element.ID === currentOrganization), company: company as ICustomer } as ITicketUser;
+    const user = { company: company as ICustomer } as ITicketUser;
     return (
       <TicketsUserEdit
         open={openEditForm}
-        user={user ?? null}
+        user={editedUser ?? user ?? null}
         onCancel={() => setOpenEditForm(false)}
         onSubmit={handleSubmit}
-        isLoading={isLoading}
+        isLoading={addIsLoading}
       />
     );
-  }, [company, currentOrganization, handleSubmit, isLoading, openEditForm, users]);
+  }, [company, editedUser, handleSubmit, addIsLoading, openEditForm]);
 
   return (
     <>
@@ -247,7 +272,7 @@ export function TicketsUsers(props: TicketsCustomersProps) {
           searchValue={filteringData?.name?.[0]}
           onRefetch={usersRefetch}
           addButton
-          onAddClick={() => setOpenEditForm(true)}
+          onAddClick={handleAddClick}
           addButtonHint="Создать ответственного"
         />
         <Divider />
@@ -296,9 +321,6 @@ export function TicketsUsers(props: TicketsCustomersProps) {
                   DEPARTMENTS: false,
                   WORKTYPES: false
                 }}
-                onRowSelectionModelChange={(ids: any) =>
-                  setCurrentUser(ids[0] ? Number(ids[0]) : 0)
-                }
               />
             </Stack>
           </Stack>

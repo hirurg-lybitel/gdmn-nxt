@@ -15,6 +15,11 @@ const findAll: RequestHandler = async (req, res) => {
 
     const response = await ticketsHistoryService.findAll(
       sessionID,
+      req.user['type'],
+      req.user['id'],
+      req.user['isAdmin'],
+      req.user['companyKey'],
+      !!req.user['permissions']?.['ticketSystem/tickets/all']?.GET,
       {
         ...req.query,
         ticketId

@@ -34,7 +34,7 @@ export interface DropzoneProps {
 export function Dropzone({
   acceptedFiles = [],
   disabled = false,
-  filesLimit = 3,
+  filesLimit,
   maxFileSize,
   showPreviews,
   initialFiles,
@@ -87,14 +87,14 @@ export function Dropzone({
     return obj;
   }, {} as Record<string, string[]>);
 
-  const isMultiple = filesLimit > 1;
+  const isMultiple = !filesLimit || filesLimit > 1;
   const previewsVisible = showPreviews && fileObjects.length > 0;
 
   const handleDropAccepted: DropzoneBaseProps['onDropAccepted'] = async (
     files,
     evt
   ) => {
-    if ((files.length + fileObjects.length) > filesLimit) {
+    if (filesLimit && (files.length + fileObjects.length) > filesLimit) {
       addSnackbar(`${getFileLimitExceedMessage(filesLimit)}.`, { variant: 'error' });
       return;
     }
@@ -139,7 +139,7 @@ export function Dropzone({
           case ErrorCode.FileTooLarge:
             return msg + `\nРазмер файла превышает ${convertBytesToMbsOrKbs(maxFileSize ?? 0)}.`;
           case ErrorCode.TooManyFiles:
-            return msg + `\n${getFileLimitExceedMessage(filesLimit)}.`;
+            return msg + `\n${getFileLimitExceedMessage(filesLimit ?? -1)}.`;
           default:
             return msg + '';
         }

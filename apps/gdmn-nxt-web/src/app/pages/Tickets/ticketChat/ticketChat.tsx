@@ -1,5 +1,5 @@
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Avatar, Box, Button, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Skeleton, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, ListItem, Popper, Skeleton, Stack, TextField, Theme, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ticketsApi, useAddTicketMessageMutation, useDeleteTicketMessageMutation, useGetAllTicketHistoryQuery, useGetAllTicketMessagesQuery, useGetAllTicketsStatesQuery, useGetTicketByIdQuery, useUpdateTicketMessageMutation, useUpdateTicketMutation } from '../../../features/tickets/ticketsApi';
@@ -10,7 +10,7 @@ import { RootState } from '@gdmn-nxt/store';
 import UserTooltip from '@gdmn-nxt/components/userTooltip/user-tooltip';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { ICRMTicketUser, ILabel, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, IUserProfile, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
+import { ICRMTicketUser, ILabel, ITicketHistory, ITicketMessage, ITicketMessageFile, ITicketState, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
 import Confirmation from '@gdmn-nxt/helpers/confirmation';
 import { makeStyles } from '@mui/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -191,11 +191,14 @@ export default function TicketChat(props: ITicketChatProps) {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data: messages = [], isFetching: messagesIsFetching, isLoading: messagesIsLoading } = useGetAllTicketMessagesQuery({ id });
+  const { data: messages = [], isFetching: messagesIsFetching, isLoading: messagesIsLoading, refetch: messagesRefetch } = useGetAllTicketMessagesQuery({ id: Number(id ?? -1) });
   const { data: states, isFetching: statesIsFetching, isLoading: statesIsLoading } = useGetAllTicketsStatesQuery();
-  const { data: ticket, isFetching: ticketIsFetching, isLoading: ticketIsLoading } = useGetTicketByIdQuery(id ?? '');
+  const { data: ticket, isFetching: ticketIsFetching, isLoading: ticketIsLoading } = useGetTicketByIdQuery(Number(id ?? -1));
   const { data: ticketHistory = [], isFetching: historyIsFetching, isLoading: historyIsLoading } = useGetAllTicketHistoryQuery({ id });
 
+  useEffect(() => {
+    dispatch(ticketsApi.util.invalidateTags(['chat']));
+  }, []);
 
   const messagesAndHistory: messagesAndHistory[] = useMemo(() => {
     return [...messages, ...ticketHistory].map((item) => {
@@ -255,12 +258,11 @@ export default function TicketChat(props: ITicketChatProps) {
         sendAt: new Date(),
         files: files
       });
-      dispatch(ticketsApi.util.invalidateTags(['tickets']));
     };
     sendMessage();
     setMessage('');
     setFiles([]);
-  }, [addMessages, dispatch, files, id, message, stateChange]);
+  }, [addMessages, files, id, message, stateChange]);
 
   useEffect(() => {
     const keydown = (e: KeyboardEvent) => {
@@ -471,7 +473,6 @@ export default function TicketChat(props: ITicketChatProps) {
     navigate(url);
   }, [navigate, ticketsUser]);
 
-  const userProfile = useSelector<RootState, IUserProfile | undefined>(state => state.user.userProfile);
   const { data: settings, isFetching: profileIsFetching } = useGetProfileSettingsQuery(userId ?? -1);
   const [setSettings, { isLoading: updateProfileIsLoading }] = useSetProfileSettingsMutation();
 
@@ -515,7 +516,19 @@ export default function TicketChat(props: ITicketChatProps) {
 
   const isAdmin = useSelector<RootState, boolean>(state => state.user.userProfile?.isAdmin ?? false);
 
-  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+  const { data: systemUsersData, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+
+  const systemUsers: ICRMTicketUser[] = useMemo(() => {
+    if (!systemUsersData) return [];
+    return systemUsersData.map((user) => ({
+      ID: user.ID,
+      fullName: user.CONTACT?.NAME ?? '',
+      email: user.EMAIL,
+      phone: user.PHONE,
+      avatar: user.AVATAR,
+      type: UserType.Gedemin
+    }), []);
+  }, [systemUsersData]);
 
   const rightButton = useMemo(() => {
     if (confirmed || ticket?.sender.ID !== userId) return;
@@ -537,14 +550,19 @@ export default function TicketChat(props: ITicketChatProps) {
       if (matchDownLg) {
         return (
           <Container>
-            <IconButton
-              onClick={settings?.PHONE ? undefined : handleOpenPhoneDialog}
-              disabled={isLoading || ticket?.needCall || !settings || updateProfileIsLoading || profileIsFetching}
-              color="primary"
-            >
-              <PhoneIcon />
-            </IconButton>
+            <Tooltip title="Запросить звонок">
+              <div>
+                <IconButton
+                  onClick={settings?.PHONE ? undefined : handleOpenPhoneDialog}
+                  disabled={isLoading || ticket?.needCall || !settings || updateProfileIsLoading || profileIsFetching}
+                  color="primary"
+                >
+                  <PhoneIcon />
+                </IconButton>
+              </div>
+            </Tooltip>
           </Container>
+
         );
       }
       return (
@@ -578,12 +596,22 @@ export default function TicketChat(props: ITicketChatProps) {
     return systemUsersIsLoading || systemUsersIsFetching || ticketIsFetching || ticketIsLoading || updateTicketIsLoading;
   }, [confirmed, systemUsersIsFetching, systemUsersIsLoading, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
+  const [cachedPerformers, setCachedPerformers] = useState<ICRMTicketUser[] | null>(null);
+
+  const handleUpdatePerformers = useCallback(async (value: ICRMTicketUser[] | null) => {
+    if (!value) return;
+
+    await updateTicket({ ...ticket, performers: value });
+
+    setCachedPerformers(null);
+  }, [ticket, updateTicket]);
+
   const memoPerformer = useMemo(() => {
     if (ticketsUser || confirmed) {
       return (
         <TextField
           variant="standard"
-          value={ticket?.performer?.fullName ?? ''}
+          value={ticket?.performers?.[0]?.fullName ?? ''}
           label={'Исполнитель'}
           InputProps={{
             readOnly: true,
@@ -604,30 +632,79 @@ export default function TicketChat(props: ITicketChatProps) {
             display: 'none'
           }
         }}
+        isOptionEqualToValue={(option, value) => option.ID === value.ID}
         disabled={performerIsloading}
         loading={performerIsloading}
         loadingText="Загрузка данных..."
         options={systemUsers ?? []}
-        value={systemUsers?.find(user => user.ID === ticket?.performer?.ID) ?? null}
-        getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
-        onChange={(e, value) => {
-          updateTicket({ ...ticket, performer: value ? { ...value, fullName: '' } as ICRMTicketUser : undefined });
-        }}
+        multiple
+        disablePortal
+        value={cachedPerformers ?? ticket?.performers ?? []}
+        getOptionLabel={(option) => option.fullName}
+        onChange={(e, value) => setCachedPerformers(value)}
+        onClose={() => handleUpdatePerformers(cachedPerformers)}
+        disableCloseOnSelect
+        renderOption={(props, option, { selected }) => (
+          <ListItem
+            {...props}
+            key={option.ID}
+            disablePadding
+            sx={{
+              display: 'flex',
+              gap: '8px',
+              py: '2px !important',
+              '&:hover .action': {
+                display: 'inline-flex !important',
+                opacity: '1 !important',
+                visibility: 'visible !important',
+              }
+            }}
+          >
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', minWidth: 0 }}>
+              <Checkbox
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option?.fullName}
+            </div>
+          </ListItem>
+        )}
         renderInput={(params) => (
           <TextField
             variant="standard"
             {...params}
-            label={'Исполнитель'}
+            sx={{
+              '& .MuiInputBase-input': {
+                minWidth: '100% !important'
+              }
+            }}
+            label={'Исполнители'}
+            placeholder="Исполнители"
           />
         )}
+        renderTags={(value: readonly ICRMTicketUser[], getTagProps) =>
+          value.map((option: ICRMTicketUser, index: number) =>
+            <Box
+              key={index}
+              style={{ maxWidth: '100%' }}
+              pr={0.5}
+            >
+              <Chip
+                size="small"
+
+                label={option.fullName}
+              />
+            </Box>
+          )
+        }
       />
     );
-  }, [confirmed, performerIsloading, systemUsers, ticket, ticketsUser, updateTicket]);
+  }, [cachedPerformers, confirmed, handleUpdatePerformers, performerIsloading, systemUsers, ticket?.performers, ticketsUser]);
 
   const statusIsLoading = useMemo(() => {
     if (ticketsUser || confirmed) return false;
-    return statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsLoading || !ticket?.performer?.ID || updateTicketIsLoading;
-  }, [confirmed, statesIsFetching, statesIsLoading, ticket?.performer?.ID, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
+    return statesIsFetching || statesIsLoading || ticketIsFetching || ticketIsLoading || !ticket?.performers || updateTicketIsLoading;
+  }, [confirmed, statesIsFetching, statesIsLoading, ticket?.performers, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading]);
 
   const memoStatus = useMemo(() => {
     const changeables = [
@@ -682,6 +759,19 @@ export default function TicketChat(props: ITicketChatProps) {
     );
   }, [confirmed, handleUpdateStatus, states, statusIsLoading, ticket?.state.ID, ticket?.state.name, ticketsUser]);
 
+  const memoDeadline = useMemo(() => {
+    return (
+      <TextField
+        variant="standard"
+        value={ticket?.deadline ? formatToFullDate(ticket?.deadline) : ticket?.ID ? 'Без срока' : ''}
+        label={'Срок выполнения'}
+        InputProps={{
+          readOnly: true,
+        }}
+      />
+    );
+  }, [ticket?.ID, ticket?.deadline]);
+
   const memoCustomer = useMemo(() => {
     if (ticketsUser) return;
     return (
@@ -735,6 +825,8 @@ export default function TicketChat(props: ITicketChatProps) {
         textFieldProps={{
           variant: 'standard'
         }}
+        disablePortal
+        readOnly={confirmed}
         onClose={() => handleUpdateLabels(cachedLabels)}
         labels={cachedLabels ?? ticket?.labels}
         onChange={(newLabels, reason) => {
@@ -750,7 +842,7 @@ export default function TicketChat(props: ITicketChatProps) {
         }}
       />
     );
-  }, [cachedLabels, handleUpdateLabels, ticket?.labels, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userPermissions]);
+  }, [cachedLabels, confirmed, handleUpdateLabels, ticket?.labels, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userPermissions]);
 
   const [enableTransition, setEnableTransition] = useState(true);
   const [expand, setExpand] = useState(true);
@@ -775,18 +867,17 @@ export default function TicketChat(props: ITicketChatProps) {
     return (
       <div
         style={{
-          minWidth: matchDownLg ? undefined : `${infoDialogWidth}px`,
-          maxWidth: matchDownLg ? undefined : `${infoDialogWidth}px`,
-          width: matchDownLg ? '100%' : undefined,
+          maxWidth: '100%',
+          minWidth: '100%',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
-          paddingLeft: matchDownLg ? 0 : '16px'
+          gap: '16px'
         }}
       >
         {memoPerformer}
         {memoLabels}
         {memoStatus}
+        {memoDeadline}
         {memoCustomer}
         {memoUser}
         {(!confirmed && ticket?.sender.ID === userId) && (
@@ -795,7 +886,10 @@ export default function TicketChat(props: ITicketChatProps) {
             title={`Завершить ${ticketsUser ? 'заявку' : 'тикет'}?`}
             text={`После завершения открыть ${ticketsUser ? 'заявку' : 'тикет'} будет невозможно`}
             dangerous
-            onConfirm={confirmTicket}
+            onConfirm={() => {
+              handleCloseInfoDialog();
+              confirmTicket();
+            }}
           >
             <Button
               color={'error'}
@@ -809,7 +903,7 @@ export default function TicketChat(props: ITicketChatProps) {
         )}
       </div>
     );
-  }, [confirmTicket, confirmed, matchDownLg, memoCustomer, memoLabels, memoPerformer, memoStatus, memoUser, ticket?.sender.ID, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userId]);
+  }, [confirmTicket, confirmed, memoCustomer, memoDeadline, memoLabels, memoPerformer, memoStatus, memoUser, ticket?.sender.ID, ticketIsFetching, ticketIsLoading, ticketsUser, updateTicketIsLoading, userId]);
 
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
@@ -829,10 +923,10 @@ export default function TicketChat(props: ITicketChatProps) {
         disableEscape
         width={infoDialogWidth + 48}
       >
-        <DialogContent dividers style={{ display: 'grid' }}>
+        <DialogContent dividers>
           {info}
         </DialogContent>
-        <DialogActions>
+        <DialogActions >
           <Stack
             direction={'row'}
             sx={{
@@ -1042,7 +1136,11 @@ export default function TicketChat(props: ITicketChatProps) {
           </div>
         </CardContent>
       </CustomizedCard >
-      {!matchDownLg && info}
+      {!matchDownLg && <div style={{ height: '100%', width: `${infoDialogWidth}px`, position: 'relative', overflow: 'auto', marginLeft: '16px' }}>
+        <div style={{ position: 'absolute', inset: 0, minWidth: '100%', maxWidth: '100%', height: 'fit-content', overflow: 'hidden' }}>
+          {info}
+        </div>
+      </div>}
     </div >
   );
 };
@@ -1284,8 +1382,9 @@ const MessageTime = ({ date }: IMessageTimeProps) => {
 
     const secondsPassed = Math.floor((now.getTime() - pastDate.getTime()) / 1000);
 
-    if (secondsPassed <= 60) return 1000;
-    if (secondsPassed <= (60 * 60)) return 1000 * 60;
+    const minute = 1000 * 60;
+
+    if (secondsPassed <= (60 * 60)) return minute;
     return;
   };
 
@@ -1311,7 +1410,7 @@ const MessageTime = ({ date }: IMessageTimeProps) => {
     <Typography variant={'caption'} style={{ textWrap: 'nowrap' }}>
       {(date) && <Tooltip arrow title={formatToFullDate(date)}>
         <div>
-          {timeAgo(date)}
+          {`${timeAgo(date, 'minute')} назад`}
         </div>
       </Tooltip>}
     </Typography>
