@@ -9,14 +9,24 @@ import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system
 import { sendEmail, SmtpOptions } from '@gdmn/mailer';
 import { config } from '@gdmn-nxt/config';
 import { profileSettingsController } from '@gdmn-nxt/controllers/settings/profileSettings';
+import { ticketsService } from '@gdmn-nxt/modules/tickets/service';
 
 const findAll = async (
   sessionID: string,
+  ticketId: number,
+  type: UserType,
   userId: number,
-  ticketId: string,
-  type?: UserType,
+  isAdmin: boolean,
+  companyKey: number,
+  showAll: boolean
 ) => {
   try {
+    const ticket = await ticketsService.findOne(sessionID, ticketId, type, userId, isAdmin, companyKey, showAll);
+
+    if (!ticket?.ID) {
+      throw NotFoundException(`Не найдет тикет с id=${ticketId}`);
+    }
+
     const messages = await ticketsMessagesRepository.find(
       sessionID,
       {
@@ -39,10 +49,13 @@ const createMessage = async (
   userId: number,
   body: Omit<ITicketMessage, 'ID' | 'user'>,
   type: UserType,
-  fromTicketEP?: boolean
+  isAdmin: boolean,
+  companyKey: number,
+  showAll: boolean,
+  fromTicketEP?: boolean,
 ) => {
   try {
-    const oldTicket = await ticketsRepository.findOne(sessionID, { id: body.ticketKey }, type);
+    const oldTicket = await ticketsService.findOne(sessionID, body.ticketKey, type, userId, isAdmin, companyKey, showAll);
 
     if (oldTicket.state.code === ticketStateCodes.confirmed) {
       throw ForbiddenException('Тикет завершен');
@@ -125,7 +138,8 @@ const createMessage = async (
 
       return await insertNotification({
         title: title,
-        message: message,
+        message: `${message}
+        от: ${newUserMessage.user.fullName}`,
         type: type,
         sessionId: sessionID,
         onDate: new Date(),
@@ -136,12 +150,16 @@ const createMessage = async (
       });
     };
 
-    if (oldTicket.performer?.ID && userId !== oldTicket.performer?.ID && !fromTicketEP) {
-      await sendNotification({
-        title: `Тикет №${oldTicket.ID}`,
-        message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
-        onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
-        user: oldTicket.performer,
+    if (oldTicket.performers?.length > 0 && !fromTicketEP) {
+      oldTicket.performers.map(async (performer) => {
+        if (userId !== performer?.ID) {
+          await sendNotification({
+            title: `Тикет №${oldTicket.ID}`,
+            message: body.body.length > 60 ? body.body.slice(0, 60) + '...' : body.body,
+            onDate: body.sendAt ? new Date(body.sendAt) : new Date(),
+            user: performer,
+          });
+        }
       });
     }
     if (userId !== oldTicket.sender.ID && oldTicket.sender.ID) {
@@ -210,7 +228,9 @@ const removeById = async (
       console.error('minioClient не определен');
     }
 
-    return await ticketsMessagesRepository.remove(sessionID, id);
+    await ticketsMessagesRepository.remove(sessionID, id);
+
+    return { id: oldMessage.ID, ticketKey: oldMessage.ticketKey };
   } catch (error) {
     throw InternalServerErrorException(error.message);
   }

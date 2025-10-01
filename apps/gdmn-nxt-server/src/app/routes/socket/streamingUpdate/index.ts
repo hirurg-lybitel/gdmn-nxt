@@ -17,14 +17,14 @@ export function StreamingUpdate() {
   });
 
   const socketIO = new Server<
-      ClientToServerEvents,
-      ServerToClientEvents
-    >(httpsServer, {
-      cors: {
-        credentials: true,
-        origin: config.origin
-      }
-    });
+    ClientToServerEvents,
+    ServerToClientEvents
+  >(httpsServer, {
+    cors: {
+      credentials: true,
+      origin: config.origin
+    }
+  });
 
   httpsServer.listen(config.streamingUpdatePort);
 

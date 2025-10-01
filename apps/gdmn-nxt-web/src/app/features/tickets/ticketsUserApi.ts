@@ -43,6 +43,14 @@ export const ticketsUserApi = createApi({
       }),
       invalidatesTags: ['users']
     }),
+    updateTicketUser: builder.mutation<ITicketUserRequestResult, ITicketUser>({
+      query: (body) => ({
+        url: `/users/${body.ID}`,
+        body: body,
+        method: 'PUT'
+      }),
+      invalidatesTags: ['users']
+    }),
     deleteTicketUser: builder.mutation<IAuthResult, number>({
       query: (id) => ({
         url: `/users/${id}`,
@@ -57,5 +65,6 @@ export const {
   useGetAllTicketUserQuery,
   useAddTicketUserMutation,
   useDeleteTicketUserMutation,
-  useGetTicketUserByIdQuery
+  useGetTicketUserByIdQuery,
+  useUpdateTicketUserMutation
 } = ticketsUserApi;

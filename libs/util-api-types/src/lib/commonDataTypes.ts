@@ -113,6 +113,7 @@ export interface IProfileSettings {
   ONE_TIME_PASSWORD?: boolean;
   PHONE?: string;
   TICKETS_EMAIL?: boolean;
+  ALL_TICKET_EMAIL_NOTIFICATIONS?: boolean;
 }
 
 export interface ISystemSettings extends IWithID {

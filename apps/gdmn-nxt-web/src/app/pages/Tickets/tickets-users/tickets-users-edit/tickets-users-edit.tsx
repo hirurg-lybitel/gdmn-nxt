@@ -5,8 +5,8 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { emailValidation, passwordValidation } from '@gdmn-nxt/helpers/validators';
 import TelephoneInput, { validatePhoneNumber } from '@gdmn-nxt/components/telephone-input';
 import * as yup from 'yup';
-import { Chip, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
-import { MouseEvent, useMemo, useState } from 'react';
+import { Checkbox, Chip, FormControlLabel, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+import { useMemo } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import { generatePassword } from '@gsbelarus/util-useful';
 import { ITicketUserRequestResult } from 'apps/gdmn-nxt-web/src/app/features/tickets/ticketsApi';
@@ -18,7 +18,7 @@ import { useSnackbar } from '@gdmn-nxt/helpers/hooks/useSnackbar';
 export interface CustomerEditProps {
   open: boolean;
   user: ITicketUser | null;
-  onSubmit: (values: ITicketUser, isDelete: boolean) => Promise<{ data: ITicketUserRequestResult; } | { error: FetchBaseQueryError | SerializedError; }>;
+  onSubmit: (values: ITicketUser, isDelete: boolean) => Promise<{ data: ITicketUserRequestResult; } | { error: FetchBaseQueryError | SerializedError; } | undefined>;
   onCancel: () => void;
   isLoading: boolean;
 }
@@ -30,18 +30,24 @@ export function TicketsUserEdit({
   onCancel,
   isLoading
 }: Readonly<CustomerEditProps>) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const password = useMemo(() => user?.password ?? generatePassword(10), [user?.password, open]);
+
   const initValue: ITicketUser = useMemo(() => ({
-    ID: -1,
+    ID: user?.ID ?? -1,
     company: user?.company ?? {
       ID: -1,
       NAME: ''
     },
-    fullName: '',
-    password: generatePassword(10),
-    userName: '',
-    email: '',
-    phone: '',
-  }), [user?.company, open]);
+    fullName: user?.fullName ?? '',
+    password: password,
+    userName: user?.userName ?? '',
+    email: user?.email ?? '',
+    phone: user?.phone ?? '',
+    isAdmin: user?.isAdmin ?? false
+  }), [user?.ID, user?.company, user?.fullName, user?.userName, user?.email, user?.phone, user?.isAdmin, password]);
+
+  const isEditUser = initValue?.ID !== -1;
 
   const formik = useFormik<ITicketUser>({
     enableReinitialize: true,
@@ -50,7 +56,7 @@ export function TicketsUserEdit({
       ...user,
       ...initValue
     },
-    validationSchema: yup.object().shape({
+    validationSchema: yup.object().shape(isEditUser ? {} : {
       userName: yup
         .string()
         .required('')
@@ -69,7 +75,7 @@ export function TicketsUserEdit({
     }),
     onSubmit: async (values) => {
       const result = await onSubmit(values, false);
-      if ('data' in result) {
+      if (result && 'data' in result) {
         formik.resetForm();
       }
     },
@@ -93,14 +99,20 @@ export function TicketsUserEdit({
       .catch(err => console.error('Ошибка копирования:', err));
   };
 
+  const handleDelete = () => {
+    onSubmit(formik.values, true);
+  };
+
   return (
     <EditDialog
       open={open}
       onClose={handleCancel}
       form={'ticketsUserAddForm'}
-      title={'Добавление ответственного'}
+      title={`${isEditUser ? 'Редактирование' : 'Добавление'} ответственного`}
       confirmation={formik.dirty}
       submitButtonDisabled={isLoading}
+      deleteButton={isEditUser}
+      onDeleteClick={handleDelete}
     >
       <FormikProvider value={formik}>
         <Form
@@ -118,6 +130,7 @@ export function TicketsUserEdit({
               value={formik.values.fullName}
               error={!!formik.errors.fullName}
               helperText={formik.errors.fullName}
+              disabled={isEditUser}
             />
             <TextField
               required
@@ -129,6 +142,7 @@ export function TicketsUserEdit({
               value={formik.values.email}
               error={!!formik.errors.email}
               helperText={formik.errors.email}
+              disabled={isEditUser}
             />
             <TelephoneInput
               fullWidth
@@ -140,8 +154,18 @@ export function TicketsUserEdit({
               value={formik.values.phone}
               error={!!formik.errors.phone}
               helperText={formik.errors.phone}
+              disabled={isEditUser}
             />
-            <div>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formik.values.isAdmin}
+                  onChange={(e) => formik.setFieldValue('isAdmin', e.target.checked)}
+                />
+              }
+              label="Администратор"
+            />
+            {!isEditUser && <div>
               <div
                 style={{
                   display: 'flex', gap: '16px', border: '1px solid var(--color-borders)',
@@ -201,7 +225,7 @@ export function TicketsUserEdit({
                 className={styles.info}
                 sx={{ border: 'none', '& span': { textWrap: 'wrap' }, height: 'fit-content', marginTop: '8px' }}
               />
-            </div>
+            </div>}
           </Stack>
         </Form>
       </FormikProvider>

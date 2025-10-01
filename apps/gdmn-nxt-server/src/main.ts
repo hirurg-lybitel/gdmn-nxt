@@ -55,6 +55,7 @@ import IORedis from 'ioredis';
 import { securityRouter } from './app/routes/security';
 import { dealFeedbackRouter } from './app/routes/dealFeedbackRouter';
 import { ticketsRouter } from './app/routes/ticketsRouter';
+import { Tickets } from './app/routes/socket/tickets';
 
 const COOKIE_AGE = 24 * 60 * 60 * 1000;
 
@@ -305,7 +306,7 @@ const redisClient = new IORedis({
   port: 6379,
 });
 
-const sessionStore = new RedisStore({
+export const sessionStore = new RedisStore({
   client: redisClient,
   ttl: 24 * 60 * 60
 });
@@ -376,6 +377,9 @@ StreamingUpdate();
 
 /** Notifications module */
 Notifications({ router });
+
+/** Tickets module */
+Tickets();
 
 /** Contacts */
 router.use(contactsRouter);

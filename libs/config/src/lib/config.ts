@@ -5,6 +5,7 @@ interface IConfig {
   serverPort: number;
   notificationPort: number;
   streamingUpdatePort: number;
+  ticketsPort: number;
   apiAccessToken: string;
   jwtSecret: string;
   serverStaticMode: boolean;
@@ -29,6 +30,8 @@ const notificationPort = Number(process.env.NX_SOCKET_NOTIFICATIONS_PORT);
 
 const streamingUpdatePort = Number(process.env.NX_SOCKET_STREAMING_UPDATE_PORT);
 
+const ticketsPort = Number(process.env.NX_SOCKET_TICKETS_PORT);
+
 const appPort =
   serverStaticMode
     ? serverPort
@@ -52,6 +55,7 @@ export const config: IConfig = {
   serverPort,
   notificationPort,
   streamingUpdatePort,
+  ticketsPort,
   apiAccessToken,
   jwtSecret,
   serverStaticMode,

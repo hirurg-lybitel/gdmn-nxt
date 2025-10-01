@@ -15,6 +15,10 @@ export default function UserTooltip({ name, phone, email, avatar, customAvatar, 
   return (
     <Tooltip
       {...rest}
+      PopperProps={{
+        disablePortal: true,
+        ...rest.PopperProps
+      }}
       arrow
       title={
         <div style={{ padding: '6px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

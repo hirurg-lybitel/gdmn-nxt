@@ -11,16 +11,19 @@ import { systemSettingsRepository } from '@gdmn-nxt/repositories/settings/system
 import { config } from '@gdmn-nxt/config';
 import { PermissionsController } from '@gdmn-nxt/controllers/permissions';
 import { profileSettingsController } from '@gdmn-nxt/controllers/settings/profileSettings';
+import { ticketsUserRepository } from '@gdmn-nxt/modules/tickets-user/repository';
 
 const findAll = async (
   sessionID: string,
   filter?: { [key: string]: any; },
   type?: UserType,
+
 ) => {
   try {
     const {
       active,
       companyKey,
+      companyID,
       userId,
       state,
       performerKey,
@@ -28,8 +31,11 @@ const findAll = async (
       pageSize,
       pageNo,
       labels,
-      sender
+      sender,
+      date
     } = filter;
+
+    const openCloseDate = date ? new Date(Number(date)) : undefined;
 
     const labelIds = labels?.split(',') ?? [];
 
@@ -44,14 +50,21 @@ const findAll = async (
     const result = await ticketsRepository.find(
       sessionID,
       {
-        ...(userId ? { USR$USERKEY: userId } : {}),
-      },
-      undefined,
-      type
+        ...(userId ? { $OR: [{ USR$USERKEY: userId, USR$PERFORMERKEY: userId, USR$CRM_USERKEY: userId }] } : {}),
+        ...(companyID ? { USR$COMPANYKEY: companyID } : {})
+      }
     );
 
     const tickets = result.reduce<ITicket[]>((filteredArray, ticket) => {
       let checkConditions = true;
+
+      if (openCloseDate) {
+        checkConditions = checkConditions &&
+          (
+            ticket.closeAt?.toDateString() === openCloseDate.toDateString()
+            || ticket.openAt?.toDateString() === openCloseDate.toDateString()
+          );
+      }
 
       if (name) {
         const lowerName = String(name).toLowerCase();
@@ -65,7 +78,7 @@ const findAll = async (
 
       if (performerKey) {
         checkConditions = checkConditions &&
-          ticket.performer?.ID === Number(performerKey);
+          ticket.performers?.some(performer => performer.ID === Number(performerKey));
       }
 
       if (state) {
@@ -117,10 +130,24 @@ const findAll = async (
 const findOne = async (
   sessionID: string,
   id: number,
-  type: UserType
+  type: UserType,
+  userId: number,
+  isAdmin: boolean,
+  companyKey: number,
+  showAll: boolean
 ) => {
   try {
-    const ticket = await ticketsRepository.findOne(sessionID, { id }, type);
+    const ticket = await ticketsRepository.findOne(sessionID, { id });
+
+    if (type === UserType.Tickets) {
+      if (isAdmin && companyKey === ticket.company.ID) return ticket;
+      if (userId === ticket.sender.ID) return ticket;
+      throw ForbiddenException('У вас недостаточно прав');
+    }
+
+    if (!showAll && userId !== ticket.sender?.ID && !ticket.performers?.some(performer => performer.ID === Number(userId))) {
+      throw ForbiddenException('У вас недостаточно прав');
+    }
 
     return ticket;
   } catch (error) {
@@ -132,18 +159,20 @@ const createTicket = async (
   sessionID: string,
   userId: number,
   body: Omit<ITicket, 'ID'>,
-  type: UserType
+  type: UserType,
+  isAdmin: boolean,
+  companyKey: number
 ) => {
   try {
     if (!body.company.ID) {
       throw new Error('Не указана организация создателя тикета');
     }
 
-    const newTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
-    const ticket = await ticketsRepository.findOne(sessionID, { ID: newTicket.ID }, type);
+    const responceTicket = await ticketsRepository.save(sessionID, { ...body, userId }, type);
+    const ticket = await ticketsRepository.findOne(sessionID, { ID: responceTicket.ID }, type);
 
     if (!ticket?.ID) {
-      throw NotFoundException(`Не найден тикет с id=${newTicket.ID}`);
+      throw NotFoundException(`Не найден тикет с id=${responceTicket.ID}`);
     }
 
     const newMessage = await ticketsMessagesService.createMessage(
@@ -157,6 +186,9 @@ const createTicket = async (
         files: body.files
       },
       type,
+      isAdmin,
+      companyKey,
+      true,
       true,
     );
 
@@ -177,121 +209,182 @@ const createTicket = async (
 
     const assignedState = ticketStates.find(state => state.code === ticketStateCodes.assigned);
 
-    if (ticket.performer?.ID && ticket.performer.ID !== -1) {
-      await ticketsHistoryService.createHistory(
-        sessionID,
-        type === UserType.Tickets ? undefined : userId,
-        {
-          ticketKey: ticket.ID,
-          state: assignedState,
-          changeAt: new Date(),
-          performer: ticket.performer
-        },
-        type
-      );
+    if (ticket.performers && ticket.performers.length > 0) {
+      await Promise.all(ticket.performers.map(async (performer) => {
+        await ticketsHistoryService.createHistory(
+          sessionID,
+          type === UserType.Tickets ? undefined : userId,
+          {
+            ticketKey: ticket.ID,
+            state: assignedState,
+            changeAt: new Date(),
+            performer: performer
+          },
+          type
+        );
+      }));
     }
 
-    const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup, OURCOMPANY: { NAME: ourCompanyName, ID: ourCompanyId } } = await systemSettingsRepository.findOne(sessionID);
 
-    // Отправка уведомления усполнителю на почту и в систему при создании тикета
-    if (ticket.performer?.ID) {
-      if (ticket.performer?.ID !== userId) {
+    const sendNewTicketNotification = async (params: { user: ICRMTicketUser, allUsers?: boolean; }) => {
+      const { user, allUsers = false } = params;
+      const type = user.type || UserType.Gedemin;
+      const userSettings = await profileSettingsController.getSettings({ userId: user.ID, sessionId: sessionID, type });
+
+      if (user.email && userSettings.settings.TICKETS_EMAIL && (allUsers || userSettings.settings.ALL_TICKET_EMAIL_NOTIFICATIONS)) {
         try {
-          const userSettings = await profileSettingsController.getSettings({ userId: ticket.performer.ID, sessionId: sessionID, type: UserType.Gedemin });
-          if (ticket.performer.email && userSettings.settings.TICKETS_EMAIL) {
-            const smtpOpt: SmtpOptions = {
-              host: smtpHost,
-              port: smtpPort,
-              user: smtpUser,
-              password: smtpPassword
-            };
+          const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
 
-            const messageText = `
-          <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
-            <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${ticket.performer.fullName}</strong>!</div>
-            <div style="font-size:20px;font-weight:bold;color:#1976d2">Вам назначен новый тикет №${ticket.ID}</div>
-            <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
-              <div style="color:#666">${ticket.title}</div>
-            </div>
-            <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-              <a href="${config.fullOrigin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
-              <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
-            </div>
-          </div>
-        `;
+          const smtpOpt: SmtpOptions = {
+            host: smtpHost,
+            port: smtpPort,
+            user: smtpUser,
+            password: smtpPassword
+          };
 
-            await sendEmail({
-              from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
-              to: ticket.performer.email,
-              subject: 'Вам назначен новый тикет',
-              html: messageText,
-              options: { ...smtpOpt }
-            });
-          }
+          const link = `${config.fullOrigin}${type === UserType.Tickets ? '' : '/employee'}/tickets/list/${ticket.ID}?disableSavedPath=true`;
+          const linkMessage = type === UserType.Tickets ? 'Открыть в системе заявок' : 'Открыть в CRM';
+
+          const messageText = `
+             <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+               <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.fullName}</strong>!</div>
+               <div style="font-size:20px;font-weight:bold;color:#1976d2">Создан новый тикет №${ticket.ID}</div>
+               <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+                 <div style="color:#666">Тема: ${ticket.title}</div>
+                 <div style="color:#666">Постановщик: ${ticket.sender.fullName}</div>
+               </div>
+               <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+                 <a href="${link}" style="color:#1976d2">${linkMessage}</a>
+                 <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+               </div>
+             </div>
+           `;
+
+          await sendEmail({
+            from: `${type === UserType.Tickets ? 'Система заявок' : 'Тикет система'} ${ourCompanyName} <${smtpUser}>`,
+            to: user.email,
+            subject: `Новый тикет №${ticket.ID}`,
+            html: messageText,
+            options: { ...smtpOpt }
+          });
         } catch (error) {
-          console.log('createTicket_sendMail_Error', error);
+          console.log('updateTicket_sendMail_Error', error);
         }
-
-        await insertNotification({
-          sessionId: sessionID,
-          title: `Новый тикет №${ticket.ID}`,
-          message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
-          onDate: new Date(),
-          userIDs: [ticket.performer.ID],
-          actionContent: ticket.ID + '',
-          actionType: NotificationAction.JumpToTicket
-        });
-      }
-    } else {
-      const users = !performersGroup?.ID ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID);
-
-      try {
-        await Promise.all(users.map(async (user) => {
-          const userSettings = await profileSettingsController.getSettings({ userId: user.USER.ID, sessionId: sessionID, type: UserType.Gedemin });
-          if (user.USER.EMAIL && userSettings.settings.TICKETS_EMAIL) {
-            const smtpOpt: SmtpOptions = {
-              host: smtpHost,
-              port: smtpPort,
-              user: smtpUser,
-              password: smtpPassword
-            };
-
-            const messageText = `
-           <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
-             <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${user.USER.CONTACT.NAME}</strong>!</div>
-             <div style="font-size:20px;font-weight:bold;color:#1976d2">Создан новый тикет №${ticket.ID}</div>
-             <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
-               <div style="color:#666">${ticket.title}</div>
-             </div>
-             <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-               <a href="${config.fullOrigin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
-               <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
-             </div>
-           </div>
-         `;
-
-            await sendEmail({
-              from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
-              to: user.USER.EMAIL,
-              subject: 'Новый тикет',
-              html: messageText,
-              options: { ...smtpOpt }
-            });
-          }
-        }));
-      } catch (error) {
-        console.log('createTicket_sendMail_Error', error);
       }
 
       await insertNotification({
         sessionId: sessionID,
         title: `Новый тикет №${ticket.ID}`,
-        message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
+        message: `${ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title}
+        Постановщик: ${ticket.sender.fullName}`,
         onDate: new Date(),
-        userIDs: users.map(user => user.USER.ID),
+        userIDs: [user.ID],
         actionContent: ticket.ID + '',
-        actionType: NotificationAction.JumpToTicket
+        actionType: NotificationAction.JumpToTicket,
+        type
       });
+    };
+
+    const [CRMAdmins, customerAdmins]: ICRMTicketUser[][] = await (async () => {
+      const CRMAdmins = (!performersGroup?.ID ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID)).map((user) => {
+        return {
+          ID: user.USER.ID,
+          fullName: user.USER.CONTACT.NAME,
+          email: user.USER.EMAIL,
+          type: UserType.Gedemin
+        };
+      });
+
+      const customerAdmins = ticket.company.ID === ourCompanyId ? [] : (await ticketsUserRepository.find(
+        sessionID,
+        {
+          USR$COMPANYKEY: Number(companyKey),
+          USR$ISADMIN: 1,
+        },
+        undefined,
+        UserType.Gedemin
+      )).map((user) => {
+        return {
+          ID: user.ID,
+          fullName: user.fullName,
+          email: user.email,
+          type: UserType.Tickets
+        };
+      });
+
+      return [CRMAdmins, customerAdmins];
+    })();
+
+    // Отправка уведомления исполнителям на почту и в систему при создании тикета
+    if (ticket.performers && ticket.performers.length > 0) {
+      await Promise.all(ticket.performers.map(async (performer) => {
+        if (performer?.ID !== userId) {
+          try {
+            const userSettings = await profileSettingsController.getSettings({ userId: performer.ID, sessionId: sessionID, type: UserType.Gedemin });
+            if (performer.email && userSettings.settings.TICKETS_EMAIL) {
+              const smtpOpt: SmtpOptions = {
+                host: smtpHost,
+                port: smtpPort,
+                user: smtpUser,
+                password: smtpPassword
+              };
+
+              const messageText = `
+                <div style="max-width:600px;margin:0 auto;padding:20px;font-family:Arial">
+                  <div style="font-size:16px;margin-bottom:24px">Добрый день, <strong>${performer.fullName}</strong>!</div>
+                  <div style="font-size:20px;font-weight:bold;color:#1976d2">Вам назначен новый тикет №${ticket.ID}</div>
+                  <div style="background:#f5f9ff;border:1px solid #e3f2fd;border-radius:8px;padding:16px;margin:16px 0">
+                    <div style="color:#666">${ticket.title}</div>
+                  </div>
+                  <div style="margin-top:24px;border-top:1px solid #eee;padding-top:16px">
+                    <a href="${config.fullOrigin}/employee/tickets/list/${ticket.ID}?disableSavedPath=true" style="color:#1976d2">Открыть в CRM</a>
+                    <p style="color:#999;font-size:12px">Это автоматическое уведомление. Пожалуйста, не отвечайте на него.</p>
+                  </div>
+                </div>
+              `;
+
+              await sendEmail({
+                from: `Тикет система ${ourCompanyName} <${smtpUser}>`,
+                to: performer.email,
+                subject: 'Вам назначен новый тикет',
+                html: messageText,
+                options: { ...smtpOpt }
+              });
+            }
+          } catch (error) {
+            console.log('createTicket_sendMail_Error', error);
+          }
+
+          await insertNotification({
+            sessionId: sessionID,
+            title: `Новый тикет №${ticket.ID}`,
+            message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
+            onDate: new Date(),
+            userIDs: [performer.ID],
+            actionContent: ticket.ID + '',
+            actionType: NotificationAction.JumpToTicket
+          });
+        }
+      }));
+
+      // Отправка уведомления админам которые хотят видеть уведомления о всех тикетах
+      await Promise.all([...CRMAdmins, ...customerAdmins].map(async (user) => {
+        if (user.ID === userId || ticket.performers.some(performer => performer.ID === user.ID)) return;
+        return await sendNewTicketNotification({
+          user,
+          allUsers: false
+        });
+      }));
+    } else {
+      // Если не указан исполнитель отправка уведомления всем админам
+      await Promise.all(CRMAdmins.map(async (user) => {
+        if (user.ID === userId) return;
+        return await sendNewTicketNotification({
+          user,
+          allUsers: true
+        });
+      }));
     }
 
     cachedRequets.cacheRequest('customers');
@@ -307,10 +400,13 @@ const updateById = async (
   id: number,
   userId: number,
   body: Omit<ITicket, 'ID'>,
-  type: UserType
+  type: UserType,
+  isAdmin: boolean,
+  companyKey: number,
+  showAll: boolean
 ) => {
   try {
-    const oldTicket = await ticketsRepository.findOne(sessionID, { id }, type);
+    const oldTicket = await findOne(sessionID, id, type, userId, isAdmin, companyKey, showAll);
 
     const oldTicketIsOpen = oldTicket.state.code !== ticketStateCodes.done
       && oldTicket.state.code !== ticketStateCodes.confirmed;
@@ -339,7 +435,15 @@ const updateById = async (
       return oldTicket.closeAt;
     })();
 
-    const updatedTicket = await ticketsRepository.update(sessionID, id, { ...body, closeAt, closeBy: { ID: closeBy, fullName: '' } }, type);
+    const updatedTicket = await ticketsRepository.update(
+      sessionID,
+      id,
+      {
+        ...body,
+        closeAt,
+        closeBy: { ID: closeBy, fullName: '' }
+      },
+      type);
 
     if (!updatedTicket?.ID) {
       throw NotFoundException(`Не найден тикет с id=${id}`);
@@ -351,24 +455,23 @@ const updateById = async (
 
     const assignedState = ticketStates.find(state => state.code === ticketStateCodes.assigned);
 
-    const ressignedState = ticketStates.find(state => state.code === ticketStateCodes.ressigned);
-
     const doneState = ticketStates.find(state => state.code === ticketStateCodes.done);
 
     interface ISendNotification extends Omit<IinsertNotificationParams, 'userIDs' | 'sessionId'> {
       user: ICRMTicketUser;
       notificationMessage?: string;
       notificationTitle?: string;
+      checkMonitorAllTickets?: boolean;
     }
 
+    const { smtpHost, smtpPort, smtpUser, smtpPassword, performersGroup, OURCOMPANY: { NAME: ourCompanyName, ID: ourCompanyId } } = await systemSettingsRepository.findOne(sessionID);
+
     const sendNotification = async (params: ISendNotification) => {
-      const { user, title, message, type = UserType.Gedemin, notificationMessage, notificationTitle, ...rest } = params;
+      const { user, title, message, type = UserType.Gedemin, notificationMessage, notificationTitle, checkMonitorAllTickets, ...rest } = params;
       const userSettings = await profileSettingsController.getSettings({ userId: user.ID, sessionId: sessionID, type });
 
-      if (user.email && userSettings.settings.TICKETS_EMAIL) {
+      if (user.email && userSettings.settings.TICKETS_EMAIL && (!checkMonitorAllTickets || userSettings.settings.ALL_TICKET_EMAIL_NOTIFICATIONS)) {
         try {
-          const { smtpHost, smtpPort, smtpUser, smtpPassword, OURCOMPANY: { NAME: ourCompanyName } } = await systemSettingsRepository.findOne(sessionID);
-
           const smtpOpt: SmtpOptions = {
             host: smtpHost,
             port: smtpPort,
@@ -418,9 +521,69 @@ const updateById = async (
       });
     };
 
+    const sendNotificationToPerformers = async (params: Omit<ISendNotification, 'user'>) => {
+      if (ticket?.performers && ticket.performers.length > 0) {
+        await Promise.all(ticket.performers.map(async (performer) => {
+          if (performer.ID === userId) return;
+          await sendNotification({
+            ...params,
+            user: performer,
+          });
+        }));
+      }
+    };
+
+    const [CRMAdmins, customerAdmins]: ICRMTicketUser[][] = await (async () => {
+      const CRMAdmins = (!performersGroup?.ID ? [] : await PermissionsController.getUserGroupLine(sessionID, performersGroup.ID)).map((user) => {
+        return {
+          ID: user.USER.ID,
+          fullName: user.USER.CONTACT.NAME,
+          email: user.USER.EMAIL,
+          type: UserType.Gedemin
+        };
+      });
+
+      const customerAdmins = ticket.company.ID === ourCompanyId ? [] : (await ticketsUserRepository.find(
+        sessionID,
+        {
+          USR$COMPANYKEY: Number(companyKey),
+          USR$ISADMIN: 1,
+        },
+        undefined,
+        UserType.Gedemin
+      )).map((user) => {
+        return {
+          ID: user.ID,
+          fullName: user.fullName,
+          email: user.email,
+          type: UserType.Tickets
+        };
+      });
+
+      return [CRMAdmins, customerAdmins];
+    })();
+
+    const sendToAdmins = async ({ adminType, ...params }: Omit<ISendNotification, 'user'> & { adminType: 'gedemin' | 'tickets' | 'all'; }) => {
+      const admins = (() => {
+        switch (adminType) {
+          case 'gedemin': return CRMAdmins;
+          case 'tickets': return customerAdmins;
+          default: return [...CRMAdmins, ...customerAdmins];
+        }
+      })();
+      await Promise.all(admins.map(async (user) => {
+        if (ticket.performers.some(performer => performer.ID === user.ID)) return;
+        await sendNotification({
+          ...params,
+          user,
+          type: user.type
+        });
+      }));
+    };
+
     // При изменении состояния тикета
     if (body.state.ID && oldTicket.state.ID !== body.state.ID) {
-      // Тикет завершен клиентом до состояния "Закрыт"
+      // Тикет завершен постановщиком до состояния "Закрыт"
       if (body.state.code === ticketStateCodes.confirmed && oldTicket.state.code !== ticketStateCodes.done) {
         await ticketsHistoryService.createHistory(
           sessionID,
@@ -438,18 +601,20 @@ const updateById = async (
           {
             ticketKey: oldTicket.ID,
             state: body.state,
-            changeAt: new Date(),
-            performer: body.performer
+            changeAt: new Date()
           },
           type
         );
-        if (ticket.performer.ID !== userId) {
-          await sendNotification({
-            title: `Тикет №${ticket.ID} завершен`,
-            message: 'Клиент завершил тикет',
-            user: ticket.performer,
-          });
-        }
+        await sendNotificationToPerformers({
+          title: `Тикет №${ticket.ID} завершен`,
+          message: 'Постановщик завершил тикет'
+        });
+        await sendToAdmins({
+          title: `Тикет №${ticket.ID} завершен`,
+          message: 'Постановщик завершил тикет',
+          checkMonitorAllTickets: true,
+          adminType: 'all'
+        });
       } else {
         // Сохранение в историю изменения состояния тикета
         await ticketsHistoryService.createHistory(
@@ -458,36 +623,36 @@ const updateById = async (
           {
             ticketKey: oldTicket.ID,
             state: body.state,
-            changeAt: new Date(),
-            performer: body.performer
+            changeAt: new Date()
           },
           type
         );
-        // Отправка уведомления исполнителю после подверждения тикета со стадии "Завершен"
-        if (body.state.code === ticketStateCodes.confirmed && ticket.performer.ID !== userId) {
-          await sendNotification({
+        // Отправка уведомления исполнителям после подверждения тикета со стадии "Завершен"
+        if (body.state.code === ticketStateCodes.confirmed) {
+          await sendNotificationToPerformers({
             title: `Тикет №${ticket.ID} завершен`,
-            message: 'Клиент подтвердил выполнение тикета',
-            user: ticket.performer,
+            message: 'Постановщик подтвердил выполнение тикета'
+          });
+          await sendToAdmins({
+            title: `Тикет №${ticket.ID} завершен`,
+            message: 'Постановщик подтвердил выполнение тикета',
+            checkMonitorAllTickets: true,
+            adminType: 'all'
           });
         } else {
-          // Отправка уведомления об изменении состояния тикета исполнителю
-          if (userId !== ticket.performer?.ID) {
-            if (type === UserType.Tickets && body.state.code === ticketStateCodes.inProgress) {
-              await sendNotification({
-                title: `Тикет №${ticket.ID}`,
-                message: 'Выполнение тикета было отклонено клиентом',
-                user: ticket.performer,
-              });
-            } else {
-              await sendNotification({
-                title: `Тикет №${ticket.ID}`,
-                message: `Статус тикета изменен на "${body.state.name}"`,
-                user: ticket.performer,
-              });
-            }
+          // Отправка уведомления об изменении состояния тикета исполнителям
+          if (oldTicket.state.code === ticketStateCodes.done && body.state.code === ticketStateCodes.inProgress) {
+            await sendNotificationToPerformers({
+              title: `Тикет №${ticket.ID}`,
+              message: 'Выполнение тикета было отклонено постановщиком',
+            });
+          } else {
+            await sendNotificationToPerformers({
+              title: `Тикет №${ticket.ID}`,
+              message: `Статус тикета изменен на "${body.state.name}"`,
+            });
           }
-          // Отправка уведомления об изменении состояния тикета клиенту
+          // Отправка уведомления об изменении состояния тикета постановщику
           if (ticket.sender.ID !== userId) {
             if (body.state.code === ticketStateCodes.done) {
               await sendNotification({
@@ -509,43 +674,42 @@ const updateById = async (
       }
     }
 
-    // При изменении исполнителя
-    if ((!oldTicket.performer?.ID || oldTicket.performer?.ID !== body.performer?.ID) && body.performer?.ID) {
-      if (!oldTicket.performer?.ID) {
-        await ticketsHistoryService.createHistory(
-          sessionID,
-          userId,
-          {
-            ticketKey: ticket.ID,
-            state: assignedState,
-            changeAt: new Date(),
-            performer: body.performer
-          },
-          type
-        );
-      } else {
-        await ticketsHistoryService.createHistory(
-          sessionID,
-          userId,
-          {
-            ticketKey: ticket.ID,
-            state: ressignedState,
-            changeAt: new Date(),
-            performer: body.performer
-          },
-          type
-        );
-      }
-      if (ticket.performer?.ID !== userId) {
+    const addedPerformers = !body.performers ? [] : body.performers.filter(newPerformer =>
+      !(oldTicket.performers ?? []).some(oldPerformer => oldPerformer.ID === newPerformer.ID)
+    );
+
+    const removedPerformers = !oldTicket.performers ? [] : oldTicket.performers.filter(oldPerformer =>
+      !(body.performers ?? []).some(newPerformer => newPerformer.ID === oldPerformer.ID)
+    );
+
+    // Добавление в историю изменения исполнителей
+    if (addedPerformers.length > 0 || removedPerformers.length > 0) {
+      await ticketsHistoryService.createHistory(
+        sessionID,
+        userId,
+        {
+          ticketKey: ticket.ID,
+          state: assignedState,
+          changeAt: new Date(),
+          addedPerformers,
+          removedPerformers
+        },
+        type
+      );
+    }
+
+    // Отправка новым исполнителям уведомления
+    if (addedPerformers.length > 0) {
+      await Promise.all(addedPerformers.map(async (performer) => {
         await sendNotification({
           title: 'Вам назначен новый тикет',
           message: ticket.title.length > 60 ? ticket.title.slice(0, 60) + '...' : ticket.title,
-          user: ticket.performer,
+          user: performer,
         });
-      }
+      }));
     }
 
-    // Запись с историю и отрпавка уведомления при запросе\подверждения состоящегося звонка
+    // Запись с историю и отправка уведомления при запросе\подверждения состоящегося звонка
     if (oldTicket.needCall !== ticket.needCall) {
       await ticketsHistoryService.createHistory(
         sessionID,
@@ -557,13 +721,12 @@ const updateById = async (
         },
         type
       );
-      if (ticket.needCall && ticket.performer.ID !== userId) {
-        await sendNotification({
+      if (ticket.needCall) {
+        await sendNotificationToPerformers({
           title: `${ticket.sender.fullName} запросил звонок`,
           message: `Телефон для связи: <a href="tel:${ticket.sender.phone}">${ticket.sender.phone}</a>`,
           notificationTitle: 'Запрос звонка',
           notificationMessage: `${ticket.sender.fullName} запросил звонок`,
-          user: ticket.performer,
         });
       } else {
         if (ticket.sender.ID !== userId) {

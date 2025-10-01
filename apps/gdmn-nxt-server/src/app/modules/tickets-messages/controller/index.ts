@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { IRequestResult, UserType } from '@gsbelarus/util-api-types';
+import { IRequestResult } from '@gsbelarus/util-api-types';
 import { ticketsMessagesService } from '../service';
 import { resultError } from '@gsbelarus/util-helpers';
 
@@ -7,19 +7,20 @@ const findAll: RequestHandler = async (req, res) => {
   try {
     const { id: sessionID } = req.session;
 
-    const ticketId = req.params.ticketId;
+    const ticketId = parseInt(req.params.ticketId);
 
-    const userId = req.user['id'];
-
-    if (!ticketId) {
-      throw new Error('Не указан обязательный параметр ticketId');
+    if (isNaN(ticketId)) {
+      throw new Error('Идентификатор поля не определен или не является числовым');
     }
 
     const response = await ticketsMessagesService.findAll(
       sessionID,
-      userId,
       ticketId,
       req.user['type'],
+      req.user['id'],
+      req.user['isAdmin'],
+      req.user['companyKey'],
+      !!req.user['permissions']?.['ticketSystem/tickets/all']?.GET
     );
 
     const result: IRequestResult = {
@@ -36,7 +37,15 @@ const findAll: RequestHandler = async (req, res) => {
 const createMessage: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'];
-    const messages = await ticketsMessagesService.createMessage(req.sessionID, userId, req.body, req.user['type']);
+    const messages = await ticketsMessagesService.createMessage(
+      req.sessionID,
+      userId,
+      req.body,
+      req.user['type'],
+      req.user['isAdmin'],
+      req.user['companyKey'],
+      !!req.user['permissions']?.['ticketSystem/tickets/all']?.GET
+    );
 
     const result: IRequestResult = {
       queries: { messages: [messages] },
@@ -89,8 +98,9 @@ const removeById: RequestHandler = async (req, res) => {
 
 
   try {
-    await ticketsMessagesService.removeById(req.sessionID, id, userId, req.user['type']);
-    res.sendStatus(200);
+    const resp = await ticketsMessagesService.removeById(req.sessionID, id, userId, req.user['type']);
+
+    res.status(200).json(resp);
   } catch (error) {
     res.status(error.code ?? 500).send(resultError(error.message));
   }

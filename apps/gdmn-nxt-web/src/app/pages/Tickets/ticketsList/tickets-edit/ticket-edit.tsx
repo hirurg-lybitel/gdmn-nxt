@@ -1,6 +1,6 @@
-import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Stack, TextField } from '@mui/material';
-import { useCallback, useEffect, useMemo, } from 'react';
-import { ITicket, UserType } from '@gsbelarus/util-api-types';
+import { Autocomplete, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, ListItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState, } from 'react';
+import { ICRMTicketUser, ITicket, IUser, UserType } from '@gsbelarus/util-api-types';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import * as yup from 'yup';
 import { RootState } from '@gdmn-nxt/store';
@@ -11,6 +11,8 @@ import styles from './tickets-edit.module.less';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import MarkdownTextfield from '@gdmn-nxt/components/Styled/markdown-text-field/markdown-text-field';
 import { useGetUsersQuery } from 'apps/gdmn-nxt-web/src/app/features/systemUsers';
+import { DateTimePicker } from '@mui/x-date-pickers-pro';
+import { OptionsTooltip } from '@gdmn-nxt/components/Styled/options-tooltip/options-tooltip';
 
 export interface ITicketEditProps {
   open: boolean;
@@ -27,29 +29,36 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
   const { onSubmit, onCancelClick } = props;
   const user = useSelector<RootState, UserState>(state => state.user);
 
-  const initValue: ITicket = useMemo(() => ({
-    ID: ticket?.ID ?? -1,
-    title: ticket?.title ?? '',
-    company: ticket?.company ?? { ID: -1, NAME: '' },
-    openAt: ticket?.openAt ? new Date(ticket?.openAt) : new Date(),
-    state: {
-      ID: ticket?.state?.ID ?? -1,
-      name: ticket?.state?.name ?? '',
-      code: ticket?.state?.code ?? 0
-    },
-    sender: {
-      ID: ticket?.sender?.ID ?? user.userProfile?.id ?? -1,
-      fullName: ticket?.sender?.fullName ?? user.userProfile?.fullName ?? ''
-    },
-    performer: {
-      ID: ticket?.company.performer?.ID ?? -1,
-      fullName: ticket?.company.performer?.FULLNAME ?? ''
-    },
-    needCall: ticket?.needCall ?? false,
-    message: '',
-    files: [],
-    labels: []
-  }), [ticket?.ID, ticket?.company, ticket?.needCall, ticket?.openAt, ticket?.sender?.ID, ticket?.sender?.fullName, ticket?.state?.ID, ticket?.state?.code, ticket?.state?.name, ticket?.title, user.userProfile?.fullName, user.userProfile?.id]);
+  const initValue: ITicket = useMemo(() => {
+    const now = new Date();
+    const day = 24 * 60 * 60 * 1000;
+    const defaultDeadline = new Date(now.getTime() + 2 * day);
+
+    return {
+      ID: ticket?.ID ?? -1,
+      title: ticket?.title ?? '',
+      company: ticket?.company ?? { ID: -1, NAME: '' },
+      openAt: ticket?.openAt ? new Date(ticket?.openAt) : new Date(),
+      state: {
+        ID: ticket?.state?.ID ?? -1,
+        name: ticket?.state?.name ?? '',
+        code: ticket?.state?.code ?? 0
+      },
+      sender: {
+        ID: ticket?.sender?.ID ?? user.userProfile?.id ?? -1,
+        fullName: ticket?.sender?.fullName ?? user.userProfile?.fullName ?? ''
+      },
+      performers: ticket?.company.performer?.ID ? [{
+        ID: ticket?.company.performer?.ID,
+        fullName: ticket?.company.performer?.FULLNAME ?? ''
+      }] : [],
+      needCall: ticket?.needCall ?? false,
+      message: '',
+      files: [],
+      labels: [],
+      deadline: ticket?.deadline ?? defaultDeadline
+    };
+  }, [ticket?.ID, ticket?.company, ticket?.deadline, ticket?.needCall, ticket?.openAt, ticket?.sender?.ID, ticket?.sender?.fullName, ticket?.state?.ID, ticket?.state?.code, ticket?.state?.name, ticket?.title, user.userProfile?.fullName, user.userProfile?.id]);
 
   const formik = useFormik<ITicket>({
     enableReinitialize: true,
@@ -102,9 +111,21 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
     formik.setFieldValue('files', attachments);
   }, [formik]);
 
-  const { data: systemUsers, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
+  const { data: systemUsersData, isLoading: systemUsersIsLoading, isFetching: systemUsersIsFetching } = useGetUsersQuery();
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+
+  const systemUsers: ICRMTicketUser[] = useMemo(() => {
+    if (!systemUsersData) return [];
+    return systemUsersData.map((user) => ({
+      ID: user.ID,
+      fullName: user.CONTACT?.NAME ?? '',
+      email: user.EMAIL,
+      phone: user.PHONE,
+      avatar: user.AVATAR,
+      type: UserType.Gedemin
+    }), []);
+  }, [systemUsersData]);
 
   return (
     <Dialog
@@ -139,7 +160,7 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
               style={{ gap: '16px' }}
               height="100%"
             >
-              <Stack sx={(theme) => ({ display: 'flex', flexDirection: { sx: 'column', md: 'row' }, gap: '16px' })}>
+              <Stack sx={(theme) => ({ display: 'flex', flexDirection: ticketsUser ? { sx: 'column', md: 'row' } : { sx: 'column', lg: 'row' }, gap: '16px' })}>
                 <TextField
                   style={{ width: '100%' }}
                   label="Тема"
@@ -152,25 +173,91 @@ export function TicketEdit(props: Readonly<ITicketEditProps>) {
                   error={getIn(formik.touched, 'title') && Boolean(getIn(formik.errors, 'title'))}
                   helperText={getIn(formik.touched, 'title') && getIn(formik.errors, 'title')}
                 />
-                {!ticketsUser && <Autocomplete
-                  fullWidth
-                  sx={(theme) => ({ maxWidth: { xs: '100%', md: '400px' } })}
-                  size="small"
-                  disabled={systemUsersIsLoading || systemUsersIsFetching}
-                  loadingText="Загрузка данных..."
-                  options={systemUsers ?? []}
-                  value={systemUsers?.find(user => user.ID === formik.values.performer?.ID) ?? null}
-                  getOptionLabel={(option) => option?.CONTACT?.NAME ?? option.NAME}
-                  onChange={(e, value) => {
-                    formik.setFieldValue('performer', value);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label={'Исполнитель'}
-                    />
-                  )}
-                />}
+                <Stack sx={{ display: 'flex', flexDirection: ticketsUser ? { sx: 'column', md: 'row' } : { sx: 'column', sm: 'row' }, gap: '16px', minWidth: ticketsUser ? '0px' : { xs: '100%', md: '550px' } }}>
+                  {!ticketsUser && <div style={{ width: '100%', position: 'relative', height: '40px' }}>
+                    <Stack sx={(theme) => ({ position: 'absolute', left: 0, right: 0, top: 0, background: theme.palette.background.paper, zIndex: 1 })}>
+                      <Autocomplete
+                        fullWidth
+                        sx={{ width: '100%' }}
+                        size="small"
+                        disabled={systemUsersIsLoading || systemUsersIsFetching}
+                        loadingText="Загрузка данных..."
+                        options={systemUsers ?? []}
+                        multiple
+                        disableCloseOnSelect
+                        value={formik.values.performers}
+                        getOptionLabel={(option) => option.fullName}
+                        onChange={(e, value) => {
+                          formik.setFieldValue('performers', value);
+                        }}
+                        renderTags={() => [<div key={0}>
+                          {(formik.values.performers && formik.values.performers.length > 0) && (
+                            <OptionsTooltip
+                              arrow
+                              title={
+                                <div style={{ maxHeight: '60vh', overflow: 'auto' }}>
+                                  {formik.values.performers.map((performer, index) => {
+                                    return (
+                                      <Typography variant={'body1'} key={performer.ID}>
+                                        {index + 1}. {performer?.fullName}
+                                      </Typography>
+                                    );
+                                  })}
+                                </div>
+                              }
+                            >
+                              <Chip
+                                style={{ cursor: 'pointer' }}
+                                size="small"
+                                label={formik.values.performers.length}
+                              />
+                            </OptionsTooltip>
+                          )}
+                        </div>]}
+                        renderOption={(props, option, { selected }) => (
+                          <ListItem
+                            {...props}
+                            key={option.ID}
+                            disablePadding
+                            sx={{
+                              display: 'flex',
+                              gap: '8px',
+                              py: '2px !important',
+                              '&:hover .action': {
+                                display: 'inline-flex !important',
+                                opacity: '1 !important',
+                                visibility: 'visible !important',
+                              }
+                            }}
+                          >
+                            <div style={{ width: '100%', display: 'flex', alignItems: 'center', minWidth: 0 }}>
+                              <Checkbox
+                                style={{ marginRight: 8 }}
+                                checked={selected}
+                              />
+                              {option?.fullName}
+                            </div>
+                          </ListItem>
+                        )}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder={'Исполнители'}
+                            label={'Исполнители'}
+                          />
+                        )}
+                      />
+                    </Stack>
+                  </div>
+                  }
+                  <DateTimePicker
+                    label="Срок выполнения"
+                    minDate={new Date()}
+                    sx={{ minWidth: '200px' }}
+                    value={formik.values.deadline}
+                    onChange={(value) => formik.setFieldValue('deadline', value)}
+                  />
+                </Stack>
               </Stack>
               <MarkdownTextfield
                 name="message"

@@ -60,6 +60,10 @@ const create: RequestHandler = async (req, res) => {
       throw ForbiddenException('Организация создаваемого ответственного лица отличается от вашей');
     }
 
+    if (type === UserType.Tickets && !req.user['isAdmin']) {
+      throw ForbiddenException('У вас недостаточно прав');
+    }
+
     const users = await ticketsUserService.create(req.sessionID, req.body);
 
     const result: IRequestResult = {
@@ -76,16 +80,15 @@ const create: RequestHandler = async (req, res) => {
 const updateById: RequestHandler = async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
-    return res
-      .status(422)
-      .send(resultError('Field ID is not defined or is not numeric'));
+    throw new Error('Идентификатор не определен или не является числовым');
   }
 
   try {
     const updatedUser = await ticketsUserService.updateById(
       req.sessionID,
       id,
-      { ...req.body, password: undefined }
+      { ...req.body, password: undefined },
+      req.user['isAdmin']
     );
 
     const result: IRequestResult = {

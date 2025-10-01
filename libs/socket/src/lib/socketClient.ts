@@ -28,6 +28,7 @@ export function setSocketClient(name: string, options: SocketOptions) {
         },
         secure: true,
         rejectUnauthorized: false,
+        withCredentials: true
       });
 
     socketClients[name].on('disconnect', reason => {
@@ -42,7 +43,7 @@ export function setSocketClient(name: string, options: SocketOptions) {
   return socketClients[name];
 }
 
-export function getSocketClient(name: string) {
+export function getSocketClient(name: string): Socket<ServerToClientEvents, ClientToServerEvents> | undefined {
   return socketClients[name];
 }
 

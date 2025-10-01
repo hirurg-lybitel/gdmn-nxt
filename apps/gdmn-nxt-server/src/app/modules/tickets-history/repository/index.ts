@@ -109,6 +109,44 @@ const find: FindHandler<ITicketHistory> = async (
       };
     });
 
+    const performersData = await fetchAsObject(`
+      SELECT
+        tph.USR$HISTORYKEY,
+        tph.USR$ISADDED,
+        gu.ID as PERFORMER_ID,
+        gc.NAME AS PERFORMER_FULLNAME,
+        gc.EMAIL as PERFORMER_EMAIL,
+        gc.PHONE as PERFORMER_PHONE,
+        gups.USR$AVATAR as PERFORMER_AVATAR_BLOB
+      FROM USR$CRM_T_PERFORMERS_HISTORY tph
+        LEFT JOIN GD_USER gu ON gu.ID = tph.USR$PERFORMERKEY
+        LEFT JOIN USR$CRM_PROFILE_SETTINGS gups ON gups.USR$USERKEY = gu.ID
+        LEFT JOIN GD_CONTACT gc ON gc.id = gu.contactkey
+      ORDER BY tph.USR$HISTORYKEY`);
+
+    const addedPerformers = new Map();
+    const removedPerformers = new Map();
+
+    performersData.map(async (item) => {
+      const performersMas = item['USR$ISADDED'] === 1 ? addedPerformers : removedPerformers;
+
+      const avatarBlob = await getStringFromBlob(attachment, transaction, item['PERFORMER_AVATAR_BLOB']);
+      const avatar = bin2String(avatarBlob.split(','));
+
+      const performer = {
+        ID: item['PERFORMER_ID'],
+        fullName: item['PERFORMER_FULLNAME'],
+        phone: item['PERFORMER_PHONE'],
+        email: item['PERFORMER_EMAIL'],
+        avatar: avatar
+      };
+      if (performersMas[item['USR$HISTORYKEY']]) {
+        performersMas[item['USR$HISTORYKEY']].push({ ...performer });
+      } else {
+        performersMas[item['USR$HISTORYKEY']] = [{ ...performer }];
+      };
+    });
+
     const ticketsHistory: ITicketHistory[] = await Promise.all(result.map(async (data) => {
       const avatarBlob = await getStringFromBlob(attachment, transaction, data['AVATAR']);
       const avatar = bin2String(avatarBlob.split(','));
@@ -148,6 +186,8 @@ const find: FindHandler<ITicketHistory> = async (
         } : {}),
         addedLabels: addedLabels[data['ID']],
         removedLabels: removedLabels[data['ID']],
+        addedPerformers: addedPerformers[data['ID']],
+        removedPerformers: removedPerformers[data['ID']],
         needCall: data['USR$NEEDCALL'] === 1
       };
     }));
@@ -179,7 +219,7 @@ const save: SaveHandler<IITicketHistorySave> = async (
 ) => {
   const { fetchAsSingletonObject, releaseTransaction } = await startTransaction(sessionID);
 
-  const { ticketKey, userId, state, changeAt, performer, addedLabels, removedLabels, needCall } = metadata;
+  const { ticketKey, userId, state, changeAt, addedLabels, removedLabels, needCall, addedPerformers, removedPerformers } = metadata;
 
   const fieldName = type === UserType.Tickets ? 'USR$CUSTOMER' : 'USR$SUPPORT';
 
@@ -193,7 +233,6 @@ const save: SaveHandler<IITicketHistorySave> = async (
         CHANGEAT: changeAt ? new Date(changeAt) : new Date(),
         STATE: state?.ID,
         SENDER: userId,
-        PERFORMER: performer?.ID,
         NEEDCALL: needCall
       }
     );
@@ -224,6 +263,38 @@ const save: SaveHandler<IITicketHistorySave> = async (
           {
             HISTORYKEY: message.ID,
             LABELKEY: label.ID,
+            ISADDED: 0
+          }
+        );
+      }));
+    }
+
+    if (addedPerformers) {
+      await Promise.all(addedPerformers.map(async (performer) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_T_PERFORMERS_HISTORY(USR$HISTORYKEY, USR$PERFORMERKEY, USR$ISADDED)
+          VALUES(:HISTORYKEY, :PERFORMERKEY, :ISADDED)
+          RETURNING ID
+        `,
+          {
+            HISTORYKEY: message.ID,
+            PERFORMERKEY: performer.ID,
+            ISADDED: 1
+          }
+        );
+      }));
+    }
+
+    if (removedPerformers) {
+      await Promise.all(removedPerformers.map(async (performer) => {
+        return await fetchAsSingletonObject<ILabel>(
+          `INSERT INTO USR$CRM_T_PERFORMERS_HISTORY(USR$HISTORYKEY, USR$PERFORMERKEY, USR$ISADDED)
+          VALUES(:HISTORYKEY, :PERFORMERKEY, :ISADDED)
+          RETURNING ID
+        `,
+          {
+            HISTORYKEY: message.ID,
+            PERFORMERKEY: performer.ID,
             ISADDED: 0
           }
         );

@@ -1,15 +1,27 @@
 import { InternalServerErrorException, ITicketHistory, NotFoundException, UserType } from '@gsbelarus/util-api-types';
 import { ticketsHistoryRepository } from '../repository';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
+import { ticketsService } from '@gdmn-nxt/modules/tickets/service';
 
 const findAll = async (
   sessionID: string,
-  filter?: { [key: string]: any; },
+  type: UserType,
+  userId: number,
+  isAdmin: boolean,
+  companyKey: number,
+  showAll: boolean,
+  filter?: { [key: string]: any; }
 ) => {
   try {
     const {
       ticketId
     } = filter;
+
+    const ticket = await ticketsService.findOne(sessionID, ticketId, type, userId, isAdmin, companyKey, showAll);
+
+    if (!ticket?.ID) {
+      throw NotFoundException(`Не найдет тикет с id=${ticketId}`);
+    }
 
     const ticketsHistory = await ticketsHistoryRepository.find(
       sessionID,

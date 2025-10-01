@@ -12,6 +12,7 @@ import useObjectsComparator from '@gdmn-nxt/helpers/hooks/useObjectsComparator';
 import ButtonWithConfirmation from '@gdmn-nxt/components/button-with-confirmation/button-with-confirmation';
 import { RootState } from '@gdmn-nxt/store';
 import { useSelector } from 'react-redux';
+import usePermissions from '@gdmn-nxt/helpers/hooks/usePermissions';
 
 export default function NotificationsTab() {
   const userProfile = useUserData();
@@ -24,7 +25,8 @@ export default function NotificationsTab() {
   const initValue: Partial<IProfileSettings> = {
     SEND_EMAIL_NOTIFICATIONS: settings?.SEND_EMAIL_NOTIFICATIONS ?? false,
     PUSH_NOTIFICATIONS_ENABLED: settings?.PUSH_NOTIFICATIONS_ENABLED ?? false,
-    TICKETS_EMAIL: settings?.TICKETS_EMAIL ?? false
+    TICKETS_EMAIL: settings?.TICKETS_EMAIL ?? false,
+    ALL_TICKET_EMAIL_NOTIFICATIONS: settings?.ALL_TICKET_EMAIL_NOTIFICATIONS ?? false
   };
 
   const formik = useFormik<IProfileSettings>({
@@ -98,10 +100,13 @@ export default function NotificationsTab() {
   };
 
   const ticketsUser = useSelector<RootState, boolean>(state => state.user.userProfile?.type === UserType.Tickets);
+  const isAdmin = useSelector<RootState, boolean>(state => !!state.user.userProfile?.isAdmin);
 
   const ticketActions = ticketsUser
     ? ['Отправлено сообщение', 'Изменен статус заявки', 'Звонок по заявке завершен']
     : ['Вам назначен тикет', 'Отправлено сообщение', 'Изменен статус тикета', ['Запрошен звонок'], 'Постановщик отклонил/подтвердил выполнение тикета'];
+
+  const userPermissions = usePermissions();
 
   return (
     <FormikProvider value={formik}>
@@ -204,6 +209,27 @@ export default function NotificationsTab() {
               <InfoIcon color="action" />
             </Tooltip>
           </Stack>
+          {(userPermissions?.['ticketSystem/tickets/all'].GET || ticketsUser || isAdmin) && <Stack direction="row" alignItems="center">
+            <FormControlLabel
+              disabled={isLoading}
+              label={ticketsUser ? 'Получать уведомления по всем заявкам' : 'Получать уведомления по всем тикетам'}
+              control={<Checkbox
+                name="ALL_TICKET_EMAIL_NOTIFICATIONS"
+                checked={formik.values.ALL_TICKET_EMAIL_NOTIFICATIONS}
+                onChange={formik.handleChange}
+              />}
+              style={{
+                minWidth: '190px',
+              }}
+            />
+            <Tooltip
+              style={{ cursor: 'help' }}
+              arrow
+              title={`Уведомления по ${ticketsUser ? 'заявкам' : 'тикетам'}, где вы не являетесь ${ticketsUser ? 'постановщиком' : 'постановщиком или исполнителем'}, будут приходить при их создании и завершении`}
+            >
+              <InfoIcon color="action" />
+            </Tooltip>
+          </Stack>}
           <Box flex={1} />
           <ButtonWithConfirmation
             variant="contained"

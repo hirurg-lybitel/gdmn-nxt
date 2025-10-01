@@ -65,6 +65,7 @@ const getSettings = async ({
             ps.USR$PUSH_NOTIFICATIONS as PUSH_NOTIFICATIONS_ENABLED,
             ps.USR$SAVEFILTERS as SAVEFILTERS,
             ps.USR$TICKETS_EMAIL,
+            ps.USR$ALL_TICKET_EMAIL_NOTIFI,
             u.USR$ONE_TIME_PASSWORD,
             u.USR$FULLNAME as FULLNAME,
             u.USR$PHONE as PHONE
@@ -98,9 +99,11 @@ const getSettings = async ({
           r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
           r['ONE_TIME_PASSWORD'] = r['USR$ONE_TIME_PASSWORD'] === 1;
           r['TICKETS_EMAIL'] = r['USR$TICKETS_EMAIL'] === 1;
+          r['ALL_TICKET_EMAIL_NOTIFICATIONS'] = r['USR$ALL_TICKET_EMAIL_NOTIFI'] === 1;
           delete r['USR$ONE_TIME_PASSWORD'];
           delete r['AVATAR_BLOB'];
           delete r['USR$TICKETS_EMAIL'];
+          delete r['USR$ALL_TICKET_EMAIL_NOTIFI'];
         };
 
         return result;
@@ -115,6 +118,7 @@ const getSettings = async ({
           ps.USR$LAST_IP as LAST_IP,
           ps.USR$SAVEFILTERS as SAVEFILTERS,
           ps.USR$TICKETS_EMAIL,
+          ps.USR$ALL_TICKET_EMAIL_NOTIFI,
           c.PHONE
         FROM GD_USER u
           JOIN GD_PEOPLE p ON p.CONTACTKEY = u.CONTACTKEY
@@ -149,8 +153,10 @@ const getSettings = async ({
         r['SAVEFILTERS'] = r['SAVEFILTERS'] === 1;
         r['ONE_TIME_PASSWORD'] = false;
         r['TICKETS_EMAIL'] = r['USR$TICKETS_EMAIL'] === 1;
+        r['ALL_TICKET_EMAIL_NOTIFICATIONS'] = r['USR$ALL_TICKET_EMAIL_NOTIFI'] === 1;
         delete r['AVATAR_BLOB'];
         delete r['USR$TICKETS_EMAIL'];
+        delete r['USR$ALL_TICKET_EMAIL_NOTIFI'];
       };
 
       return result;
@@ -197,6 +203,7 @@ const set: RequestHandler = async (req, res) => {
 
   const userId = parseIntDef(req.params.userId, -1);
   const ticketsUser = req.user['type'] === UserType.Tickets;
+  const isCRMTicketsAdmin = req.user['permissions']?.['ticketSystem/tickets/all']?.GET;
 
   const {
     AVATAR: avatar,
@@ -208,7 +215,8 @@ const set: RequestHandler = async (req, res) => {
     SAVEFILTERS,
     FULLNAME,
     PHONE,
-    TICKETS_EMAIL
+    TICKETS_EMAIL,
+    ALL_TICKET_EMAIL_NOTIFICATIONS
   } = req.body;
 
 
@@ -244,8 +252,10 @@ const set: RequestHandler = async (req, res) => {
     const sqlResult = await (async () => {
       if (ticketsUser) {
         return await fetchAsSingletonObject(
-          `UPDATE OR INSERT INTO USR$CRM_T_USER_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATION, USR$PUSH_NOTIFICATIONS, USR$SAVEFILTERS, USR$TICKETS_EMAIL)
-          VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS, :TICKETS_EMAIL)
+          `UPDATE OR INSERT INTO USR$CRM_T_USER_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATION,
+          USR$PUSH_NOTIFICATIONS, USR$SAVEFILTERS, USR$TICKETS_EMAIL, USR$ALL_TICKET_EMAIL_NOTIFI)
+          VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS,:PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS,
+          :TICKETS_EMAIL, :ALL_TICKET_EMAIL_NOTIFICATIONS)
           MATCHING(USR$USERKEY)
           RETURNING ID`,
           {
@@ -256,12 +266,15 @@ const set: RequestHandler = async (req, res) => {
             SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
             PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
             SAVEFILTERS: (SAVEFILTERS ? 1 : 0),
-            TICKETS_EMAIL
+            TICKETS_EMAIL,
+            ALL_TICKET_EMAIL_NOTIFICATIONS
           });
       }
       return await fetchAsSingletonObject(
-        `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS, USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS, USR$TICKETS_EMAIL)
-      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS, :TICKETS_EMAIL)
+        `UPDATE OR INSERT INTO USR$CRM_PROFILE_SETTINGS(USR$USERKEY, USR$AVATAR, USR$MODE, USR$LASTVERSION, USR$SEND_EMAIL_NOTIFICATIONS,
+        USR$PUSH_NOTIFICATIONS_ENABLED, USR$SAVEFILTERS, USR$TICKETS_EMAIL${isCRMTicketsAdmin ? ', USR$ALL_TICKET_EMAIL_NOTIFI' : ''})
+      VALUES(:userId, :avatar, :colorMode, :lastVersion, :SEND_EMAIL_NOTIFICATIONS, :PUSH_NOTIFICATIONS_ENABLED, :SAVEFILTERS, :TICKETS_EMAIL
+      ${isCRMTicketsAdmin ? ', :ALL_TICKET_EMAIL_NOTIFICATIONS' : ''})
       MATCHING(USR$USERKEY)
       RETURNING ID`,
         {
@@ -272,7 +285,8 @@ const set: RequestHandler = async (req, res) => {
           SEND_EMAIL_NOTIFICATIONS: Number(SEND_EMAIL_NOTIFICATIONS),
           PUSH_NOTIFICATIONS_ENABLED: Number(PUSH_NOTIFICATIONS_ENABLED),
           SAVEFILTERS: (SAVEFILTERS ? 1 : 0),
-          TICKETS_EMAIL
+          TICKETS_EMAIL,
+          ALL_TICKET_EMAIL_NOTIFICATIONS
         });
     })();
 
