@@ -2,7 +2,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { Button, CssBaseline, GlobalStyles } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { StrictMode, useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RootState, store } from './app/store';

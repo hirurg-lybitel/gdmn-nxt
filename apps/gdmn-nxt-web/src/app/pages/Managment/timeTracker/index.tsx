@@ -1,4 +1,3 @@
-import SearchBar from '@gdmn-nxt/components/search-bar/search-bar';
 import styles from './time-tracker.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
 import {
@@ -19,12 +18,10 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import CustomLoadingButton from '@gdmn-nxt/helpers/custom-loading-button/custom-loading-button';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { IFilteringData, ITimeTrack } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
-import CustomizedScrollBox from '@gdmn-nxt/components/Styled/customized-scroll-box/customized-scroll-box';
 import { AddItem } from './components/add-item';
 import { useAddTimeTrackingMutation, useDeleteTimeTrackingMutation, useGetTimeTrackingByDateQuery, useGetTimeTrackingInProgressQuery, useUpdateTimeTrackingMutation } from '../../../features/time-tracking';
 import MenuBurger from '@gdmn-nxt/helpers/menu-burger';
@@ -35,7 +32,6 @@ import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import ButtonDateRangePicker from '@gdmn-nxt/components/button-date-range-picker';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import CustomFilterButton from '@gdmn-nxt/helpers/custom-filter-button';
 import FilterPanel from './components/filter-panel';
 import { DateRange, DateRangeValidationError, PickerChangeHandlerContext } from '@mui/x-date-pickers-pro';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
@@ -98,7 +94,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 export function TimeTracker() {
   const dispatch = useDispatch();
-  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking) ?? {};
+  const filterData = useSelector((state: RootState) => state.filtersStorage.filterData?.timeTracking ?? {});
   const [openFilters, setOpenFilters] = useState(false);
 
   const {
@@ -117,24 +113,11 @@ export function TimeTracker() {
   const [addTimeTrack] = useAddTimeTrackingMutation();
   const [updateTimeTrack] = useUpdateTimeTrackingMutation();
 
-  useEffect(() => {
-    if (filterData?.period) {
-      return;
-    }
-
-    const today = dayjs();
-
-    dateRangeOnChange([
-      today.subtract(7, 'day').toDate(),
-      today.toDate()
-    ]);
-  }, []);
-
   const saveFilters = useCallback((filteringData: IFilteringData) => {
     dispatch(saveFilterData({ timeTracking: filteringData }));
-  }, []);
+  }, [dispatch]);
 
-  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), []);
+  const handleFilteringDataChange = useCallback((newValue: IFilteringData) => saveFilters(newValue), [saveFilters]);
 
   const requestSearch = useCallback((value: string) => {
     const newObject = { ...filterData };
@@ -144,13 +127,13 @@ export function TimeTracker() {
       ...(value !== '' ? { name: [value] } : {})
     });
     // setPaginationData(prev => ({ ...prev, pageNo: 0 }));
-  }, [filterData]);
+  }, [filterData, handleFilteringDataChange]);
 
   const cancelSearch = useCallback(() => {
     const newObject = { ...filterData };
     delete newObject.name;
     handleFilteringDataChange(newObject);
-  }, [filterData]);
+  }, [filterData, handleFilteringDataChange]);
 
   const filterHandlers = {
     filterClick: useCallback(() => {
@@ -215,17 +198,17 @@ export function TimeTracker() {
     setAddTimeTrackInitial({ ...value });
   };
 
-  const memoFilter = useMemo(() =>
+  const memoFilter = useMemo(() => (
     <FilterPanel
       open={openFilters}
       onClose={filterHandlers.filterClose}
       filteringData={filterData}
       onFilteringDataChange={handleFilteringDataChange}
       onClear={filterHandlers.filterClear}
-    />,
-  [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
+    />
+  ), [openFilters, filterData, filterHandlers.filterClear, filterHandlers.filterClose, handleFilteringDataChange]);
 
-  const dateRangeOnChange = (value: DateRange<Date>, context?: PickerChangeHandlerContext<DateRangeValidationError>) => {
+  const dateRangeOnChange = useCallback((value: DateRange<Date>, context?: PickerChangeHandlerContext<DateRangeValidationError>) => {
     const newPeriod = [
       value[0]?.getTime() ?? null,
       value[1]?.getTime() ?? null
@@ -236,7 +219,20 @@ export function TimeTracker() {
       ...newObject,
       ...((newPeriod[0] !== null && newPeriod[1] !== null) ? { period: [...newPeriod] } : {})
     });
-  };
+  }, [filterData, handleFilteringDataChange]);
+
+  useEffect(() => {
+    if (filterData?.period) {
+      return;
+    }
+
+    const today = dayjs();
+
+    dateRangeOnChange([
+      today.subtract(7, 'day').toDate(),
+      today.toDate()
+    ]);
+  }, [dateRangeOnChange, filterData?.period]);
 
   return (
     <Stack flex={1} spacing={3}>
@@ -275,15 +271,15 @@ export function TimeTracker() {
             Итого за период:
           </Typography>
           <Typography fontWeight={600} width={60}>
-            {durationFormat(timeTrackGroup.reduce((total, { duration }) =>
-              dayjs
+            {durationFormat(timeTrackGroup.reduce((total, { duration }) => {
+              return dayjs
                 .duration(total.length === 0 ? Object.assign({}) : total)
                 .add(
                   dayjs
                     .duration(duration)
                 )
-                .toISOString()
-            , ''))}
+                .toISOString();
+            }, ''))}
           </Typography>
         </Stack>
       </Stack>
@@ -321,7 +317,7 @@ export function TimeTracker() {
                           </Typography>
                           <Box flex={1} />
                           <Typography variant="caption">
-                          Итого:
+                            Итого:
                           </Typography>
                           <Typography fontWeight={600} width={60}>
                             {durationFormat(duration)}
@@ -373,7 +369,7 @@ interface ITimeTrackerItemProps {
   isFetching: boolean,
   filterData: IFilteringData,
   setInitial: (value: any) => (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void,
-  lastItem: boolean
+  lastItem: boolean;
 }
 
 const TimeTrackerItem = (props: ITimeTrackerItemProps) => {
@@ -421,7 +417,7 @@ const TimeTrackerItem = (props: ITimeTrackerItemProps) => {
   const [editMode, setEditMode] = useState(false);
 
   const endTime = useMemo(() => editMode ? formik.values.endTime : endTimeValue, [editMode, endTimeValue, formik.values.endTime]);
-  const startTime = useMemo(() => editMode ? formik.values.startTime : startTimeValue, [editMode, startTimeValue, formik.values.endTime]);
+  const startTime = useMemo(() => editMode ? formik.values.startTime : startTimeValue, [editMode, formik.values.startTime, startTimeValue]);
 
   const [confirmDialog] = useConfirmation();
 
@@ -642,7 +638,7 @@ const TimeTrackerItem = (props: ITimeTrackerItemProps) => {
           />
         </Stack>
       </Form>
-      {!lastItem && <Divider/>}
+      {!lastItem && <Divider />}
     </FormikProvider>
   );
 };

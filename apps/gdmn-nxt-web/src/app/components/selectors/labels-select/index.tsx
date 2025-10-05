@@ -127,6 +127,8 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
     return disableCreation ? undefined : CustomPaperComponent({ footer: memoPaperFooter });
   }, [disableCreation, memoPaperFooter]);
 
+  const selectedLabels = useMemo(() => labelsData.filter(label => labels?.find(el => el.ID === label.ID)), [labels, labelsData]);
+
   return (
     <>
       {labelEditComponent}
@@ -140,9 +142,7 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
         onChange={(e, value, reason) => {
           onChange(value, reason);
         }}
-        value={
-          labelsData.filter(label => labels?.find(el => el.ID === label.ID))
-        }
+        value={selectedLabels}
         options={labelsData}
         loading={labelsFetching}
         loadingText="Загрузка данных..."
@@ -224,7 +224,7 @@ export function LabelsSelect({ labels = [], onChange, textFieldProps, editIconSp
               '& .MuiInputBase-input': {
                 ...(textFieldProps?.sx as any)?.['& .MuiInputBase-input'],
                 minWidth: '100% !important',
-                height: rest.readOnly ? '5px' : (textFieldProps?.sx as any)?.['& .MuiInputBase-input'].height
+                height: (rest.readOnly && selectedLabels.length > 0) ? '5px' : (textFieldProps?.sx as any)?.['& .MuiInputBase-input'].height
               }
             }}
             InputProps={{

@@ -1,5 +1,5 @@
 import { ColorMode } from '@gsbelarus/util-api-types';
-import { Components, Theme, Input } from '@mui/material';
+import { Components, Theme, Input, Avatar } from '@mui/material';
 import * as locales from '@mui/material/locale';
 
 export default function componentStyleOverrides(theme: Theme): Components {
@@ -69,7 +69,7 @@ export default function componentStyleOverrides(theme: Theme): Components {
     MuiAvatar: {
       styleOverrides: {
         root: {
-          color: theme.palette?.background?.default,
+          color: theme.color.grey[700],
           background: theme.color.grey[200]
         }
       }

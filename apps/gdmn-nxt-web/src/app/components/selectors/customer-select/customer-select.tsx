@@ -1,5 +1,5 @@
 import { ICustomer, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
-import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions, Popper, useMediaQuery } from '@mui/material';
+import { Autocomplete, AutocompleteRenderOptionState, Box, Button, Checkbox, IconButton, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, SxProps, Theme, TextField, TextFieldProps, Tooltip, Typography, createFilterOptions, Popper, useMediaQuery } from '@mui/material';
 import CustomerEdit from 'apps/gdmn-nxt-web/src/app/customers/customer-edit/customer-edit';
 import { useAddFavoriteMutation, useDeleteFavoriteMutation, useAddCustomerMutation, useGetCustomersQuery, useUpdateCustomerMutation } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 import { forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -8,7 +8,6 @@ import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { makeStyles } from '@mui/styles';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
 import { GroupHeader, GroupItems } from '../../Kanban/kanban-edit-card/components/group';
 import ItemButtonEdit from '@gdmn-nxt/components/customButtons/item-button-edit/item-button-edit';
@@ -18,7 +17,7 @@ import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutoco
 import { maxVirtualizationList } from '@gdmn/constants/client';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import WarningIcon from '@mui/icons-material/Warning';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { saveFilterData } from '@gdmn-nxt/store/filtersSlice';
 import { useDispatch } from 'react-redux';
 
@@ -56,6 +55,9 @@ interface CustomerSelectProps<Multiple extends boolean | undefined> extends Base
   disableClear?: boolean;
   ticketSystem?: boolean;
 };
+
+const defaultTaskSelectWidth = 160;
+const loadingTaskSelectWidth = 100;
 
 export function CustomerSelect<Multiple extends boolean | undefined = false>(props: Readonly<CustomerSelectProps<Multiple>>) {
   const {
@@ -128,7 +130,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
       updateCustomer(customer);
     }
     setAddCustomer(false);
-  }, [editingCustomer]);
+  }, [editingCustomer, insertCustomer, updateCustomer]);
 
   const handleCancelCustomer = useCallback(() => setAddCustomer(false), []);
 
@@ -140,7 +142,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     }
   };
 
-  const memoPaperFooter = useMemo(() =>
+  const memoPaperFooter = useMemo(() => (
     <div>
       {disableCreation
         ? <></>
@@ -150,17 +152,18 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
         >
           Создать клиента
         </Button>}
-    </div>,
-    [disableCreation]);
+    </div>
+  ), [disableCreation, handleAddCustomer]);
 
-  const memoCustomerUpsert = useMemo(() =>
+  const memoCustomerUpsert = useMemo(() => (
     <CustomerEdit
       open={addCustomer}
       deleteable={false}
       customer={editingCustomer}
       onCancel={handleCancelCustomer}
       onSubmit={handleSubmitCustomer}
-    />, [addCustomer, editingCustomer]);
+    />
+  ), [addCustomer, editingCustomer, handleCancelCustomer, handleSubmitCustomer]);
 
   const filterOptions = createFilterOptions({
     matchFrom: 'any',
@@ -174,7 +177,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     customer.isFavorite
       ? deleteFavorite(customer.ID)
       : addFavorite(customer.ID);
-  }, []);
+  }, [addFavorite, deleteFavorite]);
 
   const [selectedTask, setSelectedTask] = useState<ITimeTrackTask | null>(null);
 
@@ -198,11 +201,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
 
   const [ListboxComponent] = useAutocompleteVirtualization();
 
-  const {
-    data,
-    isLoading: projectsIsLoading,
-    isFetching: projectsIsFetching
-  } = useGetProjectsQuery({
+  const { data, isLoading: projectsIsLoading, isFetching: projectsIsFetching } = useGetProjectsQuery({
     ...(!Array.isArray(value)
       ? { filter: { customerId: value?.ID, groupByFavorite: true, taskisActive: true, status: 'active' } }
       : {}),
@@ -210,7 +209,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     skip: multiple || !value || !withTasks
   });
 
-  const projects = data?.projects || [];
+  const projects = useMemo(() => data?.projects || [], [data?.projects]);
 
   useEffect(() => {
     if (multiple) return;
@@ -223,21 +222,77 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
     const { tasks, ...project } = projects[0];
 
     handleTaskSelect({ ...defaultTasks[0], project });
-  }, [multiple, projects, projectsIsLoading]);
+  }, [handleTaskSelect, multiple, projects, projectsIsLoading]);
 
   const taskSelectAreaRef = useRef<HTMLDivElement>(null);
   const [taskSelectAreaWidth, setTaskSelectAreaWidth] = useState(0);
 
+  const [parsedValue, options] = useMemo(() => {
+    if (insertCustomerIsLoading) {
+      return [multiple ? [] : null, []];
+    }
+
+    const customer = multiple && Array.isArray(value)
+      ? customers.filter(customer => value?.find(el => el.ID === customer.ID)) ?? []
+      : customers?.find(el => el.ID === (value as ICustomer)?.ID) ?? null;
+
+    return [customer, customers];
+  }, [customers, insertCustomerIsLoading, multiple, value]);
+
+  const withTask = useMemo(() => {
+    if (Array.isArray(parsedValue)) return false;
+    return parsedValue?.taskCount && parsedValue?.taskCount > 0;
+  }, [parsedValue]);
+
+  // Для отключения выбора задачи только при изменеии ID клиента
+  const [disableWhenFitching, setDisableWhenFitching] = useState(true);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const correctValue = useMemo(() => !Array.isArray(value) ? value as ICustomer | undefined : { ID: -1 } as ICustomer, [JSON.stringify(value)]);
+
+  // Отключает выбор задач при изменении ID клиента
   useEffect(() => {
-    if (projects.length === 0) {
+    if (correctValue?.ID) {
+      setDisableWhenFitching(true);
+    }
+  }, [correctValue?.ID]);
+
+  // Включает поле после загрузки проектов клиента
+  useEffect(() => {
+    if (!projectsIsFetching) {
+      setDisableWhenFitching(false);
+    }
+  }, [projectsIsFetching]);
+
+  const waitProjectLoad = useMemo(() => projectsIsLoading || (disableWhenFitching && projectsIsFetching), [disableWhenFitching, projectsIsFetching, projectsIsLoading]);
+
+  useEffect(() => {
+    if (!withTask) {
       setTaskSelectAreaWidth(0);
       return;
     }
 
+    if (waitProjectLoad) {
+      setTaskSelectAreaWidth(loadingTaskSelectWidth);
+      return;
+    }
+
+    if (projects.length === 0) {
+      setTaskSelectAreaWidth(defaultTaskSelectWidth);
+      return;
+    }
+
     setTaskSelectAreaWidth(taskSelectAreaRef.current?.clientWidth ?? 0);
-  }, [selectedTask?.name, projects.length]);
+  }, [selectedTask?.name, withTask, projects.length, waitProjectLoad]);
 
   const mobile = useMediaQuery('(pointer: coarse)');
+
+  const taskSelectWidth = useMemo(() => {
+    if (waitProjectLoad) return loadingTaskSelectWidth;
+    if (projects.length === 0) return defaultTaskSelectWidth;
+    return undefined;
+  }, [projects.length, waitProjectLoad]);
+
 
   return (
     <div style={{ position: 'relative', ...style }}>
@@ -250,11 +305,12 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
           top: '9px',
           maxWidth: '50%',
           zIndex: 99,
+          width: taskSelectWidth ? `${taskSelectWidth}px` : undefined
         }}
       >
         <div
           style={{
-            display: (projects.length === 0) ? 'none' : 'inline-flex',
+            display: withTask ? 'inline-flex' : 'none',
             position: 'relative',
             zIndex: 2,
             color: 'transparent',
@@ -280,6 +336,7 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
             projects={projects}
             task={selectedTask}
             onSelect={handleTaskSelect}
+            isLoading={waitProjectLoad}
           />
         </div>
       </Box>
@@ -306,18 +363,8 @@ export function CustomerSelect<Multiple extends boolean | undefined = false>(pro
           groupBy: (option: ICustomer) => (option.isFavorite ? 'Избранные' : 'Остальные')
         })}
         loading={customersIsFetching || insertCustomerIsLoading}
-        {...(insertCustomerIsLoading
-          ? {
-            options: [],
-            value: multiple ? [] : null
-          }
-          : {
-            options: customers,
-            value: multiple && Array.isArray(value)
-              ? customers.filter(customer => value?.find(el => el.ID === customer.ID)) ?? []
-              : customers?.find(el => el.ID === (value as ICustomer)?.ID) ?? null
-          })
-        }
+        value={parsedValue}
+        options={options}
         loadingText="Загрузка данных..."
         onChange={handleChange}
         renderOption={useCallback((props: HTMLAttributes<HTMLLIElement>, option: ICustomer, { selected, index, inputValue }: AutocompleteRenderOptionState) => {
@@ -461,7 +508,7 @@ const CustomerItem = ({
     dispatch(saveFilterData({ 'contracts': newContractsFilters }));
 
     navigate('/employee/managment/contracts', { relative: 'path' });
-  }, []);
+  }, [customer, dispatch, navigate]);
 
   return (
     <Stack
@@ -596,13 +643,15 @@ interface CustomerTasksProps {
   task: ITimeTrackTask | null;
   sx?: SxProps<Theme>;
   onSelect: (task: ITimeTrackTask) => void;
+  isLoading: boolean;
 };
 
 const CustomerTasks = ({
   projects,
   task,
   sx,
-  onSelect
+  onSelect,
+  isLoading
 }: Readonly<CustomerTasksProps>) => {
   const [addFavoriteProject] = useAddFavoriteProjectMutation();
   const [deleteFavoriteProject] = useDeleteFavoriteProjectMutation();
@@ -631,28 +680,11 @@ const CustomerTasks = ({
     onSelect(task);
   }, [onSelect]);
 
-  const [selectedProject, setSelectedProject] = useState<ITimeTrackProject | null>(null);
-
-  const projectOnChange = (
-    e: SyntheticEvent,
-    value: ITimeTrackProject | null
-  ) => {
-    setSelectedProject(value);
-  };
-
-  useEffect(() => {
-    if (!task?.project || !projects) {
-      return;
-    }
-
-    const project = projects.find(project => project.ID === task?.project?.ID);
-    if (!project) return;
-    setSelectedProject(project);
-  }, [projects, task?.project]);
-
   const CustomPopper = (props: any) => {
     return <Popper {...props} style={{ width: 'fit-content' }} />;
   };
+
+  const selectedProject = useMemo(() => projects.find(project => project.ID === task?.project?.ID) ?? null, [projects, task?.project?.ID]);
 
   return (
     <Autocomplete
@@ -660,13 +692,13 @@ const CustomerTasks = ({
       options={projects}
       getOptionLabel={() => task?.name ?? ''}
       filterOptions={filterProjects()}
-      onChange={projectOnChange}
       value={selectedProject}
+      disabled={isLoading}
       renderInput={(params) => (
         <TextField
           {...params}
           variant="standard"
-          placeholder="Выберите задачу"
+          placeholder={isLoading ? 'Загрузка...' : 'Выберите задачу'}
           InputProps={{
             ref: params.InputProps.ref,
             endAdornment: params.InputProps.endAdornment

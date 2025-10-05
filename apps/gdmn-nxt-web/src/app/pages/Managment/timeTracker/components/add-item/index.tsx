@@ -1,6 +1,6 @@
 import styles from './styles.module.less';
 import CustomizedCard from '@gdmn-nxt/components/Styled/customized-card/customized-card';
-import { Autocomplete, Box, Button, Checkbox, createFilterOptions, InputAdornment, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, createFilterOptions, List, ListItem, ListItemButton, ListItemText, ListSubheader, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { DatePicker, TimePicker, TimeValidationError } from '@mui/x-date-pickers-pro';
 import { Form, FormikProvider, getIn, useFormik } from 'formik';
 import { ChangeEvent, forwardRef, HTMLAttributes, MouseEvent, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -11,16 +11,14 @@ import StopIcon from '@mui/icons-material/Stop';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import { CustomerSelect } from '@gdmn-nxt/components/selectors/customer-select/customer-select';
-// import { useAddFavoriteMutation, useDeleteFavoriteMutation, useGetWorkProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/work-projects';
-import { ICustomer, ITimeTrack, ITimeTrackProject, ITimeTrackTask, IWorkProject } from '@gsbelarus/util-api-types';
+import { ICustomer, ITimeTrack, ITimeTrackProject, ITimeTrackTask } from '@gsbelarus/util-api-types';
 import dayjs, { durationFormat } from '@gdmn-nxt/dayjs';
 import * as yup from 'yup';
 import TextFieldMasked from '@gdmn-nxt/components/textField-masked/textField-masked';
-import filterOptions from '@gdmn-nxt/helpers/filter-options';
 import { GroupHeader, GroupItems } from '@gdmn-nxt/components/Kanban/kanban-edit-card/components/group';
 import SwitchStar from '@gdmn-nxt/components/switch-star/switch-star';
-import { useAddFavoriteTaskMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery, useGetTaskQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
-import { useAutocompleteVirtualization } from '@gdmn-nxt/helpers/hooks/useAutocompleteVirtualization';
+import { useAddFavoriteTaskMutation, useDeleteFavoriteTaskMutation, useGetProjectsQuery } from 'apps/gdmn-nxt-web/src/app/features/time-tracking';
+
 import { useGetCustomersQuery } from 'apps/gdmn-nxt-web/src/app/features/customer/customerApi_new';
 
 const durationMask = [
@@ -39,12 +37,12 @@ type SubmitMode = 'add' | 'update';
 
 interface AddItemProps {
   initial?: Partial<ITimeTrack>;
-  onSubmit: (value: ITimeTrack, mode: SubmitMode) => void
+  onSubmit: (value: ITimeTrack, mode: SubmitMode) => void;
 }
 
 const TasksListboxComponent = forwardRef<
-HTMLUListElement,
-HTMLAttributes<HTMLElement>
+  HTMLUListElement,
+  HTMLAttributes<HTMLElement>
 >(function ListboxComponent(
   props,
   ref
@@ -153,21 +151,7 @@ export const AddItem = ({
     };
   }, [formik, formik.values.inProgress]);
 
-  useEffect(() => {
-    calcDuration(
-      formik.values.startTime,
-      formik.values.endTime
-    );
-  }, [
-    formik.values.startTime,
-    formik.values.endTime
-  ]);
-
-  const handleCustomerChange = useCallback((customer: ICustomer | null | undefined) => {
-    formik.setFieldValue('customer', customer);
-  }, []);
-
-  const calcDuration = (
+  const calcDuration = useCallback((
     startTime?: Date | null,
     endTime?: Date | null
   ) => {
@@ -184,7 +168,19 @@ export const AddItem = ({
 
     const duration = dayjs.duration(dEndTime.diff(dStartTime));
     formik.setFieldValue('duration', duration.toISOString());
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    calcDuration(
+      formik.values.startTime,
+      formik.values.endTime
+    );
+  }, [formik.values.startTime, formik.values.endTime, calcDuration]);
+
+  const handleCustomerChange = useCallback((customer: ICustomer | null | undefined) => {
+    formik.setFieldValue('customer', customer);
+  }, [formik]);
 
   const handleDateTimeChange = (fieldName: string) => (value: Date | null) => {
     if (!dayjs(value).isValid()) {
@@ -323,9 +319,9 @@ export const AddItem = ({
     }
   });
 
-  const taskCount = useMemo(() => customersResponse?.data.find(
-    (customer: ICustomer) => customer.ID === formik.values.customer?.ID)?.taskCount ?? 0,
-  [customersResponse?.data, formik.values.customer?.ID]);
+  const taskCount = useMemo(() => (
+    customersResponse?.data.find((customer: ICustomer) => customer.ID === formik.values.customer?.ID)?.taskCount ?? 0
+  ), [customersResponse?.data, formik.values.customer?.ID]);
 
   return (
     <CustomizedCard className={styles.itemCard}>
@@ -544,34 +540,40 @@ export const AddItem = ({
                 >
                   {calcMode === 'calc'
                     ? (formik.values.inProgress)
-                      ? <Button
+                      ? (
+                        <Button
+                          className={styles.startButton}
+                          color="error"
+                          variant="contained"
+                          startIcon={<StopIcon />}
+                          onClick={stopClick}
+                          disabled={!formik.values.customer}
+                        >
+                          Стоп
+                        </Button>
+                      )
+                      : (
+                        <Button
+                          className={styles.startButton}
+                          variant="contained"
+                          startIcon={<PlayCircleFilledWhiteIcon />}
+                          onClick={startClick}
+                          disabled={!formik.values.customer}
+                        >
+                          Начать
+                        </Button>
+                      )
+                    : (
+                      <Button
                         className={styles.startButton}
-                        color="error"
                         variant="contained"
-                        startIcon={<StopIcon />}
-                        onClick={stopClick}
-                        disabled={!formik.values.customer}
+                        onClick={addClick}
+                        disabled={!formik.values.customer || !formik.values.duration || !formik.values.description.trim() || customersIsLoading
+                          || customersIsFetching || (taskCount > 0 && !formik.values.task)}
                       >
-                        Стоп
+                        Добавить
                       </Button>
-                      : <Button
-                        className={styles.startButton}
-                        variant="contained"
-                        startIcon={<PlayCircleFilledWhiteIcon />}
-                        onClick={startClick}
-                        disabled={!formik.values.customer}
-                      >
-                        Начать
-                      </Button>
-                    : <Button
-                      className={styles.startButton}
-                      variant="contained"
-                      onClick={addClick}
-                      disabled={!formik.values.customer || !formik.values.duration || customersIsLoading
-                        || customersIsFetching || (taskCount > 0 && !formik.values.task)}
-                    >
-                      Добавить
-                    </Button>}
+                    )}
 
                 </Box>
                 <ToggleButtonGroup
@@ -625,6 +627,6 @@ export const AddItem = ({
           </Stack>
         </Form>
       </FormikProvider>
-    </CustomizedCard>
+    </CustomizedCard >
   );
 };
