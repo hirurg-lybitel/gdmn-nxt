@@ -620,6 +620,8 @@ export function TicketsList(props: ticketsListProps) {
     handleOnFilterChange('labels', [...(filteringData?.labels ?? []), newLabel]);
   };
 
+  const theme = useTheme();
+
   const columns: GridColDef<ITicket>[] = [
     {
       field: 'title',
@@ -699,10 +701,11 @@ export function TicketsList(props: ticketsListProps) {
         const avatar = (
           <div
             style={{
-              background: 'var(--color-primary-bg)', minHeight: '40px', minWidth: '40px',
+              background: theme.color.grey[200], minHeight: '40px', minWidth: '40px',
               maxHeight: '40px', maxWidth: '40px', borderRadius: '100%',
               display: 'flex', justifyContent: 'center', alignItems: 'center',
-              fontWeight: 500, fontSize: '15px', position: 'relative'
+              fontWeight: 500, fontSize: '15px', position: 'relative',
+              color: 'black'
             }}
           >
             <span style={{ zIndex: 1 }}>{getLetters(company?.NAME ?? '')}</span>

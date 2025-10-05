@@ -1,4 +1,4 @@
-import { Avatar, Tooltip, TooltipProps } from '@mui/material';
+import { Avatar, Tooltip, TooltipProps, useTheme } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import styles from './user-tooltip.module.less';
@@ -12,12 +12,25 @@ interface IUserTooltipProps extends Omit<TooltipProps, 'title'> {
 }
 
 export default function UserTooltip({ name, phone, email, avatar, customAvatar, ...rest }: Readonly<IUserTooltipProps>) {
+  const theme = useTheme();
+
   return (
     <Tooltip
       {...rest}
       PopperProps={{
         disablePortal: true,
-        ...rest.PopperProps
+        ...rest.PopperProps,
+        sx: {
+          ...rest.PopperProps?.sx,
+          '& .MuiTooltip-tooltip': {
+            boxShadow: '0px 4px 5px -2px rgb(0 0 0 / 20%), 0px 7px 10px 1px rgb(0 0 0 / 14%), 0px 2px 16px 1px rgb(0 0 0 / 12%)',
+            background: theme.palette.background.paper + ' !important',
+            color: theme.textColor
+          },
+          '& .MuiTooltip-arrow::before': {
+            background: theme.palette.background.paper + ' !important',
+          }
+        }
       }}
       arrow
       title={
