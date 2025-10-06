@@ -13,7 +13,7 @@ import { useGetAllFiltersQuery } from '../features/filters/filtersApi';
 import { useGetAllSegmentsQuery } from '../features/Marketing/segments/segmentsApi';
 import { UserType } from '@gsbelarus/util-api-types';
 import { useEffect } from 'react';
-import { clearSocket, setSocketClient } from '@gdmn-nxt/socket';
+import { clearSocket, setSocketClient, SocketNames } from '@gdmn-nxt/socket';
 import { config } from '@gdmn-nxt/config';
 
 /** Загрузка данных на фоне во время авторизации  */
@@ -29,8 +29,14 @@ export function InitData() {
       userId: userId
     });
 
+    setSocketClient(SocketNames.streamingUpdate, {
+      url: `https://${config.serverHost}:${config.streamingUpdatePort}`,
+      userId: userId
+    });
+
     return () => {
       clearSocket('tickets');
+      clearSocket(SocketNames.streamingUpdate);
     };
   }, [userId]);
 

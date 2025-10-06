@@ -362,7 +362,7 @@ const upsert: RequestHandler = async (req, res) => {
 };
 
 const remove: RequestHandler = async (req, res) => {
-  const { attachment, transaction, releaseTransaction, fetchAsSingletonObject } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsSingletonObject, fetchAsObject } = await startTransaction(req.sessionID);
 
   const id = parseInt(req.params.id);
 
@@ -371,23 +371,61 @@ const remove: RequestHandler = async (req, res) => {
   try {
     const userId = req.user['id'] || -1;
 
-    /** Формирование истории изменений */
-    const sql = `
-      SELECT
-        task.USR$NAME, task.USR$CARDKEY
-      FROM USR$CRM_KANBAN_CARD_TASKS task
-      WHERE task.ID = :taskId`;
+    const taskData = await fetchAsSingletonObject<IKanbanTask>(`
+    SELECT
+      task.ID,
+      task.USR$CARDKEY,
+      task.USR$NAME,
+      task.USR$CLOSED,
+      task.USR$DEADLINE,
+      task.USR$DATECLOSE,
+      task.USR$CREATIONDATE,
+      task.USR$NUMBER,
+      task.USR$INPROGRESS,
+      performer.ID AS PERFORMER_ID,
+      performer.NAME AS PERFORMER_NAME,
+      creator.ID AS CREATOR_ID,
+      creator.NAME AS CREATOR_NAME,
+      tt.ID AS TYPE_ID,
+      tt.USR$NAME AS TYPE_NAME
+    FROM USR$CRM_KANBAN_CARD_TASKS task
+      LEFT JOIN USR$CRM_KANBAN_CARDS card ON card.ID = task.USR$CARDKEY
+      LEFT JOIN GD_CONTACT performer ON performer.ID = task.USR$PERFORMER
+      LEFT JOIN GD_CONTACT creator ON creator.ID = task.USR$CREATORKEY
+      LEFT JOIN USR$CRM_KANBAN_CARD_TASKS_TYPES tt ON tt.ID = task.USR$TASKTYPEKEY
+    WHERE task.ID = :taskId
+    `, { taskId: id });
 
-    const oldTaskRecord = await fetchAsSingletonObject(sql, { taskId: id });
+    const oldTask: IKanbanTask = {
+      ...taskData,
+      PERFORMER: taskData['PERFORMER_ID']
+        ? {
+          ID: taskData['PERFORMER_ID'],
+          NAME: taskData['PERFORMER_NAME']
+        }
+        : null,
+      CREATOR: taskData['CREATOR_ID']
+        ? {
+          ID: taskData['CREATOR_ID'],
+          NAME: taskData['CREATOR_NAME']
+        }
+        : null,
+      ...(taskData['TYPE_ID'] && {
+        TASKTYPE: {
+          ID: taskData['TYPE_ID'],
+          NAME: taskData['TYPE_NAME'],
+        },
+      }),
+    };
 
     const changes: IKanbanHistory[] = [];
     changes.push({
       ID: -1,
       USR$TYPE: '3',
-      USR$CARDKEY: oldTaskRecord.USR$CARDKEY > 0 ? oldTaskRecord.USR$CARDKEY : null,
+      USR$CARDKEY: oldTask.USR$CARDKEY > 0 ? oldTask.USR$CARDKEY : null,
       USR$DESCRIPTION: 'Задача',
-      USR$OLD_VALUE: oldTaskRecord.USR$NAME || '',
-      USR$NEW_VALUE: oldTaskRecord.USR$NAME || '',
+      USR$OLD_VALUE: oldTask.USR$NAME || '',
+      USR$NEW_VALUE: oldTask.USR$NAME || '',
       USR$USERKEY: userId
     });
 
@@ -425,7 +463,7 @@ const remove: RequestHandler = async (req, res) => {
       return res.status(500).send(resultError('Объект не найден'));
     }
 
-    return res.status(200).json({ 'ID': id });
+    return res.status(200).json(oldTask);
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {

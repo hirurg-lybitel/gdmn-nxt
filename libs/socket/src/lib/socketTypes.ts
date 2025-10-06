@@ -1,4 +1,10 @@
 import { IKanbanCard, IKanbanColumn, IKanbanTask, ITicket, ITicketHistory, ITicketMessage, UserType } from '@gsbelarus/util-api-types';
+
+export enum SocketNames {
+  streamingUpdate = 'streamingUpdate',
+  tickets = 'tickets'
+}
+
 export interface InterServerEvents {
   ping: () => void;
   joinToRoom: (roomName: string) => void;
@@ -48,6 +54,9 @@ export interface INotification {
 }
 
 export enum SocketRoom {
+  KanbanColumns = 'KanbanColumns',
+  KanbanCards = 'KanbanCards',
+  kanbanTasks = 'kanbanTasks',
   KanbanBoard = 'KanbanBoard'
 }
 
@@ -68,19 +77,25 @@ export enum KanbanEvent {
 }
 
 interface KanbanEvents {
+  [SocketRoom.KanbanColumns]: () => void,
   [KanbanEvent.AddColumn]: (column: IKanbanColumn) => void;
   [KanbanEvent.UpdateColumn]: (column: IKanbanColumn) => void;
   [KanbanEvent.DeleteColumn]: (id: number) => void;
+
+  [SocketRoom.KanbanCards]: () => void;
   [KanbanEvent.AddCard]: (columnId: number, card: IKanbanCard) => void;
   [KanbanEvent.UpdateCard]: (columnId: number, card: Partial<IKanbanCard>) => void;
-  [KanbanEvent.DeleteCard]: (columnId: number, id: number) => void;
-  [KanbanEvent.ReorderCards]: (columnId: number, cards: IKanbanCard[]) => void;
+  [KanbanEvent.DeleteCard]: (columnId: number, card: IKanbanCard) => void;
+  [KanbanEvent.ReorderCards]: () => void;
+
+  [SocketRoom.kanbanTasks]: () => void;
   [KanbanEvent.AddTask]: (cardId: number, task: IKanbanTask) => void;
   [KanbanEvent.UpdateTask]: (cardId: number, task: IKanbanTask) => void;
-  [KanbanEvent.DeleteTask]: (id: number) => void;
+  [KanbanEvent.DeleteTask]: (task: IKanbanTask) => void;
+
   [KanbanEvent.AddTaskCard]: (columnIndex: number, task: IKanbanTask) => void;
   [KanbanEvent.UpdateTaskCard]: (columnIndex: number, taskCard: IKanbanTask) => void;
-  [KanbanEvent.DeleteTaskCard]: (id: number) => void;
+  [KanbanEvent.DeleteTaskCard]: (task: IKanbanTask) => void;
 }
 
 export enum TicketEvent {
