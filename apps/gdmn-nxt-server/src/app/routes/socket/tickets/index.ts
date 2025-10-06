@@ -5,13 +5,11 @@ import { marked } from 'marked';
 import { readFileSync } from 'fs';
 import { createServer } from 'https';
 import path from 'path';
-import { ITicket, ticketStateCodes, UserType } from '@gsbelarus/util-api-types';
-import * as cookie from 'cookie';
-import signature from 'cookie-signature';
-import { sessionStore } from 'apps/gdmn-nxt-server/src/main';
+import { ITicket, ticketStateCodes } from '@gsbelarus/util-api-types';
 import { ticketsService } from '@gdmn-nxt/modules/tickets/service';
 import { ticketsRepository } from '@gdmn-nxt/modules/tickets/repository';
 import { ticketsHistoryRepository } from '@gdmn-nxt/modules/tickets-history/repository';
+import { getUserSessionBySidAndSocket } from '@gdmn-nxt/server/utils/sessions-helper';
 
 marked.use({
   mangle: false,
@@ -54,22 +52,6 @@ export function Tickets() {
   socketIO.on('connection', (socket) => {
     console.log(`⚡ Tickets: ${socket.id} user just connected!`);
 
-    const rawCookie = socket.handshake.headers.cookie;
-    const cookies = cookie.parse(rawCookie);
-
-    const getUser = async (userType: UserType): Promise<any> => {
-      if (!cookies) return;
-      const sidCookieName = userType === UserType.Tickets ? 'ticketsSid' : 'Sid';
-      let sid = cookies[sidCookieName];
-      if (!sid?.startsWith('s:')) return;
-      sid = signature.unsign(sid.slice(2), config.jwtSecret);
-      if (!sid) return;
-
-      return await sessionStore.get(sid, (err, session) => {
-        return session?.passport?.user;
-      });
-    };
-
     const roomsByTicket = (ticket: ITicket) => {
       const rooms: string[] = [RoomsPerfix.AllTickets];
       if (ticket.sender?.ID) {
@@ -86,7 +68,7 @@ export function Tickets() {
 
     // Комната чата по тикету
     socket.on(TicketEvent.JoinToChat, async (ticketId, userType) => {
-      const userSession = await getUser(userType);
+      const userSession = await getUserSessionBySidAndSocket(userType, socket);
 
       if (!userSession) return;
 
@@ -114,7 +96,7 @@ export function Tickets() {
     socket.on(TicketEvent.NewMessage, async (message) => {
       socketIO.to(`${RoomsPerfix.Ticket}${message.ticketKey}`).emit(TicketEvent.NewMessage, message);
       if (message.state?.ID) {
-        const userSession = await getUser(message.user.type);
+        const userSession = await getUserSessionBySidAndSocket(message.user.type, socket);
         const ticket = await ticketsService.findOne(sessionID, message.ticketKey, message.user.type, userSession.id, userSession.isAdmin, userSession.companyKey, true);
 
         socketIO.to([...roomsByTicket(ticket), `${RoomsPerfix.Ticket}${ticket.ID}`]).emit(TicketEvent.UpdateTicket, ticket);
@@ -142,7 +124,7 @@ export function Tickets() {
 
     // Комната тикетов
     socket.on(TicketEvent.JoinToTicketsRoom, async (userType) => {
-      const userSession = await getUser(userType);
+      const userSession = await getUserSessionBySidAndSocket(userType, socket);
 
       const showAll = userSession.permissions?.['ticketSystem/tickets/all']?.GET;
 

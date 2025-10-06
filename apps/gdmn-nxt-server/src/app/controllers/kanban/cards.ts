@@ -463,10 +463,122 @@ const remove: RequestHandler = async (req, res) => {
 
   if (isNaN(Number(id))) return res.status(422).send(resultError('Field ID is not defined or isn\'t numeric'));
 
-  const { attachment, transaction, releaseTransaction } = await startTransaction(req.sessionID);
+  const { attachment, transaction, releaseTransaction, fetchAsObject } = await startTransaction(req.sessionID);
 
   let result: ResultSet;
   try {
+    // FIXME: Перенести все что связано со сделками в модули чтобы избежать дублирования кода
+    const cardData = await fetchAsObject(`
+      SELECT
+        card.ID, COALESCE(card.USR$INDEX, 0) USR$INDEX, card.USR$MASTERKEY,
+        card.USR$DEALKEY, deal.ID deal_ID, deal.USR$NAME deal_USR$NAME, deal.USR$DISABLED deal_USR$DISABLED,
+        deal.USR$AMOUNT deal_USR$AMOUNT, deal.USR$CONTACTKEY deal_USR$CONTACTKEY,
+        con.ID con_ID, con.NAME con_NAME,
+        performer.ID AS PERFORMER_ID,
+        performer.NAME AS PERFORMER_NAME,
+        secondPerformer.ID AS SECOND_PERFORMER_ID,
+        secondPerformer.NAME AS SECOND_PERFORMER_NAME,
+        creator.ID AS CREATOR_ID,
+        creator.NAME AS CREATOR_NAME,
+        source.ID AS SOURCE_ID,
+        source.USR$NAME AS SOURCE_NAME,
+        deal.USR$DEADLINE,
+        deal.USR$DONE,
+        deal.USR$READYTOWORK,
+        dep.ID DEP_ID,
+        dep.NAME DEP_NAME,
+        deny.ID DENY_ID,
+        deny.USR$NAME AS DENY_NAME,
+        deal.USR$DENIED DENIED,
+        deal.USR$PREPAID PREPAID,
+        deal.USR$COMMENT COMMENT,
+        deal.USR$DESCRIPTION DESCRIPTION,
+        deal.USR$REQUESTNUMBER AS REQUESTNUMBER,
+        deal.USR$PRODUCTNAME AS PRODUCTNAME,
+        deal.USR$CONTACT_NAME AS CONTACT_NAME,
+        deal.USR$CONTACT_EMAIL AS CONTACT_EMAIL,
+        deal.USR$CONTACT_PHONE AS CONTACT_PHONE,
+        deal.USR$CREATIONDATE CREATIONDATE,
+        deal.USR$NUMBER AS DEAL_NUMBER
+      FROM USR$CRM_KANBAN_CARDS card
+        JOIN USR$CRM_DEALS deal ON deal.ID = card.USR$DEALKEY
+        JOIN GD_CONTACT con ON con.ID = deal.USR$CONTACTKEY
+        LEFT JOIN GD_CONTACT dep ON dep.ID = deal.USR$DEPOTKEY
+        LEFT JOIN GD_CONTACT performer ON performer.ID = deal.USR$PERFORMER
+        LEFT JOIN GD_CONTACT secondPerformer ON secondPerformer.ID = deal.USR$SECOND_PERFORMER
+        LEFT JOIN GD_CONTACT creator ON creator.ID = deal.USR$CREATORKEY
+        LEFT JOIN USR$CRM_DENY_REASONS deny ON deny.ID = deal.USR$DENYREASONKEY
+        LEFT JOIN USR$CRM_DEALS_SOURCE source ON source.ID = deal.USR$SOURCEKEY
+      WHERE card.ID = ?
+    `, [id]);
+
+    const card: IKanbanCard = {
+      // ...el,
+      ID: cardData[0]['ID'],
+      USR$INDEX: cardData[0]['USR$INDEX'],
+      USR$MASTERKEY: cardData[0]['USR$MASTERKEY'],
+      USR$DEALKEY: cardData[0]['USR$DEALKEY'],
+      DEAL: {
+        ID: cardData[0]['DEAL_ID'],
+        USR$NUMBER: cardData[0]['DEAL_NUMBER'],
+        USR$NAME: cardData[0]['DEAL_USR$NAME'],
+        USR$CONTACTKEY: cardData[0]['deal_USR$CONTACTKEY'],
+        USR$AMOUNT: cardData[0]['DEAL_USR$AMOUNT'],
+        USR$DEADLINE: cardData[0]['USR$DEADLINE'],
+        ...(cardData[0]['SOURCE_ID'] && {
+          SOURCE: {
+            ID: cardData[0]['SOURCE_ID'],
+            NAME: cardData[0]['SOURCE_NAME']
+          }
+        }),
+        ...(cardData[0]['CON_ID'] && {
+          CONTACT: {
+            ID: cardData[0]['CON_ID'],
+            NAME: cardData[0]['CON_NAME'],
+          },
+        }),
+        ...(cardData[0]['CREATOR_ID'] && {
+          CREATOR: {
+            ID: cardData[0]['CREATOR_ID'],
+            NAME: cardData[0]['CREATOR_NAME'],
+          },
+        }),
+        PERFORMERS: []
+          .concat(cardData[0]['PERFORMER_ID'] ? [{
+            ID: cardData[0]['PERFORMER_ID'],
+            NAME: cardData[0]['PERFORMER_NAME'],
+          }] : [])
+          .concat(cardData[0]['SECOND_PERFORMER_ID'] ? [{
+            ID: cardData[0]['SECOND_PERFORMER_ID'],
+            NAME: cardData[0]['SECOND_PERFORMER_NAME'],
+          }] : []),
+        ...(cardData[0]['DEP_ID'] && {
+          DEPARTMENT: {
+            ID: cardData[0]['DEP_ID'],
+            NAME: cardData[0]['DEP_NAME'],
+          },
+        }),
+        ...(cardData[0]['DENY_ID'] && {
+          DENYREASON: {
+            ID: cardData[0]['DENY_ID'],
+            NAME: cardData[0]['DENY_NAME'],
+          },
+        }),
+        USR$DONE: cardData[0]['USR$DONE'] === 1,
+        USR$READYTOWORK: cardData[0]['USR$READYTOWORK'] === 1,
+        DENIED: cardData[0]['DENIED'] === 1,
+        COMMENT: cardData[0]['COMMENT'],
+        REQUESTNUMBER: cardData[0]['REQUESTNUMBER'],
+        PRODUCTNAME: cardData[0]['PRODUCTNAME'],
+        CONTACT_NAME: cardData[0]['CONTACT_NAME'],
+        CONTACT_EMAIL: cardData[0]['CONTACT_EMAIL'],
+        CONTACT_PHONE: cardData[0]['CONTACT_PHONE'],
+        CREATIONDATE: cardData[0]['CREATIONDATE'],
+        DESCRIPTION: cardData[0]['DESCRIPTION'],
+        PREPAID: cardData[0]['PREPAID'] === 1,
+      }
+    };
+
     result = await attachment.executeQuery(
       transaction,
       `EXECUTE BLOCK(
@@ -495,14 +607,16 @@ const remove: RequestHandler = async (req, res) => {
       [id]
     );
 
-    const data: { SUCCESS: number, USR$MASTERKEY: number; }[] = await result.fetchAsObject();
+    const data: {
+      SUCCESS: number, USR$MASTERKEY: number;
+    }[] = await result.fetchAsObject();
 
     if (data[0].SUCCESS !== 1) {
       return res.status(500).send(resultError('Объект не найден'));
     };
 
     await result.close();
-    return res.status(200).json({ 'ID': id, 'USR$MASTERKEY': data[0].USR$MASTERKEY });
+    return res.status(200).json({ card, 'USR$MASTERKEY': data[0].USR$MASTERKEY });
   } catch (error) {
     return res.status(500).send(resultError(error.message));
   } finally {

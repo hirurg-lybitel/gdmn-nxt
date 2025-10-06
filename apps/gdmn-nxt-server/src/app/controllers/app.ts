@@ -12,6 +12,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
       c.name as contactName,
       c.disabled as contactDisabled,
       c.email,
+      c.ID as CONTACTKEY,
       p.firstname,
       p.surname
     FROM
@@ -48,6 +49,7 @@ export const checkGedeminUser = async (userName: string, password: string): Prom
             email: data[0]['EMAIL'],
             firstname: data[0]['FIRSTNAME'],
             surname: data[0]['SURNAME'],
+            contactkey: data[0]['CONTACTKEY'],
             type: UserType.Gedemin
           }
         };

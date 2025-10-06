@@ -231,6 +231,7 @@ passport.use(new Strategy(
             id: res.userProfile.id,
             email: res.userProfile.email,
             permissions: userPermissions,
+            contactKey: res.userProfile.contactkey
           });
         }
         console.log('Invalid gedemin user', { userName, password });
