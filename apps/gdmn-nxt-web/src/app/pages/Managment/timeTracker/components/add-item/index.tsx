@@ -131,6 +131,8 @@ export const AddItem = ({
     },
   });
 
+  const { setFieldValue } = formik;
+
   useEffect(() => {
     if (!formik.values.inProgress) {
       return;
@@ -143,13 +145,13 @@ export const AddItem = ({
       const endTime = dayjs();
       const duration = dayjs.duration(endTime.diff(startTime));
 
-      formik.setFieldValue('duration', duration.toISOString());
+      setFieldValue('duration', duration.toISOString());
     }, 1000);
 
     return () => {
       clearInterval(clockId);
     };
-  }, [formik, formik.values.inProgress]);
+  }, [formik.values.inProgress, formik.values.startTime, setFieldValue]);
 
   const calcDuration = useCallback((
     startTime?: Date | null,
@@ -167,7 +169,7 @@ export const AddItem = ({
     }
 
     const duration = dayjs.duration(dEndTime.diff(dStartTime));
-    formik.setFieldValue('duration', duration.toISOString());
+    setFieldValue('duration', duration.toISOString());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -179,15 +181,15 @@ export const AddItem = ({
   }, [formik.values.startTime, formik.values.endTime, calcDuration]);
 
   const handleCustomerChange = useCallback((customer: ICustomer | null | undefined) => {
-    formik.setFieldValue('customer', customer);
-  }, [formik]);
+    setFieldValue('customer', customer);
+  }, [setFieldValue]);
 
   const handleDateTimeChange = (fieldName: string) => (value: Date | null) => {
     if (!dayjs(value).isValid()) {
       return;
     }
 
-    formik.setFieldValue(fieldName, value);
+    setFieldValue(fieldName, value);
 
     formik.values.date?.setSeconds(0, 0);
     formik.values.startTime?.setSeconds(0, 0);
@@ -196,24 +198,24 @@ export const AddItem = ({
 
   const startClick = () => {
     setSubmitMode('add');
-    formik.setFieldValue('date', dayjs().toDate());
-    formik.setFieldValue('startTime', dayjs().toDate());
-    formik.setFieldValue('endTime', null);
-    formik.setFieldValue('inProgress', true);
+    setFieldValue('date', dayjs().toDate());
+    setFieldValue('startTime', dayjs().toDate());
+    setFieldValue('endTime', null);
+    setFieldValue('inProgress', true);
 
     formik.submitForm();
   };
 
   const stopClick = () => {
     setSubmitMode('update');
-    formik.setFieldValue('endTime', dayjs().toDate());
-    formik.setFieldValue('inProgress', false);
+    setFieldValue('endTime', dayjs().toDate());
+    setFieldValue('inProgress', false);
 
     const startTime = dayjs(formik.values.startTime);
     const endTime = dayjs(formik.values.endTime);
 
     const duration = dayjs.duration(endTime.diff(startTime));
-    formik.setFieldValue('duration', duration.toISOString());
+    setFieldValue('duration', duration.toISOString());
 
     toggleValidTimers(true);
 
@@ -237,22 +239,22 @@ export const AddItem = ({
 
     const newDuration = dayjs.duration({ hours, minutes, seconds });
     const isoDuration = newDuration.toISOString();
-    formik.setFieldValue('duration', isoDuration);
+    setFieldValue('duration', isoDuration);
 
     const startTime = dayjs(formik.values.startTime);
-    formik.setFieldValue('endTime', startTime.add(newDuration).toDate());
+    setFieldValue('endTime', startTime.add(newDuration).toDate());
   };
 
   const billableChange = (
     event: ChangeEvent<HTMLInputElement>,
     checked: boolean
   ) => {
-    formik.setFieldValue('billable', checked);
+    setFieldValue('billable', checked);
   };
 
-  const handleTaskSelected = async (task: ITimeTrackTask | null) => {
-    formik.setFieldValue('task', task);
-  };
+  const handleTaskSelected = useCallback(async (task: ITimeTrackTask | null) => {
+    setFieldValue('task', task);
+  }, [setFieldValue]);
 
   const [descriptionOnFocus, setDescriptionOnFocus] = useState(false);
 
